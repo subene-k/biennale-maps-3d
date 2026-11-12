@@ -1,0 +1,2436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Purana Qila Biennale Map</title>
+<meta name="description" content="3D walking map of Purana Qila for The India Biennale '26.">
+<style>html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: full-bleed 3D map of the fort; a floating panel on the left (desktop) that becomes a bottom sheet on phones. */
+:root{
+  --bg:#E8ECEF; --panel:#FFFFFF; --panel-2:#F3F4F5; --fg:#1D1B1A; --muted:#625E5A; --line:#DDDAD6;
+  --accent:#AE3820; --accent-fg:#FFFFFF; --route:#1659C7; --ok:#2C7F45; --warn:#A35F00;
+  --c-gate:#AE3820; --c-monument:#946000; --c-museum:#6A4CC0; --c-garden:#2C7F45; --c-biennale:#C8175F; --c-facility:#4C5B69;
+  --sky:#C9D7E2; --ground-out:#A5AF8E; --ground-in:#DDCDAE; --path:#EFE4CF; --stone:#A8422B; --stone-dark:#7A2E1D;
+  --marble:#F1EDE5; --barrack:#CFC3AA; --grass:#88A964; --moat:#7E9A5C; --water:#6AA1BC; --road:#8D9093; --tree:#4D7838; --void:#3A2F2A;
+  --shadow:0 10px 30px rgba(18,22,26,.18);
+  --f-display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101315; --panel:#191C1F; --panel-2:#22262A; --fg:#ECE8E3; --muted:#A29B94; --line:#2E3337;
+    --accent:#E26A50; --accent-fg:#1A0E0A; --route:#58A2FF; --ok:#5FBE7C; --warn:#E3A33C;
+    --c-gate:#E26A50; --c-monument:#E0A53A; --c-museum:#A78BFA; --c-garden:#5FBE7C; --c-biennale:#F2609A; --c-facility:#94A3B4;
+    --sky:#0D1722; --ground-out:#263022; --ground-in:#4A3F32; --path:#6A5C4A; --stone:#8C3926; --stone-dark:#5E2416;
+    --marble:#C9C3B8; --barrack:#776C5B; --grass:#3D5A30; --moat:#33492A; --water:#2A5873; --road:#3A3E42; --tree:#2E4A24; --void:#120E0C;
+    --shadow:0 10px 30px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101315; --panel:#191C1F; --panel-2:#22262A; --fg:#ECE8E3; --muted:#A29B94; --line:#2E3337;
+  --accent:#E26A50; --accent-fg:#1A0E0A; --route:#58A2FF; --ok:#5FBE7C; --warn:#E3A33C;
+  --c-gate:#E26A50; --c-monument:#E0A53A; --c-museum:#A78BFA; --c-garden:#5FBE7C; --c-biennale:#F2609A; --c-facility:#94A3B4;
+  --sky:#0D1722; --ground-out:#263022; --ground-in:#4A3F32; --path:#6A5C4A; --stone:#8C3926; --stone-dark:#5E2416;
+  --marble:#C9C3B8; --barrack:#776C5B; --grass:#3D5A30; --moat:#33492A; --water:#2A5873; --road:#3A3E42; --tree:#2E4A24; --void:#120E0C;
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45;overflow:hidden;-webkit-font-smoothing:antialiased}
+.app{position:relative;height:100%;overflow:hidden}
+.map{position:absolute;inset:0;background:var(--sky);z-index:0;isolation:isolate}
+.map canvas{display:block}
+.labels{position:absolute;inset:0;touch-action:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--route);outline-offset:2px}
+
+/* ---------- pins ---------- */
+.pin{width:0;height:0;position:relative;pointer-events:none}
+.pin .dot{position:absolute;left:-14px;bottom:0;width:28px;height:28px;border-radius:50% 50% 50% 2px;transform:rotate(-45deg);transform-origin:center;
+  background:var(--cat);border:2px solid var(--panel);box-shadow:0 3px 10px rgba(0,0,0,.28);display:grid;place-items:center;pointer-events:auto;cursor:pointer;
+  transition:transform .15s ease}
+.pin .dot span{transform:rotate(45deg);font:600 11px/1 var(--f-mono);color:#fff;display:grid;place-items:center}
+.pin .dot svg{width:15px;height:15px;display:block}
+.pin .dot b{font:600 11px/1 var(--f-mono)}
+.pin .name{position:absolute;left:18px;bottom:16px;white-space:nowrap;font:600 12px/1 var(--f-body);color:var(--fg);background:var(--panel);
+  padding:5px 8px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.16);opacity:0;transform:translateY(2px);transition:opacity .15s,transform .15s;pointer-events:none}
+.map.l-major .pin.major .name,.map.l-all .pin .name,.pin.sel .name,.pin:hover .name{opacity:1;transform:none}
+.pin:hover .dot{transform:rotate(-45deg) scale(1.12)}
+.pin.sel .dot{transform:rotate(-45deg) scale(1.25);box-shadow:0 0 0 4px color-mix(in srgb,var(--cat) 35%,transparent),0 4px 12px rgba(0,0,0,.3)}
+.pin.fac .dot{width:30px;height:30px;left:-15px}
+.pin.dim{opacity:.35}
+.pin.onroute{opacity:1}
+.pin.stopnum .dot{background:var(--route)}
+.ctx{font:600 10.5px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap;pointer-events:none;
+  text-shadow:0 0 6px var(--sky),0 0 2px var(--sky)}
+
+/* ---------- map controls ---------- */
+.ctl{position:absolute;z-index:6;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:8px}
+.ctl .grp{display:flex;flex-direction:column;background:var(--panel);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.ctl button{width:40px;height:40px;border:0;background:transparent;display:grid;place-items:center;color:var(--fg)}
+.ctl button+button{border-top:1px solid var(--line)}
+.ctl button:hover{background:var(--panel-2)}
+.ctl button[aria-pressed="true"]{color:var(--route)}
+.ctl svg{width:18px;height:18px}
+.compass{width:40px;height:40px;border-radius:50%;background:var(--panel);box-shadow:var(--shadow);display:grid;place-items:center;border:0}
+.compass svg{width:26px;height:26px;transition:transform .05s linear}
+
+.banner{position:absolute;z-index:7;top:calc(64px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);
+  padding:10px 12px 10px 16px;border-radius:10px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center;max-width:calc(100% - 140px);font-weight:500}
+.banner button{background:transparent;border:1px solid color-mix(in srgb,var(--bg) 40%,transparent);color:var(--bg);border-radius:7px;padding:5px 10px;white-space:nowrap}
+.toast-btn{margin-left:12px;border:0;border-radius:7px;padding:6px 12px;font-weight:600;background:var(--route);color:#fff}
+.toast{position:absolute;z-index:8;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;box-shadow:var(--shadow);font-weight:500;max-width:calc(100% - 32px)}
+
+/* ---------- panel ---------- */
+.panel{position:absolute;z-index:5;left:max(16px,env(safe-area-inset-left,0px));top:calc(16px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:min(372px,calc(100% - 32px));display:flex;flex-direction:column;background:var(--panel);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.handle{display:none}
+.brand{display:flex;gap:12px;align-items:center;padding:16px 18px 12px}
+.brand .mark{width:36px;height:36px;flex:none;border-radius:8px;background:var(--accent);display:grid;place-items:center}
+.brand .mark svg{width:22px;height:22px}
+.brand h1{font:700 19px/1.1 var(--f-display);letter-spacing:-.01em;margin:0;text-wrap:balance}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.venues{display:flex;gap:4px;margin:0 18px 10px;padding:3px;background:var(--panel-2);border-radius:10px}
+.venues button{flex:1;border:0;background:none;border-radius:8px;padding:7px 8px;font-weight:600;font-size:13px;color:var(--muted)}
+.venues button[aria-pressed="true"]{background:var(--panel);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+@media (max-width:760px){.venues{margin:0 16px 8px}}
+.tabs{display:flex;gap:4px;padding:0 14px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:10px 8px 11px;color:var(--muted);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.body{flex:1;min-height:0;overflow:auto;padding:14px 18px 18px;display:flex;flex-direction:column;gap:14px}
+.body[hidden]{display:none}
+.search{width:100%;box-sizing:border-box;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 10px 4px 8px;font-size:12.5px;display:inline-flex;gap:6px;align-items:center;color:var(--fg)}
+.chip i{width:18px;height:18px;border-radius:50%;background:var(--cat);color:#fff;display:grid;place-items:center}
+.chip i svg{width:11px;height:11px}
+.chip[aria-pressed="false"]{opacity:.5}
+.grp-h{font:600 11px/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:6px 0 2px}
+.list{display:flex;flex-direction:column;gap:2px}
+.item{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start;text-align:left;border:0;background:none;padding:8px;border-radius:9px;width:100%}
+.item:hover{background:var(--panel-2)}
+.item .n{width:26px;height:26px;border-radius:50%;background:var(--cat);color:#fff;display:grid;place-items:center;margin-top:1px}
+.item .n svg{width:15px;height:15px}
+.item b{display:block;font-weight:600}
+.item small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.item div{min-width:0}
+.detail .photo{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;margin:10px 0 2px;background:var(--panel-2)}
+.player .plimg{float:left;width:58px;height:58px;object-fit:cover;border-radius:8px;margin:2px 10px 4px 0}
+.detail h2{font:700 22px/1.15 var(--f-display);margin:4px 0 6px;text-wrap:balance}
+.back{border:0;background:none;color:var(--muted);padding:0;font-weight:600}
+.catline{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);font-weight:600}
+.catline i{width:20px;height:20px;border-radius:50%;background:var(--cat);color:#fff;display:grid;place-items:center}
+.catline i svg{width:12px;height:12px}
+.detail p{margin:8px 0 0}
+.note{background:color-mix(in srgb,var(--c-biennale) 10%,var(--panel));border-left:3px solid var(--c-biennale);padding:10px 12px;border-radius:0 8px 8px 0;margin-top:12px;font-size:13.5px}
+.note b{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--c-biennale);margin-bottom:3px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:8px 12px;font-weight:600}
+.btn:hover{background:var(--panel-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.route{background:var(--route);border-color:var(--route);color:#fff}
+.btn.danger{color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.block{width:100%}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field select,.field input,.field textarea{padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2);width:100%;box-sizing:border-box}
+.field textarea{resize:vertical;min-height:64px}
+.stophead{display:flex;justify-content:space-between;align-items:baseline}
+.stophead b{font-family:var(--f-display);font-size:16px}
+.stoplist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;position:relative}
+.stoplist li{display:grid;grid-template-columns:22px 24px minmax(0,1fr) auto;gap:6px;align-items:center;position:relative;border-radius:10px;background:var(--panel)}
+.stoplist li:not(:last-child)::before{content:"";position:absolute;left:39px;top:26px;height:20px;border-left:2px dotted var(--route);opacity:.6}
+.stoplist.sorting li::before{display:none}
+.stoplist li.dragging{z-index:3;box-shadow:0 8px 24px rgba(0,0,0,.22);outline:1px solid var(--line)}
+.stoplist li.dragging select{pointer-events:none}
+.grip{width:22px;height:34px;border:0;background:none;border-radius:6px;display:grid;place-items:center;color:var(--muted);cursor:grab;touch-action:none;padding:0}
+.grip:hover{background:var(--panel-2);color:var(--fg)}
+.dragging .grip{cursor:grabbing}
+.grip svg{width:14px;height:14px}
+.stoplist .k{width:24px;height:24px;border-radius:50%;background:var(--route);color:#fff;font:600 11px/24px var(--f-mono);text-align:center;position:relative;z-index:1}
+.stoplist li:first-child .k{background:var(--ok)}
+.stoplist li:last-child:not(:first-child) .k{background:var(--accent);color:var(--accent-fg)}
+.stoplist select{min-width:0;width:100%;padding:8px 9px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2)}
+.stoplist .acts{display:flex}
+.icon{width:28px;height:32px;border:0;background:none;border-radius:7px;display:grid;place-items:center;color:var(--muted);padding:0}
+.icon:hover:not(:disabled){background:var(--panel-2);color:var(--fg)}
+.icon:disabled{opacity:.25;cursor:default}
+.icon svg{width:15px;height:15px}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--muted);font-size:13px}
+.check{display:flex;gap:8px;align-items:center;font-size:13px}
+.divider{height:1px;background:var(--line)}
+.result{display:flex;flex-direction:column;gap:10px}
+.stats{display:flex;gap:18px;align-items:baseline}
+.stats div{display:flex;flex-direction:column}
+.stats strong{font:500 22px/1.1 var(--f-mono);font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--muted)}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.steps li button{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:7px 4px;border-radius:8px}
+.steps li button:hover{background:var(--panel-2)}
+.steps .k{width:22px;height:22px;border-radius:50%;background:var(--route);color:#fff;font:600 11px/22px var(--f-mono);text-align:center}
+.steps .d{font:500 12px/1 var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.steps .t{min-width:0}
+.steps .t small{display:block;color:var(--muted);font-size:12px}
+.hint{color:var(--muted);font-size:12.5px;margin:0}
+.status{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.badge{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--panel-2);color:var(--muted)}
+.badge.dirty{background:color-mix(in srgb,var(--warn) 18%,var(--panel));color:var(--warn)}
+.badge.saved{background:color-mix(in srgb,var(--ok) 16%,var(--panel));color:var(--ok)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel-2);padding:10px;border-radius:9px;font-size:13px}
+.copybox{width:100%;box-sizing:border-box;height:120px;font:12px/1.4 var(--f-mono);padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2)}
+.foot{font-size:12px;color:var(--muted);margin-top:auto;padding-top:6px}
+
+/* ---------- top-centre stack: view switch, 360 place bar, guided-walk player ---------- */
+.topc{--mapleft:404px;--mapright:72px;position:absolute;z-index:6;top:calc(16px + env(safe-area-inset-top,0px));left:calc(var(--mapleft) + (100% - var(--mapleft) - var(--mapright))/2);
+  transform:translateX(-50%);width:min(440px,calc(100% - var(--mapleft) - var(--mapright) - 16px));display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.topc>*{pointer-events:auto}
+.modes{display:flex;background:var(--panel);border-radius:999px;padding:3px;box-shadow:var(--shadow)}
+.modes button{border:0;background:none;border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;color:var(--muted);white-space:nowrap}
+.modes button[aria-checked="true"]{background:var(--fg);color:var(--bg)}
+.card2{width:100%;box-sizing:border-box;background:var(--panel);border-radius:12px;box-shadow:var(--shadow);padding:10px 10px 10px 14px}
+.placebar{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;gap:6px;align-items:center;padding:8px}
+.placebar .pb-t{min-width:0;text-align:center}
+.placebar b{display:block;font:700 15px/1.2 var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.placebar small{display:block;color:var(--muted);font-size:12px}
+.placebar p{margin:4px 0 0;font-size:12.5px;color:var(--fg);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.topc:has(#player:not([hidden])) #placebar{display:none}
+.placebar .pills{grid-column:1/-1;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.placebar .pills:not(:has(.pill:not([hidden]))){display:none}
+.placebar .pill{border:1px solid var(--line);background:var(--panel-2);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
+.placebar .pill[aria-pressed="true"]{background:var(--route);border-color:var(--route);color:#fff}
+.player{display:grid;grid-template-columns:1fr;gap:8px;align-items:center}
+.player small{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--route);font-weight:600}
+.player b{display:block;font:700 15px/1.25 var(--f-display)}
+.player p{margin:3px 0 0;font-size:12.5px;max-height:5.6em;overflow:auto}
+.player .pl-b{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-start}
+.sound{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);font-weight:600;font-size:12.5px;white-space:nowrap}
+.sound svg{width:16px;height:16px}
+.wviews{display:flex;background:var(--panel-2);border-radius:999px;padding:2px;margin-right:4px}
+.wviews button{border:0;background:none;border-radius:999px;padding:6px 10px;font-weight:600;font-size:12px;color:var(--muted)}
+.wviews button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.sound.endw{background:var(--panel);color:var(--fg)}
+.sound.endw:hover{border-color:var(--accent);color:var(--accent)}
+.sound[aria-pressed="true"]{background:var(--route);border-color:var(--route);color:#fff}
+.vstat{display:block;margin-top:4px;font-size:11.5px;color:var(--muted)}
+.vstat.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--route);margin-right:6px;vertical-align:1px;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (max-width:760px){.player{grid-template-columns:1fr}.player .pl-b{justify-content:flex-start}}
+.icon.lg{width:36px;height:36px;color:var(--fg)}
+.icon.lg svg{width:18px;height:18px}
+.icon[aria-pressed="true"].tog{color:var(--route)}
+.map.eye .ctx{display:none}
+.map.eye .pin.far{visibility:hidden}
+.map.pano .pin,.map.pano .ctx{visibility:hidden}
+.map.eye .labels{cursor:grab}
+.map.eye .labels:active{cursor:grabbing}
+.voice-note{font-size:12px;color:var(--muted)}
+
+@media (max-width:760px){
+  .topc{--mapleft:0px;--mapright:64px;left:calc((100% - 64px)/2 + 8px);width:calc(100% - 96px)}
+  .panel{left:0;right:0;bottom:0;top:auto;width:auto;height:min(52%,520px);border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom,0px);transition:height .2s ease}
+  .panel.collapsed{height:calc(118px + env(safe-area-inset-bottom,0px))}
+  .handle{display:block;align-self:center;width:100%;height:20px;border:0;background:none;position:relative;flex:none}
+  .handle::after{content:"";position:absolute;left:50%;top:8px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--line)}
+  .brand{padding:2px 16px 8px}
+  .brand h1{font-size:17px}
+  .brand .mark{width:30px;height:30px}
+  .body{padding:12px max(16px,env(safe-area-inset-left,0px)) 16px}
+  .tabs{padding:0 12px}
+  .banner{max-width:calc(100% - 96px);font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <div id="map" class="map" role="application" aria-label="3D map of the Red Fort. Drag to rotate, scroll or pinch to zoom."></div>
+
+  <div class="ctl" aria-label="Map controls">
+    <button class="compass" id="compass" title="Face north" aria-label="Face north">
+      <svg viewBox="0 0 26 26" aria-hidden="true"><path d="M13 3 17 13H9Z" fill="var(--accent)"/><path d="M13 23 9 13h8Z" fill="var(--muted)"/><text x="13" y="11.5" text-anchor="middle" font-size="5" font-weight="700" fill="#fff" font-family="Inter,sans-serif">N</text></svg>
+    </button>
+    <div class="grp">
+      <button id="zin" title="Zoom in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button id="zout" title="Zoom out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+    </div>
+    <div class="grp">
+      <button id="topview" title="Top view" aria-label="Top view" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/></svg></button>
+      <button id="home" title="Reset view" aria-label="Reset view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7M6 10v10h12V10"/></svg></button>
+    </div>
+  </div>
+
+  <div id="banner" class="banner" hidden><span id="bannerText">Tap the map to place the point</span><button id="bannerCancel" type="button">Cancel</button></div>
+  <div id="toast" class="toast" hidden role="status"></div>
+
+  <div class="topc">
+    <div class="modes" role="radiogroup" aria-label="Map view">
+      <button type="button" role="radio" aria-checked="true" data-mode="map">3D map</button>
+      <button type="button" role="radio" aria-checked="false" data-mode="eye">360° view</button>
+    </div>
+    <div class="card2 placebar" id="placebar" hidden>
+      <button class="icon lg" id="pPrev" type="button" aria-label="Previous place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="pb-t"><small id="pSub"></small><b id="pName"></b><p id="pDesc"></p></div>
+      <button class="icon lg" id="pNext" type="button" aria-label="Next place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <div class="pills"><button class="pill" id="pPhoto" type="button" aria-pressed="true" hidden>360° photo</button><button class="pill" id="pGround" type="button" hidden>Back to ground level</button></div>
+    </div>
+    <div class="card2 player" id="player" hidden aria-live="polite">
+      <div><img id="plImg" class="plimg" alt="" hidden><small id="plStatus"></small><b id="plName"></b><p id="plDesc" hidden></p><span class="vstat" id="plVoice"></span></div>
+      <div class="pl-b">
+        <div class="wviews" role="group" aria-label="Walk view">
+          <button type="button" data-wv="map" aria-pressed="true" title="Watch from above">Map</button>
+          <button type="button" data-wv="behind" aria-pressed="false" title="Walk behind the guide">Follow</button>
+          <button type="button" data-wv="eyes" aria-pressed="false" title="See what the guide sees">Eyes</button>
+        </div>
+        <button class="sound" id="plSpeed" type="button" title="Walking speed" aria-label="Walking speed">1×</button>
+        <button class="icon lg" id="plPlay" type="button" aria-label="Pause walk"></button>
+        <button class="icon lg" id="plNext" type="button" aria-label="Skip to next stop" title="Skip to next stop"></button>
+        <button class="sound" id="plMute" type="button" aria-pressed="true" aria-label="Sound"></button>
+        <button class="icon lg tog" id="plFollow" type="button" aria-pressed="true" aria-label="Follow the walk" title="Follow the walk"></button>
+        <button class="sound endw" id="plStop" type="button" aria-label="End guided walk" title="End guided walk"></button>
+      </div>
+    </div>
+  </div>
+
+  <aside id="panel" class="panel">
+    <button class="handle" id="handle" type="button" aria-label="Expand or collapse panel"></button>
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><path d="M3 21V11h3v-2h2v2h8V9h2v2h3v10Z"/><path d="M10 21v-5a2 2 0 0 1 4 0v5"/><path d="M12 4c1.5 1 1.5 3 0 4-1.5-1-1.5-3 0-4Z"/></svg></div>
+      <div><h1 id="venueName">Red Fort · Lal Qila</h1><p>The India Biennale ’26 · 4 Dec 2026 – 21 Mar 2027</p></div>
+    </div>
+    <div class="venues" role="group" aria-label="Venue">
+      <button type="button" data-venue="red-fort" aria-pressed="true">Red Fort</button>
+      <button type="button" data-venue="purana-qila" aria-pressed="false">Purana Qila</button>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="t-explore" aria-selected="true" data-tab="explore">Explore</button>
+      <button role="tab" id="t-route" aria-selected="false" data-tab="route">Directions</button>
+      <button role="tab" id="t-manage" aria-selected="false" data-tab="manage" hidden>Manage</button>
+    </nav>
+
+    <section class="body" id="tab-explore">
+      <div id="exploreList" style="display:flex;flex-direction:column;gap:12px">
+        <input class="search" id="q" type="search" placeholder="Search places" aria-label="Search places">
+        <div class="chips" id="chips"></div>
+        <div id="list"></div>
+        <p class="foot">Positions are approximate. Drag the map to rotate it, pinch or scroll to zoom.</p>
+      </div>
+      <div id="detail" class="detail" hidden></div>
+    </section>
+
+    <section class="body" id="tab-route" hidden>
+      <div class="stophead"><b>My stops</b><span class="hint" id="stopCount"></span></div>
+      <ol class="stoplist" id="stops" aria-label="Stops in visiting order"></ol>
+      <p class="hint">Tap places on the map to add them, or use “Add stop”. Stop 1 is where you start.</p>
+      <div class="btnrow"><button class="btn" id="addStop" type="button">+ Add stop</button><button class="btn" id="resetStops" type="button">Clear stops</button></div>
+      <label class="check"><input type="checkbox" id="optOrder" checked> Find the shortest order</label>
+      <label class="check" style="margin-top:-6px"><input type="checkbox" id="keepEnd"> Keep my last stop last</label>
+      <div class="btnrow"><button class="btn route" id="goRoute" type="button">Show route</button><button class="btn" id="clearRoute" type="button">Hide route</button></div>
+      <div class="result" id="result" hidden></div>
+      <div class="divider"></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <b style="font-family:var(--f-display);font-size:16px">Visit every place</b>
+        <p class="hint">Plans one walking loop through all places, starting from stop 1 and taking the nearest unvisited place next.</p>
+        <label class="check"><input type="checkbox" id="incFac"> Include visitor services</label>
+        <button class="btn primary block" id="goTour" type="button">Plan full tour</button>
+      </div>
+    </section>
+
+    <section class="body" id="tab-manage" hidden>
+      <div class="status"><span id="mCount"></span><span class="badge" id="mBadge">Saved</span></div>
+      <div class="btnrow">
+        <button class="btn" id="mAdd" type="button">Add a point</button>
+        <button class="btn primary" id="mSave" type="button" disabled>Save for everyone</button>
+        <button class="btn" id="mDiscard" type="button" disabled>Discard</button>
+      </div>
+      <div class="field"><label for="mPick">Point to edit</label><select id="mPick"></select></div>
+      <form id="mForm" style="display:flex;flex-direction:column;gap:10px" autocomplete="off">
+        <div class="field"><label for="fName">Name</label><input id="fName" maxlength="80"></div>
+        <div class="field"><label for="fCat">Category</label><select id="fCat"></select></div>
+        <div class="field"><label for="fIcon">Map icon</label><select id="fIcon"></select></div>
+        <div class="field"><label for="fDesc">Description</label><textarea id="fDesc" maxlength="400"></textarea></div>
+        <div class="field"><label for="fNote">Biennale note (shown highlighted)</label><textarea id="fNote" maxlength="400" placeholder="Installation, artist, timings…"></textarea></div>
+        <div class="field" id="fPhotoField" hidden>
+          <label for="fPhoto">Photo</label>
+          <div class="btnrow" style="align-items:center"><label class="btn" id="fPhotoBtn" for="fPhoto">Upload photo</label><input type="file" id="fPhoto" accept="image/jpeg,image/png,image/webp" hidden><button class="btn danger" id="fPhotoDel" type="button" hidden>Remove photo</button><span class="hint" id="fPhotoState">No photo</span></div>
+          <p class="hint">Shown with the place’s description and during the guided walk.</p>
+        </div>
+        <div class="field" id="fPanoField" hidden>
+          <label for="fPano">360° photo</label>
+          <div class="btnrow" style="align-items:center"><label class="btn" id="fPanoBtn" for="fPano">Upload photo</label><input type="file" id="fPano" accept="image/jpeg,image/png,image/webp" hidden><button class="btn danger" id="fPanoDel" type="button" hidden>Remove photo</button><span class="hint" id="fPanoState">No photo</span></div>
+          <p class="hint">Use a 2:1 equirectangular photo from a 360° camera or phone app, up to 20 MB.</p>
+        </div>
+        <div class="btnrow"><button class="btn" id="fMove" type="button">Move on map</button><button class="btn danger" id="fDel" type="button">Delete point</button></div>
+        <div class="confirm" id="fConfirm" hidden><span id="fConfirmText"></span><button class="btn danger" id="fDelYes" type="button">Delete</button><button class="btn" id="fDelNo" type="button">Keep</button></div>
+      </form>
+      <div class="divider"></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn" id="mCopy" type="button">Copy data as JSON</button>
+        <textarea class="copybox" id="mCopyBox" hidden readonly aria-label="Map data JSON"></textarea>
+        <p class="hint">New points connect to the nearest walkway automatically. “Save for everyone” updates the map for all visitors.</p>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<script type="application/json" id="poi-fallback">{"version":1,"updated":"2026-11-12","pois":[{"id":"entry","name":"Entry plaza & Biennale Pass check","cat":"facility","x":-345,"z":58,"desc":"Security check and pass scanning outside Lahori Gate. The Biennale Pass covers entry to the fort, so no separate monument ticket is needed.","note":"","icon":"ticket"},{"id":"lahori","name":"Lahori Gate","cat":"gate","x":-280,"z":30,"desc":"Main entrance on the west wall, facing Lahore. The Prime Minister addresses the nation from its ramparts every Independence Day.","note":""},{"id":"chhatta","name":"Chhatta Chowk","cat":"monument","x":-205,"z":30,"desc":"Covered bazaar arcade just inside Lahori Gate, once the royal Meena Bazaar. Craft shops still line both sides.","note":""},{"id":"naubat","name":"Naubat Khana","cat":"museum","x":-60,"z":30,"desc":"The drum house, where court musicians played for the emperor. The upper floor holds the Indian War Memorial Museum.","note":""},{"id":"diwaniam","name":"Diwan-i-Aam","cat":"monument","x":62,"z":30,"desc":"Hall of Public Audience. Red sandstone arcades frame the marble throne canopy where the emperor heard petitions.","note":""},{"id":"mumtaz","name":"Mumtaz Mahal","cat":"museum","x":222,"z":120,"desc":"Southernmost of the riverside palaces. It now houses a museum.","note":""},{"id":"rang","name":"Rang Mahal","cat":"monument","x":222,"z":30,"desc":"Palace of Colours. The Nahr-i-Bihisht water channel flowed through it into a carved marble lotus basin.","note":""},{"id":"khas","name":"Khas Mahal","cat":"monument","x":222,"z":-50,"desc":"The emperor's private chambers, with the Muthamman Burj tower where he appeared to people gathered by the river.","note":""},{"id":"diwanikhas","name":"Diwan-i-Khas","cat":"monument","x":222,"z":-120,"desc":"Hall of Private Audience in white marble, once home to the Peacock Throne.","note":""},{"id":"hammam","name":"Hammam","cat":"monument","x":222,"z":-185,"desc":"The royal baths, with marble floors and inlaid fountains.","note":""},{"id":"moti","name":"Moti Masjid","cat":"monument","x":150,"z":-200,"desc":"Small white marble mosque built by Aurangzeb in 1659 for his private use.","note":""},{"id":"hayat","name":"Hayat Bakhsh Bagh","cat":"garden","x":-10,"z":-385,"desc":"The Life-Giving Garden: a Mughal charbagh with water channels, flanked by the Sawan and Bhadon pavilions.","note":""},{"id":"zafar","name":"Zafar Mahal","cat":"monument","x":55,"z":-320,"desc":"Red sandstone pavilion in the garden tank, added by Bahadur Shah Zafar in 1842.","note":""},{"id":"shahburj","name":"Shah Burj","cat":"monument","x":228,"z":-400,"desc":"Tower at the north-east corner where the Nahr-i-Bihisht channel entered the palace complex.","note":""},{"id":"baoli","name":"Baoli (stepwell)","cat":"monument","x":-22,"z":-200,"desc":"Stepwell that descends in stages to the water level.","note":""},{"id":"kranti","name":"Kranti Mandir museums","cat":"museum","x":-150,"z":-130,"desc":"British-era barracks now used as museums on India's freedom struggle, including the Subhas Chandra Bose and INA Museum.","note":""},{"id":"delhi","name":"Delhi Gate","cat":"gate","x":-40,"z":470,"desc":"Southern gate of the fort, flanked by two life-size stone elephants.","note":""},{"id":"infodesk","name":"Biennale info desk (example)","cat":"facility","x":-235,"z":72,"desc":"Example point. Edit or delete it in Manage.","note":"Maps, programme guides and help with the Biennale app.","icon":"info"},{"id":"toilets","name":"Toilets (approximate)","cat":"facility","x":-165,"z":72,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":"","icon":"toilet"},{"id":"cafe","name":"Cafe (approximate)","cat":"facility","x":10,"z":118,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":"","icon":"cafe"},{"id":"exhibitA","name":"Exhibit spot A (example)","cat":"biennale","x":95,"z":125,"desc":"Example exhibit position on the lawn south of Diwan-i-Aam.","note":"Replace with the real installation name, artist and timings."},{"id":"exhibitB","name":"Exhibit spot B (example)","cat":"biennale","x":-75,"z":-290,"desc":"Example exhibit position near the garden.","note":"Replace with the real installation name, artist and timings."}]}</script>
+<script type="application/json" id="poi-fallback-pq">{"version":1,"updated":"2026-11-12","pois":[{"id":"entry","name":"Entry & Biennale Pass check","cat":"facility","icon":"ticket","x":-232,"z":24,"desc":"Pass scanning outside Bara Darwaza, by the lake. The Biennale Pass covers entry to the fort, so no separate monument ticket is needed.","note":""},{"id":"bara","name":"Bara Darwaza","cat":"gate","x":-178,"z":0,"desc":"The main western gateway in red sandstone, flanked by massive bastions and topped with domed kiosks. It looks out over the lake.","note":""},{"id":"humayun","name":"Humayun Darwaza","cat":"gate","x":-10,"z":249,"desc":"The southern gate, named after the Mughal emperor Humayun.","note":""},{"id":"talaqi","name":"Talaqi Darwaza","cat":"gate","x":10,"z":-245,"desc":"The northern gate, often called the Forbidden Gate.","note":""},{"id":"mosque","name":"Qila-i-Kuhna Mosque","cat":"monument","x":0,"z":-70,"desc":"Built by Sher Shah Suri in 1541, this single-domed mosque has a prayer hall with five arched bays in red sandstone, with marble and slate inlay.","note":""},{"id":"shermandal","name":"Sher Mandal","cat":"monument","x":60,"z":30,"desc":"A two-storey octagonal tower of red sandstone. Humayun used it as a library and died in 1556 after a fall on its stairs.","note":""},{"id":"baoli","name":"Baoli (stepwell)","cat":"monument","x":95,"z":-150,"desc":"A stepwell that descends in stages to the water.","note":""},{"id":"museum","name":"Archaeological Site Museum","cat":"museum","x":-120,"z":72,"desc":"Objects found in excavations at the fort, from pottery to coins.","note":""},{"id":"excavation","name":"Excavation site","cat":"monument","icon":"dig","x":110,"z":95,"desc":"Excavated trenches showing layers of settlement across many centuries. Tradition links the site with Indraprastha of the Mahabharata.","note":""},{"id":"lake","name":"Purana Qila lake","cat":"garden","icon":"boat","x":-330,"z":20,"desc":"The lake along the west side of the fort, with boating.","note":""},{"id":"infodesk","name":"Biennale info desk (example)","cat":"facility","icon":"info","x":-150,"z":-22,"desc":"Example point. Edit or delete it in Manage.","note":"Maps, programme guides and help with the Biennale app."},{"id":"toilets","name":"Toilets (approximate)","cat":"facility","icon":"toilet","x":-150,"z":38,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":""},{"id":"cafe","name":"Cafe (approximate)","cat":"facility","icon":"cafe","x":-90,"z":-40,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":""},{"id":"parking","name":"Parking (approximate)","cat":"facility","icon":"parking","x":-262,"z":250,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":""},{"id":"exhibitA","name":"Exhibit spot A (example)","cat":"biennale","x":-60,"z":-120,"desc":"Example exhibit position on the north lawn.","note":"Replace with the real installation name, artist and timings."},{"id":"exhibitB","name":"Exhibit spot B (example)","cat":"biennale","x":20,"z":120,"desc":"Example exhibit position on the south lawn.","note":"Replace with the real installation name, artist and timings."}]}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const $ = s => document.querySelector(s);
+
+/* ================= venues ================= */
+/* Each venue has its own model, walkways and places file. Positions are in metres from the venue's centre: x grows east, z grows south. */
+const VENUES = {
+  'red-fort': {
+    key:'red-fort', name:'Red Fort · Lal Qila', short:'Red Fort', file:'pois.json', fallback:'poi-fallback',
+    poly:[[250,-420],[250,400],[170,470],[-150,470],[-260,330],[-280,30],[-250,-280],[-100,-450],[150,-460]],
+    lanes:[[306,-1150,306,1150],[318,1150,318,-1150],[-446,-1150,-446,1150],[-434,1150,-434,-1150]],
+    gates:[[-280,30],[-40,470]], home:{pos:[-520,600,760], target:[0,0,10]},
+    entrance:'lahori', defaultStops:['lahori','diwaniam','diwanikhas','moti'],
+    noStand:[[478,-1500,900,1500]],
+    views:{lahori:'w', delhi:'s', naubat:'w', diwaniam:'w', mumtaz:'w', rang:'w', khas:'w', diwanikhas:'w', hammam:'w', moti:'w', chhatta:'w'},
+    base:{A:[-345,30],B:[-280,30],C:[-150,30],D:[-88,30],E:[38,30],V:[40,-24],W:[112,-24],F:[190,30],G:[190,120],H:[190,-50],I:[190,-120],J:[190,-200],K:[190,-350],L:[214,-392],
+      M:[-55,200],N:[-40,440],O:[-60,-100],P:[-60,-200],Q:[-60,-350],R:[55,-350],S:[150,-250],T:[-150,-105],U:[20,100]},
+    edges:['A-B','B-C','C-D','D-E','E-V','V-W','W-F','W-H','F-G','F-H','H-I','I-J','J-K','K-L','D-M','M-N','D-O','O-P','P-Q','Q-R','R-K','R-S','S-J','O-T','U-E','U-G'],
+    build:() => buildRedFort()
+  },
+  'purana-qila': {
+    key:'purana-qila', name:'Purana Qila · Old Fort', short:'Purana Qila', file:'pois-purana-qila.json', fallback:'poi-fallback-pq',
+    poly:[[-150,-235],[-40,-245],[60,-245],[150,-230],[172,-120],[175,0],[168,130],[150,235],[40,250],[-60,248],[-155,235],[-172,120],[-178,0],[-170,-125]],
+    lanes:[[324,-1150,324,1150],[336,1150,336,-1150],[-486,-1150,-486,1150],[-474,1150,-474,-1150]],
+    gates:[[-178,0],[-10,249],[10,-245]], home:{pos:[-330,380,470], target:[-20,0,0]},
+    entrance:'bara', defaultStops:['bara','mosque','shermandal','humayun'],
+    noStand:[[-440,-190,-222,210]],
+    views:{bara:'w', humayun:'n', talaqi:'s', mosque:'e', museum:'n', excavation:'w', baoli:'w'},
+    base:{A:[-215,0],B:[-178,0],C:[-120,0],D:[-40,0],M1:[30,-45],S1:[35,30],N1:[10,-170],T:[10,-245],T2:[10,-300],H1:[-10,180],H:[-10,249],H2:[-10,300],
+      X1:[60,-150],E1:[75,70],L1:[-215,-160],L2:[-215,170],P1:[-230,240]},
+    edges:['A-B','B-C','C-D','D-M1','D-S1','M1-S1','M1-N1','N1-T','T-T2','S1-H1','H1-H','H-H2','M1-X1','X1-N1','S1-E1','E1-H1','C-H1','A-L1','A-L2','L2-P1'],
+    build:() => buildPuranaQila()
+  }
+};
+const LOCKED_VENUE = 'purana-qila';   // set to a venue key ('red-fort' or 'purana-qila') to publish a single-venue map
+const VENUE = VENUES[LOCKED_VENUE] || VENUES[location.hash.slice(1)] || VENUES['red-fort'];
+/* Light mode for phones and low-power devices: fewer moving things, smaller shadow map, lower pixel density. */
+const LITE = matchMedia('(max-width:760px)').matches || (navigator.hardwareConcurrency || 8) <= 4;
+const LIVE = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ================= map icons ================= */
+const ICONS_MAP = {
+  gate:'<path d="M4 21V9a8 8 0 0 1 16 0v12h-5v-7a3 3 0 0 0-6 0v7z"/>',
+  dome:'<path d="M12 2.5c.7 1.3 1.6 1.9 1.6 3.1A6.2 6.2 0 0 1 18.2 12v1.5H5.8V12a6.2 6.2 0 0 1 4.6-6.4c0-1.2.9-1.8 1.6-3.1zM4.5 15h15v2h-15zm1.5 3h12v3H6z"/>',
+  museum:'<path d="M12 2.5 2.5 7.5V10h19V7.5zM5 11h2.4v7H5zm4.2 0h2.4v7H9.2zm4.2 0h2.4v7h-2.4zm4.2 0H20v7h-2.4zM2.5 19h19v2.5h-19z"/>',
+  tree:'<path d="M12 2a6 6 0 0 0-4.7 9.7A4.6 4.6 0 0 0 11 19.2V22h2v-2.8a4.6 4.6 0 0 0 3.7-7.5A6 6 0 0 0 12 2z"/>',
+  spark:'<path d="m12 2 2.3 6.2L21 10l-6.7 1.8L12 18l-2.3-6.2L3 10l6.7-1.8zM19 15.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"/>',
+  toilet:'<path d="M6.5 2.2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm11 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM4.6 7.5h3.8c.9 0 1.6.7 1.6 1.6V15H8.6v7H4.4v-7H3V9.1c0-.9.7-1.6 1.6-1.6zm11.2 0h3.4l3 8.2h-2.3V22h-3.9v-6.3h-2.3zM11.3 2h1.4v20h-1.4z"/>',
+  cafe:'<path d="M3 8h13v4.5A6.5 6.5 0 0 1 9.5 19h0A6.5 6.5 0 0 1 3 12.5zm13 1.2h1.6a3.1 3.1 0 0 1 0 6.2h-2v-2.1h2a1 1 0 0 0 0-2H16zM2 20.2h15.5V22H2zM6.4 2h1.6v4.5H6.4zm4.2 0h1.6v4.5h-1.6z"/>',
+  info:'<path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1.3 8h2.6v8h-2.6zm0-4h2.6v2.6h-2.6z"/>',
+  ticket:'<path fill-rule="evenodd" d="M2 6h20v4a2 2 0 0 0 0 4v4H2v-4a2 2 0 0 0 0-4zm12.5 2v2h1.6V8zm0 3v2h1.6v-2zm0 3v2h1.6v-2z"/>',
+  firstaid:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
+  water:'<path d="M12 2s7 7.6 7 12.6a7 7 0 0 1-14 0C5 9.6 12 2 12 2z"/>',
+  parking:'<path fill-rule="evenodd" d="M3 3h18v18H3zm5.5 3v12h2.8v-4H14a4 4 0 0 0 0-8zm2.8 2.4H14a1.6 1.6 0 0 1 0 3.2h-2.7z"/>',
+  accessible:'<path d="M11 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-1 5.5h2.2V12H17v2h-6.8zM8 10.3v2.4a4.5 4.5 0 1 0 6.6 4.9l1.9.8A6.6 6.6 0 1 1 8 10.3zM17 15h2.2l2 5-1.8.8-1.6-3.8H17z"/>',
+  boat:'<path d="M2.5 15h19l-3.3 5.5H5.8zM11 2.5V14H4.5zm2 3.5 6.5 8H13z"/>',
+  exit:'<path d="M3 3h11v4.5h-2.2V5.2H5.2v13.6h6.6v-2.3H14V21H3zm12 4.5 6 4.5-6 4.5v-3.2H8.5v-2.6H15z"/>',
+  shop:'<path d="M5 7.5h14l1.2 14H3.8zM8.5 7.5a3.5 3.5 0 0 1 7 0h-2.2a1.3 1.3 0 0 0-2.6 0z"/>',
+  photo:'<path fill-rule="evenodd" d="M3 7h3.6L8.6 4h6.8l2 3H21v13H3zm9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>',
+  dig:'<path d="M2 20h20v2H2zM3 18v-3h4v-3h4V9h4V6h6v2.4h-3.6v3H13.8v3H9.8v3H5.6V18z"/>'
+};
+const ICON_NAMES = {gate:'Gate', dome:'Monument', museum:'Museum', tree:'Garden', spark:'Biennale exhibit', toilet:'Toilets', cafe:'Cafe or food', info:'Information', ticket:'Tickets / pass check',
+  firstaid:'First aid', water:'Drinking water', parking:'Parking', accessible:'Accessible facility', boat:'Boating', exit:'Exit', shop:'Shop', photo:'Photo spot', dig:'Excavation'};
+const CAT_ICON = {gate:'gate', monument:'dome', museum:'museum', garden:'tree', biennale:'spark', facility:'info'};
+const iconKey = p => (p?.icon && ICONS_MAP[p.icon]) ? p.icon : (CAT_ICON[p?.cat] || 'dome');
+const iconSvg = k => `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${ICONS_MAP[k] || ICONS_MAP.dome}</svg>`;
+const CATS = {
+  gate:{label:'Gates', one:'Gate'}, monument:{label:'Palaces & monuments', one:'Monument'}, museum:{label:'Museums', one:'Museum'},
+  garden:{label:'Gardens', one:'Garden'}, biennale:{label:'Biennale', one:'Biennale exhibit'}, facility:{label:'Visitor services', one:'Visitor service'}
+};
+const CAT_ORDER = ['gate','monument','museum','garden','biennale','facility'];
+const WALK_M_PER_MIN = 70;
+
+/* ================= data ================= */
+let saved = { pois: [] };
+let pois = [];
+let dirty = false;
+let fileSha = undefined;
+async function loadData(){
+  try{
+    const r = await fetch(VENUE.file, {cache:'no-store'});
+    if(!r.ok) throw 0;
+    saved = await r.json();
+  }catch{ try{ saved = JSON.parse(document.getElementById(VENUE.fallback).textContent); }catch{ saved = {pois:[]}; } }
+  pois = structuredClone(saved.pois || []);
+}
+
+/* ================= scene ================= */
+const mapEl = $('#map');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, LITE ? 1.5 : 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+mapEl.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.domElement.className = 'labels';
+mapEl.appendChild(labelRenderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xcccccc, 1500, 3600);
+const camera = new THREE.PerspectiveCamera(40, 1, 5, 8000);
+const HOME = { pos:new THREE.Vector3(...VENUE.home.pos), target:new THREE.Vector3(...VENUE.home.target) };
+camera.position.copy(HOME.pos);
+const controls = new OrbitControls(camera, labelRenderer.domElement);
+controls.target.copy(HOME.target);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = 1.38; controls.minDistance = 90; controls.maxDistance = 2000;
+controls.screenSpacePanning = false;
+controls.update();
+
+scene.add(new THREE.HemisphereLight(0xe4edf7, 0x9c8463, 1.25));
+const sun = new THREE.DirectionalLight(0xffe9cc, 2.7);
+sun.position.set(-620, 560, 430);
+sun.castShadow = true;
+Object.assign(sun.shadow.camera, {left:-760,right:760,top:760,bottom:-760,near:10,far:2600});
+sun.shadow.mapSize.set(LITE ? 1024 : 2048, LITE ? 1024 : 2048); sun.shadow.bias = -0.0005; sun.shadow.normalBias = .6;
+scene.add(sun);
+
+/* ---------- procedural textures (greyscale detail; the theme colour tints them) ---------- */
+let seed = 7; const rnd = () => (seed = (seed*16807) % 2147483647) / 2147483647;
+function canvasTex(size, draw){
+  const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'); draw(g, size);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function grain(g, n, base, amp){
+  const d = g.getImageData(0,0,n,n), a = d.data;
+  for(let i=0;i<a.length;i+=4){ const v = a[i] + (rnd()-.5)*amp; a[i] = a[i+1] = a[i+2] = Math.max(0, Math.min(255, v)); a[i+3] = 255; }
+  g.putImageData(d,0,0);
+}
+const TEX = {
+  sandstone: canvasTex(512, (g,n) => {                    // dressed red-sandstone courses with staggered joints
+    g.fillStyle = 'rgb(226,226,226)'; g.fillRect(0,0,n,n);
+    const rows = 8, rh = n/rows;
+    for(let r=0;r<rows;r++){ const cols = 3 + (r%2), cw = n/cols, off = (r%2) ? cw/2 : 0;
+      for(let c=-1;c<=cols;c++){ const v = 214 + rnd()*26; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(off + c*cw + 2, r*rh + 2, cw - 4, rh - 4); } }
+    grain(g, n, 0, 22);
+    g.fillStyle = 'rgba(120,120,120,.55)'; for(let r=0;r<=rows;r++) g.fillRect(0, r*rh - 1, n, 2);
+  }),
+  marble: canvasTex(512, (g,n) => {                        // white marble with faint veins and inlaid panel borders
+    g.fillStyle = 'rgb(246,246,246)'; g.fillRect(0,0,n,n); grain(g, n, 0, 8);
+    g.strokeStyle = 'rgba(150,150,150,.18)'; g.lineWidth = 1.2;
+    for(let i=0;i<14;i++){ g.beginPath(); let x = rnd()*n, y = rnd()*n; g.moveTo(x,y); for(let k=0;k<5;k++){ x += (rnd()-.5)*140; y += (rnd()-.3)*120; g.lineTo(x,y); } g.stroke(); }
+    g.strokeStyle = 'rgba(170,160,150,.35)'; g.lineWidth = 3; g.strokeRect(24,24,n-48,n-48); g.lineWidth = 1.5; g.strokeRect(40,40,n-80,n-80);
+  }),
+  sand: canvasTex(512, (g,n) => { g.fillStyle = 'rgb(232,232,232)'; g.fillRect(0,0,n,n);
+    for(let i=0;i<260;i++){ g.fillStyle = `rgba(${rnd()<.5?0:255},${0},${0},0)`; const v = 200 + rnd()*55; g.fillStyle = `rgba(${v},${v},${v},.25)`; g.beginPath(); g.arc(rnd()*n, rnd()*n, 6 + rnd()*30, 0, 7); g.fill(); }
+    grain(g, n, 0, 26); }),
+  grass: canvasTex(512, (g,n) => { g.fillStyle = 'rgb(220,220,220)'; g.fillRect(0,0,n,n);
+    for(let i=0;i<5000;i++){ const v = 170 + rnd()*85; g.strokeStyle = `rgba(${v},${v},${v},.7)`; g.beginPath(); const x = rnd()*n, y = rnd()*n; g.moveTo(x,y); g.lineTo(x + (rnd()-.5)*3, y - 3 - rnd()*5); g.stroke(); }
+    grain(g, n, 0, 20); }),
+  paving: canvasTex(256, (g,n) => { g.fillStyle = 'rgb(236,236,236)'; g.fillRect(0,0,n,n); const k = n/4;
+    for(let i=0;i<4;i++) for(let j=0;j<4;j++){ const v = 222 + rnd()*30; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(i*k+1.5, j*k+1.5, k-3, k-3); }
+    grain(g, n, 0, 14); }),
+  plaster: canvasTex(256, (g,n) => { g.fillStyle = 'rgb(236,236,236)'; g.fillRect(0,0,n,n); grain(g, n, 0, 14); }),
+  asphalt: canvasTex(256, (g,n) => { g.fillStyle = 'rgb(210,210,210)'; g.fillRect(0,0,n,n); grain(g, n, 0, 40); }),
+  water: canvasTex(256, (g,n) => { g.fillStyle = 'rgb(225,225,225)'; g.fillRect(0,0,n,n);
+    g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 2; for(let i=0;i<22;i++){ const y = rnd()*n, x = rnd()*n; g.beginPath(); g.moveTo(x,y); g.quadraticCurveTo(x+18, y-5, x+36, y); g.stroke(); } })
+};
+
+const themed = [];
+function tmat(token, map, uvS, extra={}){ const m = new THREE.MeshStandardMaterial({roughness:.9, metalness:0, map: map || null, ...extra}); m.userData.token = token; m.userData.uvS = uvS || 8; themed.push(m); return m; }
+const M = {
+  out:tmat('--ground-out', TEX.grass, 14), inn:tmat('--ground-in', TEX.sand, 18), path:tmat('--path', TEX.paving, 3),
+  stone:tmat('--stone', TEX.sandstone, 4.5), stoneDark:tmat('--stone-dark', TEX.sandstone, 4.5),
+  marble:tmat('--marble', TEX.marble, 5, {roughness:.45}), barrack:tmat('--barrack', TEX.plaster, 6), grass:tmat('--grass', TEX.grass, 9), moat:tmat('--moat', TEX.grass, 12),
+  water:tmat('--water', TEX.water, 14, {roughness:.15, metalness:.25}), road:tmat('--road', TEX.asphalt, 10), tree:tmat('--tree', null, 8), dark:tmat('--void', null, 8),
+  gold:new THREE.MeshStandardMaterial({color:0xD4AF37, roughness:.3, metalness:.75}),
+  trunk:new THREE.MeshStandardMaterial({color:0x6b4a2f, roughness:1})
+};
+
+/* ---------- geometry helpers: world-scale UVs, static meshes merged per material after building ---------- */
+function scaleUV(geo, su, sv){ const uv = geo.attributes.uv; if(!uv) return geo; for(let i=0;i<uv.count;i++) uv.setXY(i, uv.getX(i)*su, uv.getY(i)*sv); uv.needsUpdate = true; return geo; }
+function boxUV(geo, w, h, d, S){
+  const uv = geo.attributes.uv, dims = [[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];
+  for(let f=0; f<6; f++) for(let k=0; k<4; k++){ const i = f*4+k; uv.setXY(i, uv.getX(i)*dims[f][0]/S, uv.getY(i)*dims[f][1]/S); }
+  uv.needsUpdate = true; return geo;
+}
+const solids = [], statics = [];
+function add(mesh, shadow=true){ mesh.castShadow = shadow; mesh.receiveShadow = true; scene.add(mesh); if(shadow) solids.push(mesh); statics.push(mesh); return mesh; }
+function box(w,h,d,mat,x,z,y=0,ry=0,shadow=true){ const m = new THREE.Mesh(boxUV(new THREE.BoxGeometry(w,h,d), w,h,d, mat.userData.uvS || 5), mat); m.position.set(x,y+h/2,z); m.rotation.y = ry; return add(m, shadow); }
+function cyl(r,h,mat,x,z,y=0,seg=8,rTop=r){ const m = new THREE.Mesh(scaleUV(new THREE.CylinderGeometry(rTop,r,h,seg), 2*Math.PI*r/(mat.userData.uvS||5), h/(mat.userData.uvS||5)), mat); m.position.set(x,y+h/2,z); return add(m); }
+const ONION = [[0,0],[1,0],[1.06,.22],[1.04,.5],[.86,.82],[.56,1.06],[.27,1.26],[.08,1.44],[0,1.5]];
+function dome(r,mat,x,z,y,drum=true){
+  if(drum) cyl(r*.98, r*.35, mat, x, z, y, 20);
+  const yy = y + (drum ? r*.35 : 0);
+  const m = new THREE.Mesh(new THREE.LatheGeometry(ONION.map(([a,b]) => new THREE.Vector2(a*r, b*r)), 20), mat); m.position.set(x,yy,z); add(m);
+  const f = new THREE.Mesh(new THREE.ConeGeometry(r*.09, r*.55, 8), M.gold); f.position.set(x, yy + r*1.5 + r*.25, z); add(f, false);
+  const k = new THREE.Mesh(new THREE.SphereGeometry(r*.1, 8, 6), M.gold); k.position.set(x, yy + r*1.52, z); add(k, false);
+  return m;
+}
+function chhatri(x,z,y,s=1,mat=M.marble,domeMat=mat){       // domed kiosk: plinth, four pillars, eave, onion dome
+  box(6.4*s,.5*s,6.4*s,mat,x,z,y);
+  for(const a of [-1,1]) for(const b of [-1,1]) cyl(.32*s,3.2*s,mat,x+a*2.5*s,z+b*2.5*s,y+.5*s,8);
+  box(7.6*s,.35*s,7.6*s,mat,x,z,y+3.7*s);
+  dome(2.6*s, domeMat, x, z, y+4.05*s);
+}
+function plane(w,d,mat,x,z,y=.05){ const S = mat.userData.uvS || 8; const m = new THREE.Mesh(scaleUV(new THREE.PlaneGeometry(w,d), w/S, d/S), mat); m.rotation.x = -Math.PI/2; m.position.set(x,y,z); m.receiveShadow = true; scene.add(m); return m; }
+function poly(points,mat,y,scale=1,holes=[]){
+  const s = new THREE.Shape(points.map(([x,z]) => new THREE.Vector2(x*scale, -z*scale)));
+  for(const h of holes) s.holes.push(new THREE.Path(h.map(([x,z]) => new THREE.Vector2(x, -z))));
+  const S = mat.userData.uvS || 8; const m = new THREE.Mesh(scaleUV(new THREE.ShapeGeometry(s, 12), 1/S, 1/S), mat); m.rotation.x = -Math.PI/2; m.position.y = y; m.receiveShadow = true; scene.add(m); return m;
+}
+function strip(a,b,w,mat,y=.12){ const dx=b[0]-a[0], dz=b[1]-a[1]; const len=Math.hypot(dx,dz); return box(len+w*.6, .25, w, mat, (a[0]+b[0])/2, (a[1]+b[1])/2, y, -Math.atan2(dz,dx), false); }
+
+/* Facades: an extruded panel with pointed-arch openings. `face` is the side of the building it sits on. */
+function archPath(p, cx, w, yb, ys, ya, hole){
+  const x0 = cx - w/2, x1 = cx + w/2, k = ys + (ya - ys)*.72;
+  if(hole){ p.moveTo(x0,yb); p.lineTo(x1,yb); p.lineTo(x1,ys); p.quadraticCurveTo(x1,k,cx,ya); p.quadraticCurveTo(x0,k,x0,ys); p.lineTo(x0,yb); }
+  return p;
+}
+function arcadeGeo(W, H, n, depth, {sill=.25, spring=.56, apex=.84, open=.7, tiers=1} = {}){
+  const s = new THREE.Shape(); s.moveTo(-W/2,0); s.lineTo(W/2,0); s.lineTo(W/2,H); s.lineTo(-W/2,H); s.closePath();
+  const bw = W/n, th = H/tiers;
+  for(let t=0; t<tiers; t++) for(let i=0; i<n; i++){
+    const cx = -W/2 + bw*(i+.5), base = t*th;
+    s.holes.push(archPath(new THREE.Path(), cx, bw*open, base + sill + (t ? .6 : 0), base + th*spring, base + th*apex, true));
+  }
+  return new THREE.ExtrudeGeometry(s, {depth, bevelEnabled:false, curveSegments:6});
+}
+function gateGeo(W, H, pw, ps, pa, depth){       // facade with a tall archway open at the bottom and rows of blind niches
+  const k = ps + (pa - ps)*.72, s = new THREE.Shape();
+  s.moveTo(-W/2,0); s.lineTo(-pw/2,0); s.lineTo(-pw/2,ps); s.quadraticCurveTo(-pw/2,k,0,pa); s.quadraticCurveTo(pw/2,k,pw/2,ps); s.lineTo(pw/2,0);
+  s.lineTo(W/2,0); s.lineTo(W/2,H); s.lineTo(-W/2,H); s.closePath();
+  const side = (W - pw)/2 - 2;
+  if(side > 4) for(const sg of [-1,1]) for(const [yb,yh] of [[3,H*.42],[H*.5,H*.86]]){
+    const n = Math.max(1, Math.floor(side/4.2)), bw = side/n;
+    for(let i=0;i<n;i++){ const cx = sg*(pw/2 + 1 + bw*(i+.5)); s.holes.push(archPath(new THREE.Path(), cx, bw*.62, yb, yb + (yh-yb)*.62, yh, true)); }
+  }
+  return new THREE.ExtrudeGeometry(s, {depth, bevelEnabled:false, curveSegments:6});
+}
+const FACE_ROT = {n:0, s:Math.PI, w:Math.PI/2, e:-Math.PI/2};
+function facade(geo, mat, x, z, face, y=0){
+  const S = mat.userData.uvS || 5; scaleUV(geo, 1/S, 1/S);
+  const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = FACE_ROT[face]; return add(m);
+}
+function parapet(x, z, w, d, y, mat, step=2.4){        // small merlons along a flat roof edge
+  for(const [ax, az, len, alongX] of [[x, z-d/2, w, true],[x, z+d/2, w, true],[x-w/2, z, d, false],[x+w/2, z, d, false]]){
+    const n = Math.floor(len/step);
+    for(let i=0;i<=n;i++){ const t = -len/2 + i*len/n; box(alongX?1:.6, 1.1, alongX?.6:1, mat, alongX?ax+t:ax, alongX?az:az+t, y, 0, false); }
+  }
+}
+
+/* ================= shared builders (used by every venue) ================= */
+let FORT = VENUE.poly;
+const GATES = VENUE.gates;
+const nearGate = (x,z,r=36) => GATES.some(([gx,gz]) => Math.hypot(gx-x,gz-z) < r);
+const rect = (cx,cz,w,d) => [[cx-w/2,cz-d/2],[cx+w/2,cz-d/2],[cx+w/2,cz+d/2],[cx-w/2,cz+d/2]];
+let ground;
+function buildGround(holes, inner=M.inn, moat=M.moat){
+  ground = poly([[-2600,-2600],[2600,-2600],[2600,2600],[-2600,2600]], M.out, 0, 1, holes);
+  if(moat) poly(FORT, moat, .03, 1.075, holes);
+  poly(FORT, inner, .07, 1, holes);
+}
+function buildWalls({height=18, lowEdge=-1, lowHeight=12, bastionEvery=150, kioskOnBastion=k => k===0} = {}){
+  const merlons = [];
+  FORT.forEach((a,i) => {
+    const b = FORT[(i+1)%FORT.length];
+    const dx=b[0]-a[0], dz=b[1]-a[1], len=Math.hypot(dx,dz), ry=-Math.atan2(dz,dx);
+    const mx=(a[0]+b[0])/2, mz=(a[1]+b[1])/2;
+    let nx = dz/len, nz = -dx/len; if(nx*mx + nz*mz < 0){ nx = -nx; nz = -nz; }   // outward normal
+    const h = i === lowEdge ? lowHeight : height;
+    box(len,h*.18,13,M.stoneDark,mx+nx*.8,mz+nz*.8,0,ry);       // battered plinth
+    box(len,h,10,M.stone,mx,mz,0,ry);
+    box(len,.9,11.4,M.stoneDark,mx,mz,h*.62,ry);                   // moulding band
+    box(len,1.4,11,M.stoneDark,mx,mz,h,ry);
+    for(let s=2; s<len-2; s+=3.6){ const x = a[0]+dx*s/len, z = a[1]+dz*s/len; if(nearGate(x,z)) continue; merlons.push([x + nx*4.6, h+1.4, z + nz*4.6, ry]); }
+    const n = Math.max(1, Math.round(len/bastionEvery));
+    for(let k=0;k<n;k++){
+      const t = k/n, x = a[0]+dx*t, z = a[1]+dz*t;
+      if(nearGate(x,z)) continue;
+      cyl(12,h+5,M.stone,x,z,0,16);
+      cyl(12.8,1.4,M.stoneDark,x,z,h+5,16);
+      for(let q=0;q<14;q++){ const ang = q/14*Math.PI*2; merlons.push([x+Math.cos(ang)*11.6, h+6.4, z+Math.sin(ang)*11.6, -ang]); }
+      if(kioskOnBastion(k, i) && i !== lowEdge) chhatri(x,z,h+6.4,1.05);
+    }
+  });
+  const g = boxUV(new THREE.BoxGeometry(1.6,2.2,1.4), 1.6,2.2,1.4, 4.5);
+  const im = new THREE.InstancedMesh(g, M.stone, merlons.length), o = new THREE.Object3D();
+  merlons.forEach(([x,y,z,r],i) => { o.position.set(x,y+1.1,z); o.rotation.set(0,r,0); o.updateMatrix(); im.setMatrixAt(i,o.matrix); });
+  im.castShadow = im.receiveShadow = true; scene.add(im);
+}
+/* Gateway: archway facades, two towers with domed pavilions, a row of kiosks, and a walled forecourt on the outer side. */
+function gate(x,z,alongX,{outer=-1, round=false, kiosks=7, H=26} = {}){
+  const W = alongX?34:48, D = alongX?48:34, P = 12;
+  const side = ((alongX ? D : W) - P)/2, off = P/2 + side/2;
+  if(alongX){ box(W-2,H,side,M.stone,x,z-off); box(W-2,H,side,M.stone,x,z+off); box(W-2,H-14,P,M.stone,x,z,14); }
+  else { box(side,H,D-2,M.stone,x-off,z); box(side,H,D-2,M.stone,x+off,z); box(P,H-14,D-2,M.stone,x,z,14); }
+  const g1 = gateGeo(alongX ? D : W, H, P, 13, 20, 1.2), g2 = gateGeo(alongX ? D : W, H, P, 13, 20, 1.2);
+  if(alongX){ facade(g1, M.stone, x-W/2, z, 'w'); facade(g2, M.stone, x+W/2, z, 'e'); }
+  else { facade(g1, M.stone, x, z+D/2, 's'); facade(g2, M.stone, x, z-D/2, 'n'); }
+  box(W+1.2,1.2,D+1.2,M.stoneDark,x,z,H);
+  const seg = round ? 16 : 8, tr = round ? 11 : 9;
+  for(const s of [-1,1]){
+    const tx = alongX ? x : x+s*(W/2+tr-3), tz = alongX ? z+s*(D/2+tr-3) : z;
+    cyl(tr,H+6,M.stone,tx,tz,0,seg); cyl(tr+.6,1,M.stoneDark,tx,tz,12,seg); cyl(tr+.6,1,M.stoneDark,tx,tz,24,seg); cyl(tr+1,1.2,M.stoneDark,tx,tz,H+6,seg);
+    chhatri(tx,tz,H+7.2,1.55);
+  }
+  const span = (alongX ? D : W) - 8;
+  for(let i=0;i<kiosks;i++){ const t = -span/2 + span*i/(kiosks-1); chhatri(alongX?x:x+t, alongX?z+t:z, H+1.2, .62); }
+  if(alongX){ const bx = x + outer*32; box(18,17,15,M.stone,bx,z-13.5); box(18,17,15,M.stone,bx,z+13.5); parapet(bx,z,18,42,17,M.stone,3); }
+  else { const bz = z + outer*32; box(15,17,18,M.stone,x-13.5,bz); box(15,17,18,M.stone,x+13.5,bz); parapet(x,bz,42,18,17,M.stone,3); }
+  addGateDoors(x, z, alongX, outer, P, 13, (alongX ? W : D)/2 - 1.4);
+}
+/* Heavy studded wooden doors in an archway. They swing open as the guide, the 360° viewer or a visitor comes near. */
+const DOORS = [];
+const doorTex = canvasTex(256, (g,n) => {
+  g.fillStyle = 'rgb(122,78,44)'; g.fillRect(0,0,n,n);
+  for(let i=0;i<8;i++){ const v = 100 + rnd()*40; g.fillStyle = `rgb(${v+20},${v-15},${v-45})`; g.fillRect(i*n/8+1, 0, n/8-2, n); }
+  g.fillStyle = 'rgba(40,30,25,.85)'; for(const y of [.15,.5,.85]) g.fillRect(0, y*n-6, n, 12);
+  g.fillStyle = 'rgba(30,25,20,.9)'; for(let y=24; y<n; y+=32) for(let x=16; x<n; x+=32){ g.beginPath(); g.arc(x,y,3.2,0,7); g.fill(); }
+});
+const doorMat = new THREE.MeshStandardMaterial({map:doorTex, roughness:.85});
+function addGateDoors(x, z, alongX, outer, P, h, inset){
+  const leafW = P/2 - .1, pivots = [];
+  for(const side of [-1,1]){
+    const piv = new THREE.Group();
+    const leaf = new THREE.Mesh(new THREE.BoxGeometry(alongX ? .45 : leafW, h, alongX ? leafW : .45), doorMat);
+    if(alongX){ piv.position.set(x + outer*inset, 0, z + side*P/2); leaf.position.set(0, h/2, -side*leafW/2); }
+    else { piv.position.set(x + side*P/2, 0, z + outer*inset); leaf.position.set(-side*leafW/2, h/2, 0); }
+    piv.add(leaf); scene.add(piv);
+    pivots.push({piv, sign: alongX ? side*outer : -side*outer});
+  }
+  DOORS.push({x, z, pivots, open:0});
+}
+function updateDoors(dt){
+  if(!DOORS.length) return;
+  const actors = [];
+  if(walk.active && walker.visible) actors.push([walker.position.x, walker.position.z, 45]);
+  if(mode === 'eye') actors.push([camera.position.x, camera.position.z, 45]);
+  for(const p of live.visitors?.people || []) if(p.x !== undefined) actors.push([p.x, p.z, 16]);
+  for(const d of DOORS){
+    const near = actors.some(([ax,az,r]) => Math.hypot(ax-d.x, az-d.z) < r);
+    d.open += ((near ? 1 : 0) - d.open)*Math.min(1, dt*(near ? 1.6 : .8));
+    const e = d.open*d.open*(3 - 2*d.open), ang = e*1.45;
+    for(const q of d.pivots) q.piv.rotation.y = q.sign*ang;
+  }
+}
+/* A stepped pit sunk below ground (a stepwell, or excavation trenches). The ground needs a matching hole. */
+function pit(cx, cz, w, d, levels, stepH, stepIn, mat, floorMat){
+  for(let k=0;k<levels;k++){
+    const sw = w - k*2*stepIn, sd = d - k*2*stepIn, y = -k*stepH, t = stepIn;
+    for(const [dx,dz,bw,bd] of [[0,-(sd-t)/2,sw,t],[0,(sd-t)/2,sw,t],[-(sw-t)/2,0,t,sd-2*t],[(sw-t)/2,0,t,sd-2*t]]) box(bw,stepH,bd,mat,cx+dx,cz+dz,y-stepH,0,false);
+  }
+  plane(w - levels*2*stepIn, d - levels*2*stepIn, floorMat, cx, cz, -levels*stepH + .02);
+}
+function facadeAt(geo, mat, x, z, ry, y=0){ const S = mat.userData.uvS || 5; scaleUV(geo, 1/S, 1/S); const m = new THREE.Mesh(geo, mat); m.position.set(x,y,z); m.rotation.y = ry; return add(m); }
+let FLAG = null;
+const BOATS = [], FOUNTAINS = [];
+function addFlag(x, y, z, ry){
+  const c = document.createElement('canvas'); c.width = 360; c.height = 240; const g = c.getContext('2d');
+  g.fillStyle = '#FF9933'; g.fillRect(0,0,360,80); g.fillStyle = '#FFFFFF'; g.fillRect(0,80,360,80); g.fillStyle = '#138808'; g.fillRect(0,160,360,80);
+  g.strokeStyle = '#000080'; g.lineWidth = 3; g.beginPath(); g.arc(180,120,34,0,7); g.stroke();
+  g.lineWidth = 1.4; for(let i=0;i<24;i++){ const a = i/24*Math.PI*2; g.beginPath(); g.moveTo(180,120); g.lineTo(180+Math.cos(a)*34, 120+Math.sin(a)*34); g.stroke(); }
+  g.fillStyle = '#000080'; g.beginPath(); g.arc(180,120,6,0,7); g.fill();
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const geo = new THREE.PlaneGeometry(9, 6, 18, 8); geo.translate(4.5, 0, 0);
+  const flag = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({map:tex, side:THREE.DoubleSide, roughness:.8}));
+  flag.position.set(x, y + 13.5, z); flag.rotation.y = ry; scene.add(flag);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.18,.24,17,8), new THREE.MeshStandardMaterial({color:0xdddddd, metalness:.5, roughness:.4}));
+  pole.position.set(x, y + 8.5, z); scene.add(pole);
+  FLAG = {mesh:flag, base:geo.attributes.position.array.slice(), t:0};
+}
+function plantTrees(treePts, cypress=[]){
+  const cg = new THREE.IcosahedronGeometry(7,1), pos = cg.attributes.position;
+  for(let i=0;i<pos.count;i++){ const v = new THREE.Vector3().fromBufferAttribute(pos,i); v.multiplyScalar(.82 + rnd()*.32); v.y *= .85; pos.setXYZ(i, v.x, v.y, v.z); }
+  cg.computeVertexNormals();
+  const crown = new THREE.InstancedMesh(cg, M.tree, Math.max(1, treePts.length));
+  const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(.8,1.2,6,6), M.trunk, Math.max(1, treePts.length + cypress.length));
+  const cyp = new THREE.InstancedMesh(new THREE.ConeGeometry(2.3,13,8), M.tree, Math.max(1, cypress.length));
+  crown.count = treePts.length; trunk.count = treePts.length + cypress.length; cyp.count = cypress.length;
+  const o = new THREE.Object3D(), col = new THREE.Color();
+  treePts.forEach(([x,z,s],i) => {
+    o.position.set(x,3*s,z); o.scale.setScalar(s); o.rotation.set(0,0,0); o.updateMatrix(); trunk.setMatrixAt(i,o.matrix);
+    o.position.set(x,9.5*s,z); o.rotation.y = i; o.updateMatrix(); crown.setMatrixAt(i,o.matrix);
+    col.setHSL(0, 0, .82 + rnd()*.3); crown.setColorAt(i, col);
+  });
+  cypress.forEach(([x,z],i) => {
+    o.rotation.set(0,0,0); o.scale.setScalar(1); o.position.set(x,1.5,z); o.updateMatrix(); trunk.setMatrixAt(treePts.length+i, o.matrix);
+    o.position.set(x,8,z); o.updateMatrix(); cyp.setMatrixAt(i,o.matrix); col.setHSL(0,0,.75 + rnd()*.15); cyp.setColorAt(i,col);
+  });
+  for(const m of [crown,trunk,cyp]){ m.castShadow = true; m.receiveShadow = true; scene.add(m); }
+}
+const scatterInto = (list, cx,cz,w,d,n, avoid=() => false) => { for(let i=0;i<n;i++){ const x = cx-w/2+rnd()*w, z = cz-d/2+rnd()*d; if(!avoid(x,z)) list.push([x, z, .8+rnd()*.5]); } };
+function ctxLabel(text,x,z,y=2){ const d = document.createElement('div'); d.className='ctx'; d.textContent = text; const o = new CSS2DObject(d); o.position.set(x,y,z); scene.add(o); return o; }
+
+/* ================= Red Fort ================= */
+function buildRedFort(){
+  const BAOLI = [-22,-200];
+  buildGround([rect(BAOLI[0],BAOLI[1],26,26)]);
+  plane(30,2400,M.road,312,0,.06);                 // Ring Road
+  plane(420,3000,M.water,690,0,.04);               // Yamuna
+  plane(26,2400,M.road,-440,0,.06);                // Netaji Subhash Marg
+  plane(140,26,M.road,-370,30,.065);               // approach to Lahori Gate
+  plane(900,24,M.road,-900,30,.06);                // towards Chandni Chowk
+  plane(40,90,M.road,-40,560,.06);                 // south approach to Delhi Gate
+  box(26,1.5,70,M.stone,160,-500);                 // bridge to Salimgarh
+  buildWalls({height:18, lowEdge:0, bastionEvery:150});
+  gate(-280,30,true,{outer:-1});
+  gate(-40,470,false,{outer:1});
+  for(const ex of [-62,-18]){ box(4.5,4,9,M.road,ex,507,1.2); box(1.6,4.5,1.6,M.road,ex,512,0); box(5.5,1.2,10,M.stoneDark,ex,507,0); }   // Delhi Gate elephants
+  addFlag(-280, 27.2, 30, Math.PI/2);
+  /* ---------- Chhatta Chowk: covered bazaar with shop arches on both sides ---------- */
+  box(100,9,5,M.stone,-205,22.5); box(100,9,5,M.stone,-205,37.5);
+  facade(arcadeGeo(100, 8, 16, .8, {open:.62}), M.stone, -205, 25.2, 's');
+  facade(arcadeGeo(100, 8, 16, .8, {open:.62}), M.stone, -205, 34.8, 'n');
+  box(102,1.2,21,M.stoneDark,-205,30,9); cyl(9,3,M.stone,-205,30,10.2,8); dome(5,M.stone,-205,30,13.2);
+
+  /* ---------- Naubat Khana: three-storey gateway ---------- */
+  box(28,18,16,M.stone,-60,16); box(28,18,16,M.stone,-60,44); box(28,7,12,M.stone,-60,30,11);
+  addGateDoors(-60, 30, true, -1, 12, 6.5, 13.4);
+  facade(gateGeo(44, 18, 12, 6.5, 10.5, 1), M.stone, -74.5, 30, 'w');
+  facade(gateGeo(44, 18, 12, 6.5, 10.5, 1), M.stone, -45.5, 30, 'e');
+  box(31,1.2,45,M.stoneDark,-60,30,18); parapet(-60,30,30,44,19.2,M.stone,2.8);
+  chhatri(-60,10,19.2,.8); chhatri(-60,50,19.2,.8);
+
+  /* ---------- Diwan-i-Aam: nine-arched hall on a plinth, marble throne canopy ---------- */
+  box(46,1.6,76,M.stoneDark,62,30);
+  box(16,11,70,M.stone,70,30,1.6);                                        // back of the hall; the arcade in front leaves an open, roofed hall
+  facade(arcadeGeo(70, 11, 9, 1.6, {open:.74}), M.stone, 48.8, 30, 'w', 1.6);
+  facade(arcadeGeo(30, 11, 3, 1.6, {open:.7}), M.stone, 63, -5.2, 'n', 1.6);
+  facade(arcadeGeo(30, 11, 3, 1.6, {open:.7}), M.stone, 63, 65.2, 's', 1.6);
+  box(32,1.2,74,M.stoneDark,63,30,12.6); parapet(63,30,32,74,13.8,M.stone,2.6);
+  for(const zc of [-5,65]) for(const xc of [48,78]) chhatri(xc,zc,13.8,.75);
+  box(8,1.2,12,M.marble,58,30,1.6); for(const a of [-1,1]) for(const b of [-1,1]) cyl(.4,5,M.marble,58+a*3.2,30+b*4.6,2.8,8);   // throne canopy
+  box(8.6,.6,12.6,M.marble,58,30,7.8); dome(3.2,M.marble,58,30,8.4,false);
+
+  /* ---------- riverside palaces in white marble ---------- */
+  function palace(x,z,w,d,h,arches,opts={}){
+    box(w+4,1.4,d+4,M.marble,x,z);
+    box(w-3,h,d,M.marble,x+1.5,z,1.4);
+    facade(arcadeGeo(d, h, arches, 1.4, {open:.7}), M.marble, x-w/2+.2, z, 'w', 1.4);
+    box(w+1.4,.9,d+1.4,M.marble,x,z,h+1.4); parapet(x,z,w+1.2,d+1.2,h+2.3,M.marble,2.2);
+    if(opts.corner) for(const sx of [-1,1]) for(const sz of [-1,1]) chhatri(x+sx*(w/2-3), z+sz*(d/2-3), h+2.3, .8, M.marble, opts.gold ? M.gold : M.marble);
+  }
+  palace(222,120,36,40,8,6);                                           // Mumtaz Mahal
+  palace(222,30,40,50,8,7,{corner:true});                              // Rang Mahal
+  palace(222,-50,36,40,9,5);                                           // Khas Mahal
+  cyl(9,15,M.marble,250,-50,0,8); cyl(9.8,.8,M.marble,250,-50,15,8); dome(6,M.gold,250,-50,15.8);   // Muthamman Burj
+  palace(222,-120,34,30,10,5,{corner:true, gold:true});                 // Diwan-i-Khas
+  palace(222,-185,34,28,8,4); dome(3.6,M.marble,214,-185,10.2,false); dome(3.6,M.marble,230,-185,10.2,false);   // Hammam
+  // Moti Masjid: walled courtyard and prayer hall with three onion domes
+  box(30,6,1.2,M.marble,150,-214.4); box(30,6,1.2,M.marble,150,-185.6); box(1.2,6,30,M.marble,135.6,-200);
+  box(10,9,28,M.marble,160,-200); facade(arcadeGeo(28, 9, 3, 1.2, {open:.6}), M.marble, 153.8, -200, 'w');
+  for(const dz of [-8,0,8]) dome(dz ? 3 : 3.8, M.marble, 160, -200+dz, 9);
+  // Shah Burj
+  cyl(12,16,M.marble,228,-404,0,8); cyl(12.8,.8,M.marble,228,-404,16,8); chhatri(228,-404,16.8,1.35);
+  plane(2.2,560,M.water,199,-130,.14);                                // Nahr-i-Bihisht channel
+
+  /* ---------- Hayat Bakhsh Bagh: charbagh, channels, fountains, pavilions ---------- */
+  plane(245,180,M.grass,52.5,-320,.1);
+  box(245,.3,4,M.marble,52.5,-320,0,0,false); box(4,.3,180,M.marble,55,-320,0,0,false);
+  plane(245,2.2,M.water,52.5,-320,.34); plane(2.2,180,M.water,55,-320,.34);
+  for(let x=-60; x<=170; x+=20) if(Math.abs(x-55) > 26){ cyl(.8,.9,M.marble,x,-320,0,8); FOUNTAINS.push([x,-320]); }
+  for(let z=-405; z<=-235; z+=20) if(Math.abs(z+320) > 26){ cyl(.8,.9,M.marble,55,z,0,8); FOUNTAINS.push([55,z]); }
+  for(const [dx,dz] of [[-17,-17],[17,-17],[-17,17],[17,17]]) FOUNTAINS.push([55+dx,-320+dz,1]);
+  box(46,.8,46,M.marble,55,-320,0,0,false); plane(42,42,M.water,55,-320,.85);
+  box(13,6,13,M.stone,55,-320,.8);
+  for(const f of ['n','s','e','w']){ const o = {n:[55,-326.6],s:[55,-313.4],e:[61.6,-320],w:[48.4,-320]}[f]; facade(arcadeGeo(13,6,3,.5,{open:.62}), M.stone, o[0], o[1], f, .8); }
+  box(14,.8,14,M.stoneDark,55,-320,6.8); parapet(55,-320,14,14,7.6,M.stone,2);
+  for(const px of [-62,167]){
+    box(15,1,15,M.marble,px,-320); box(12,7,12,M.marble,px,-320,1);
+    for(const f of ['n','s','e','w']){ const o = {n:[px,-327.5],s:[px,-312.5],e:[px+7.5,-320],w:[px-7.5,-320]}[f]; facade(arcadeGeo(15,7,3,.6,{open:.6}), M.marble, o[0], o[1], f, 1); }
+    box(16,.8,16,M.marble,px,-320,8); parapet(px,-320,16,16,8.8,M.marble,2.2);
+  }
+
+  /* ---------- British-era barracks with verandah arcades ---------- */
+  for(const bz of [-80,-130,-180]){
+    box(92,10,10,M.barrack,-155,bz);
+    facade(arcadeGeo(92,9,15,.8,{open:.66,spring:.62,apex:.8}), M.barrack, -155, bz-6.2, 'n');
+    facade(arcadeGeo(92,9,15,.8,{open:.66,spring:.62,apex:.8}), M.barrack, -155, bz+6.2, 's');
+    box(94,1,14,M.barrack,-155,bz,10); parapet(-155,bz,94,14,11,M.barrack,3.2);
+  }
+  pit(BAOLI[0], BAOLI[1], 26, 26, 6, 1.3, 1.7, M.stone, M.water);
+  box(28,.8,1.2,M.stone,BAOLI[0],BAOLI[1]-13.4,0,0,false); box(28,.8,1.2,M.stone,BAOLI[0],BAOLI[1]+13.4,0,0,false);
+  /* ---------- lawns ---------- */
+  plane(130,70,M.grass,60,118,.1); plane(120,110,M.grass,-160,240,.1); plane(110,120,M.grass,60,300,.1); plane(70,60,M.grass,-170,380,.1);
+  plane(80,100,M.grass,-150,-330,.1); plane(70,90,M.grass,95,-140,.1);
+  const treePts = [];
+  const scatter = (cx,cz,w,d,n) => scatterInto(treePts, cx,cz,w,d,n);
+  for(const [x0,z0] of [[-40,-380],[150,-380],[-40,-260],[150,-260]]) for(let i=0;i<3;i++) for(let j=0;j<2;j++) treePts.push([x0+i*14-14, z0+j*16-8, 1]);
+  scatter(-160,240,110,100,14); scatter(60,300,100,110,12); scatter(-170,380,60,50,6); scatter(-150,-330,70,90,9); scatter(95,-140,60,80,6);
+  for(let z=-1100; z<=1100; z+=36){ treePts.push([-466,z,1.1]); treePts.push([-414,z+18,1]); treePts.push([340,z,1.05]); }
+  for(let i=0;i<90;i++){ const a = rnd()*Math.PI*2, r = 620+rnd()*600; const x = Math.cos(a)*r, z = Math.sin(a)*r*1.1; if(x>290 || Math.abs(x+440)<30) continue; treePts.push([x,z,.9+rnd()*.6]); }
+  const cypress = [];
+  for(let x=-55; x<=165; x+=18) if(Math.abs(x-55) > 30){ cypress.push([x,-326]); cypress.push([x,-314]); }
+  for(let z=-400; z<=-240; z+=18) if(Math.abs(z+320) > 30){ cypress.push([49,z]); cypress.push([61,z]); }
+  for(let z=-2; z<=62; z+=12) cypress.push([36,z]);
+  plantTrees(treePts, cypress);
+  ctxLabel('Netaji Subhash Marg',-440,-520); ctxLabel('Ring Road',312,-640); ctxLabel('Yamuna',690,-200); ctxLabel('← Chandni Chowk',-760,40);
+  ctxLabel('Salimgarh Fort ↑',165,-570); ctxLabel('Moat',-330,-200);
+}
+
+/* ================= Purana Qila ================= */
+function buildPuranaQila(){
+  const BAOLI = [95,-150], DIG = [110,95];
+  buildGround([rect(BAOLI[0],BAOLI[1],22,22), rect(DIG[0],DIG[1],60,34)], M.grass, null);
+  // lake along the west side, with a stone edge and boats
+  plane(210,390,M.water,-332,10,.05);
+  box(212,.7,2,M.stone,-332,-186,0,0,false); box(212,.7,2,M.stone,-332,206,0,0,false); box(2,.7,392,M.stone,-226,10,0,0,false); box(2,.7,392,M.stone,-438,10,0,0,false);
+  const boatHull = new THREE.MeshStandardMaterial({color:0xf3efe6, roughness:.6}), boatTop = new THREE.MeshStandardMaterial({color:0xc0392b, roughness:.7});
+  const skin = new THREE.MeshLambertMaterial({color:0x7a4e33}), wakeMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.35, depthWrite:false});
+  const shirts = [0x2e86c1,0xf1c40f,0x27ae60,0xe67e22,0x8e44ad,0xecf0f1];
+  const wakeShape = new THREE.Shape([new THREE.Vector2(0,-3), new THREE.Vector2(-3.4,-14), new THREE.Vector2(3.4,-14)]);
+  for(let i=0;i<6;i++){
+    const g = new THREE.Group();
+    const hull = new THREE.Mesh(new THREE.BoxGeometry(2.6,.9,6.4), boatHull); hull.position.y = .6;
+    const bow = new THREE.Mesh(new THREE.ConeGeometry(1.3,2.2,4), boatHull); bow.rotation.set(Math.PI/2,Math.PI/4,0); bow.scale.set(1,1,.45); bow.position.set(0,.6,4.2);
+    const top = new THREE.Mesh(new THREE.BoxGeometry(2.4,.25,3.2), i%2 ? boatTop : boatHull); top.position.y = 2.2;
+    for(const a of [-1,1]) for(const b of [-1,1]){ const p = new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,1.3,5), boatHull); p.position.set(a*1,1.5,b*1.4); g.add(p); }
+    const rower = new THREE.Mesh(new THREE.CylinderGeometry(.22,.28,.8,6), new THREE.MeshLambertMaterial({color:shirts[i]})); rower.position.set(0,1.45,-1.6);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(.17,8,6), skin); head.position.set(0,2,-1.6);
+    const oars = new THREE.Group(); for(const a of [-1,1]){ const o = new THREE.Mesh(new THREE.BoxGeometry(2.2,.06,.14), boatHull); o.position.set(a*1.9,1.2,0); oars.add(o); } oars.position.z = -1.2;
+    const wake = new THREE.Mesh(new THREE.ShapeGeometry(wakeShape), wakeMat); wake.rotation.x = -Math.PI/2; wake.position.y = .12;
+    g.add(hull, bow, top, rower, head, oars, wake); g.scale.setScalar(1.5); scene.add(g);
+    BOATS.push({g, oars, wake, cx:-332, cz:10, rx:28 + i*11, rz:60 + i*19, a:rnd()*Math.PI*2, w:(i%2 ? -1 : 1)*(.05 - i*.004), bob:rnd()*6});
+  }
+  plane(26,2400,M.road,330,0,.06);                 // Mathura Road
+  plane(24,2400,M.road,-480,0,.06);                // Bhairon Marg
+  plane(90,60,M.road,-262,250,.06);                // parking
+  plane(24,90,M.road,-10,330,.06);                 // south approach
+  plane(24,90,M.road,10,-330,.06);                 // north approach
+  buildWalls({height:16, bastionEvery:120, kioskOnBastion:(k,i) => k===0 && i%2===0});
+  gate(-178,0,true,{outer:-1, round:true, kiosks:5, H:24});            // Bara Darwaza
+  gate(-10,249,false,{outer:1, round:true, kiosks:5, H:22});           // Humayun Darwaza
+  gate(10,-245,false,{outer:-1, round:true, kiosks:5, H:22});          // Talaqi Darwaza
+  addFlag(-178, 25, 0, Math.PI/2);
+  // Qila-i-Kuhna Mosque: prayer hall facing east, five arched bays, single dome, corner turrets, paved courtyard
+  plane(46,62,M.path,32,-70,.12);
+  box(20,1.4,58,M.stoneDark,0,-70);
+  box(11,13,52,M.stoneDark,-2.5,-70,1.4);                                // recessed hall behind the arches
+  facade(arcadeGeo(52, 13, 5, 1.6, {open:.62, apex:.88}), M.stone, 6.6, -70, 'e', 1.4);
+  box(16.6,.8,54,M.marble,-.2,-70,14.4); parapet(-.2,-70,16,54,15.2,M.stone,2.4);
+  dome(6.5, M.stone, -2, -70, 15.2);
+  for(const tz of [-96.5,-43.5]){ cyl(2.6,17,M.stone,-8,tz,0,8); chhatri(-8,tz,17,.55); }
+  // Sher Mandal: two-storey octagonal tower with arched bays and a domed kiosk on top
+  const SM = [60,30];
+  cyl(11,1.4,M.stoneDark,SM[0],SM[1],0,8);
+  cyl(9,8,M.stone,SM[0],SM[1],1.4,8);
+  cyl(9.7,.7,M.stoneDark,SM[0],SM[1],9.4,8);
+  cyl(7.4,6.5,M.stone,SM[0],SM[1],10.1,8);
+  cyl(8,.6,M.marble,SM[0],SM[1],16.6,8);
+  for(let k=0;k<8;k++){
+    const phi = (k+.5)*Math.PI/4, s1 = Math.sin(phi), c1 = Math.cos(phi);
+    const ap1 = 9*Math.cos(Math.PI/8) + .02, ap2 = 7.4*Math.cos(Math.PI/8) + .02;
+    facadeAt(arcadeGeo(2*9*Math.sin(Math.PI/8), 8, 1, .7, {open:.55}), M.stone, SM[0]+s1*ap1, SM[1]+c1*ap1, phi+Math.PI, 1.4);
+    facadeAt(arcadeGeo(2*7.4*Math.sin(Math.PI/8), 6.5, 1, .6, {open:.5}), M.stone, SM[0]+s1*ap2, SM[1]+c1*ap2, phi+Math.PI, 10.1);
+  }
+  chhatri(SM[0],SM[1],17.2,1.05);
+  // Archaeological Site Museum
+  box(34,7,13,M.barrack,-120,72.5);
+  facade(arcadeGeo(34,6.5,7,.8,{open:.6}), M.barrack, -120, 65.2, 'n');
+  box(35,.8,15,M.barrack,-120,72,7); parapet(-120,72,35,15,7.8,M.barrack,3);
+  // Stepwell and excavation trenches
+  pit(BAOLI[0], BAOLI[1], 22, 22, 6, 1.3, 1.5, M.stone, M.water);
+  pit(DIG[0], DIG[1], 60, 34, 3, 1.6, 4, M.stoneDark, M.inn);
+  for(const [dx,dz,w,d] of [[-14,-4,10,1],[-6,5,1,9],[8,-3,12,1],[16,4,1,7],[2,6,9,1]]) box(w,1.1,d,M.stoneDark,DIG[0]+dx,DIG[1]+dz,-4.8,0,false);
+  // lawn edging and trees
+  const treePts = [], cypress = [];
+  const clear = (x,z) => !insideFortPoly(x,z,-10) || Math.hypot(x-SM[0],z-SM[1]) < 18 || (x>-14 && x<60 && z>-105 && z<-35) || (Math.abs(x-BAOLI[0])<18 && Math.abs(z-BAOLI[1])<18)
+    || (Math.abs(x-DIG[0])<36 && Math.abs(z-DIG[1])<22) || (Math.abs(x+120)<24 && Math.abs(z-72)<14) || Math.abs(z) < 12 && x < -30 || Math.abs(x-10) < 10 && z < -150 || Math.abs(x+10) < 10 && z > 170;
+  scatterInto(treePts, -90,-150,120,130,20, clear); scatterInto(treePts, -95,160,120,130,18, clear);
+  scatterInto(treePts, 125,-30,70,140,10, clear); scatterInto(treePts, 110,195,80,60,7, clear); scatterInto(treePts, -60,-20,40,40,3, clear);
+  for(let x=-165; x<=-40; x+=16){ cypress.push([x,-11]); cypress.push([x,11]); }
+  scatterInto(treePts, 420,440,500,420,120); scatterInto(treePts, -360,-420,300,200,40); scatterInto(treePts, -360,420,300,200,35); scatterInto(treePts, 260,-420,400,200,50);
+  for(let z=-1100; z<=1100; z+=34){ treePts.push([350,z,1.05]); treePts.push([-500,z,1]); }
+  plantTrees(treePts, cypress);
+  ctxLabel('Purana Qila lake',-332,-150); ctxLabel('Mathura Road',330,-560); ctxLabel('Bhairon Marg',-480,-560); ctxLabel('Delhi Zoo ↘',300,380);
+  ctxLabel('Pragati Maidan ↑',0,-430); ctxLabel('Parking',-262,290);
+}
+function insideFortPoly(x, z, margin=0){
+  let c = false; for(let i=0, j=FORT.length-1; i<FORT.length; j=i++){ const [xi,zi] = FORT[i], [xj,zj] = FORT[j]; if((zi > z) !== (zj > z) && x < (xj-xi)*(z-zi)/(zj-zi) + xi) c = !c; }
+  if(!c || !margin) return c;
+  for(let i=0;i<FORT.length;i++){ const a = FORT[i], b = FORT[(i+1)%FORT.length], vx=b[0]-a[0], vz=b[1]-a[1]; const t = Math.max(0, Math.min(1, ((x-a[0])*vx + (z-a[1])*vz)/(vx*vx+vz*vz))); if(Math.hypot(x-a[0]-vx*t, z-a[1]-vz*t) < -margin) return false; }
+  return true;
+}
+VENUE.build();
+
+/* Merge all static architecture into one mesh per material (keeps the page fast on phones).
+   The originals stay in `solids` (detached) for line-of-sight checks in the 360° view. */
+function mergeStatics(){
+  const groups = new Map();
+  for(const m of statics){
+    m.updateMatrixWorld(true);
+    let g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+    g.applyMatrix4(m.matrixWorld);
+    for(const k of Object.keys(g.attributes)) if(!['position','normal','uv'].includes(k)) g.deleteAttribute(k);
+    if(!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*2), 2));
+    g.clearGroups();
+    const key = m.material.uuid + (m.castShadow ? 's' : 'f');
+    if(!groups.has(key)) groups.set(key, {mat:m.material, shadow:m.castShadow, list:[]});
+    groups.get(key).list.push(g);
+    scene.remove(m);
+  }
+  for(const {mat, shadow, list} of groups.values()){
+    const mm = new THREE.Mesh(mergeGeometries(list, false), mat); mm.castShadow = shadow; mm.receiveShadow = true; scene.add(mm);
+  }
+  statics.length = 0;
+}
+
+/* ================= walkways & routing ================= */
+const BASE = VENUE.base;
+const BASE_EDGES = VENUE.edges.map(e => e.split('-'));
+BASE_EDGES.forEach(([a,b]) => strip(BASE[a],BASE[b],6,M.path));
+mergeStatics();
+renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;   // buildings don't move: draw their shadows once
+
+/* ================= live layer: visitors, birds, traffic, boats, fountains, clouds =================
+   Everything here is instanced or tiny, casts no real-time shadow, and is reduced on phones. */
+const lathe = (pts, seg=18, flat=.78, phiStart=0, phiLen=Math.PI*2) => { const g = new THREE.LatheGeometry(pts.map(([r,y]) => new THREE.Vector2(r,y)), seg, phiStart, phiLen); g.scale(1,1,flat); return g; };
+const live = { t:0 };
+const sway = (n) => Math.sin(n);
+const vPalette = [0xc0392b,0x2e86c1,0xf1c40f,0x27ae60,0x8e44ad,0xe67e22,0xecf0f1,0xd35400,0x16a085,0xe84393,0x34495e,0xf39c12];
+const tmpO = new THREE.Object3D(), tmpC = new THREE.Color();
+// visitors strolling along the walkways: men in kurta-pyjama and women in saris (instanced, a few draw calls)
+{
+  const N = LIVE ? (LITE ? 20 : 40) : 0;
+  const adj = {}; for(const [a,b] of BASE_EDGES){ (adj[a] ||= []).push(b); (adj[b] ||= []).push(a); }
+  const at = (geo, x, y, z, rx=0, rz=0, sx=1, sy=1, sz=1) => { geo.scale(sx,sy,sz); if(rx) geo.rotateX(rx); if(rz) geo.rotateZ(rz); geo.translate(x,y,z); return geo; };
+  const merge = list => mergeGeometries(list.map(g => { g = g.index ? g.toNonIndexed() : g; for(const k of Object.keys(g.attributes)) if(!['position','normal'].includes(k)) g.deleteAttribute(k); return g; }));
+  const headParts = (bun) => {
+    const h = [at(new THREE.SphereGeometry(.1,12,10), 0,1.6,0, 0,0, .9,1.08,1), at(new THREE.CylinderGeometry(.045,.05,.1,8), 0,1.48,0)];
+    const hr = [at(new THREE.SphereGeometry(.104,12,8,0,Math.PI*2,0,Math.PI*.6), 0,1.615,-.01, -.35,0, .92,1.08,1.04)];
+    if(bun) hr.push(at(new THREE.SphereGeometry(.06,10,8), 0,1.6,-.11));
+    return {h, hr};
+  };
+  // man: kurta with sleeves, pyjama legs, hands
+  const mH = headParts(false);
+  const man = {
+    cloth: merge([lathe([[0,.56],[.25,.56],[.2,.9],[.17,1.03],[.19,1.2],[.2,1.36],[.15,1.44],[0,1.46]], 12),
+                  at(new THREE.CapsuleGeometry(.048,.4,3,6), -.23,1.13,0, 0,.12), at(new THREE.CapsuleGeometry(.048,.4,3,6), .23,1.13,0, 0,-.12)]),
+    legs: merge([at(new THREE.CylinderGeometry(.06,.055,.56,8), -.08,.32,0), at(new THREE.CylinderGeometry(.06,.055,.56,8), .08,.32,0),
+                 at(new THREE.BoxGeometry(.09,.06,.22), -.08,.03,.04), at(new THREE.BoxGeometry(.09,.06,.22), .08,.03,.04)]),
+    skin: merge([...mH.h, at(new THREE.SphereGeometry(.04,8,6), -.27,.86,0), at(new THREE.SphereGeometry(.04,8,6), .27,.86,0)]),
+    hair: merge(mH.hr)
+  };
+  // woman: sari falling to the ankles, blouse, pallu over the left shoulder, bare arms, hair in a bun
+  const wH = headParts(true);
+  const pallu = new THREE.BoxGeometry(.2,.75,.02); pallu.rotateZ(.35); pallu.rotateY(.2); pallu.translate(-.06,1.08,-.16);
+  const palluF = new THREE.BoxGeometry(.16,.4,.02); palluF.rotateZ(.55); palluF.translate(-.02,1.24,.15);
+  const woman = {
+    cloth: merge([lathe([[0,.02],[.27,.02],[.24,.4],[.2,.78],[.165,.95],[.18,1.12],[.18,1.3],[.13,1.4],[0,1.42]], 12), pallu, palluF]),
+    legs: merge([at(new THREE.BoxGeometry(.09,.05,.2), -.07,.025,.12), at(new THREE.BoxGeometry(.09,.05,.2), .07,.025,.12)]),
+    skin: merge([...wH.h, at(new THREE.CapsuleGeometry(.04,.42,3,6), -.21,1.12,0, 0,.1), at(new THREE.CapsuleGeometry(.04,.42,3,6), .21,1.12,0, 0,-.1),
+                 at(new THREE.SphereGeometry(.037,8,6), -.24,.86,0), at(new THREE.SphereGeometry(.037,8,6), .24,.86,0)]),
+    hair: merge(wH.hr)
+  };
+  const kurtaCols = [0xf5f0e6,0xe8dcc0,0xa9cce3,0xf0b27a,0x7b241c,0xf7dc6f,0xd5f5e3,0xfdebd0];
+  const sariCols = [0xc2185b,0xff8f00,0x00897b,0xc62828,0xfbc02d,0x2e7d32,0x6a1b9a,0xe65100,0x1565c0,0xad1457];
+  const matCloth = new THREE.MeshLambertMaterial(), matLegs = new THREE.MeshLambertMaterial({color:0xece6d8}), matSkin = new THREE.MeshLambertMaterial({color:0x8d5a3b}), matHair = new THREE.MeshLambertMaterial({color:0x17110d});
+  const counts = [Math.ceil(N/2), Math.floor(N/2)];
+  const sets = [man, woman].map((v, vi) => {
+    const n = Math.max(1, counts[vi]);
+    const ms = [new THREE.InstancedMesh(v.cloth, matCloth, n), new THREE.InstancedMesh(v.legs, vi ? matSkin : matLegs, n), new THREE.InstancedMesh(v.skin, matSkin, n), new THREE.InstancedMesh(v.hair, matHair, n)];
+    ms.forEach(m => { m.count = counts[vi]; });
+    return ms;
+  });
+  const blob = new THREE.CircleGeometry(.4,10); blob.rotateX(-Math.PI/2); blob.translate(0,.22,0);
+  const sI = new THREE.InstancedMesh(blob, new THREE.MeshBasicMaterial({color:0, transparent:true, opacity:.2, depthWrite:false}), Math.max(1,N)); sI.count = N;
+  const keys = Object.keys(adj), people = [], k = [0,0];
+  for(let i=0;i<N;i++){
+    const a = keys[Math.floor(rnd()*keys.length)], b = adj[a][Math.floor(rnd()*adj[a].length)];
+    const v = i % 2, idx = k[v]++;
+    people.push({a, b, t:rnd(), speed:1.1 + rnd()*.7, ph:rnd()*6, pause:0, v, idx});
+    sets[v][0].setColorAt(idx, tmpC.setHex(v ? sariCols[idx % sariCols.length] : kurtaCols[idx % kurtaCols.length]));
+  }
+  if(N){ sets.flat().forEach(m => { if(m.count) scene.add(m); }); scene.add(sI); }
+  live.visitors = {people, adj, sets, sI};
+}
+// birds circling in loose V formations
+{
+  const flocks = LIVE ? (LITE ? 2 : 3) : 0, per = LITE ? 5 : 7, N = flocks*per;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute([0,0,.6, 0,0,-.4, -1.5,.1,-.25,  0,0,.6, 1.5,.1,-.25, 0,0,-.4], 3));
+  g.computeVertexNormals();
+  const bI = new THREE.InstancedMesh(g, new THREE.MeshBasicMaterial({color:0x2b2b2b, side:THREE.DoubleSide}), Math.max(1,N)); bI.count = N;
+  const fl = [];
+  for(let f=0; f<flocks; f++) fl.push({r:180 + f*90, y:70 + f*18, w:(f%2 ? -1 : 1)*(.045 + f*.01), a:rnd()*6, cx:(rnd()-.5)*200, cz:(rnd()-.5)*300});
+  if(N) scene.add(bI);
+  live.birds = {bI, fl, per};
+}
+// traffic on the surrounding roads
+{
+  const N = LIVE ? (LITE ? 14 : 30) : 0, lanes = VENUE.lanes || [];
+  const car = new THREE.BoxGeometry(2,1.4,4.4); car.translate(0,1,0);
+  const cab = new THREE.BoxGeometry(1.8,.9,2.2); cab.translate(0,2.1,-.3);
+  const cI = new THREE.InstancedMesh(car, new THREE.MeshLambertMaterial(), Math.max(1,N));
+  const tI = new THREE.InstancedMesh(cab, new THREE.MeshLambertMaterial({color:0x2c3e50}), Math.max(1,N));
+  cI.count = tI.count = lanes.length ? N : 0;
+  const cars = [];
+  const carCols = [0xffffff,0xc0392b,0x7f8c8d,0x2c3e50,0xf1c40f,0x2e86c1,0x16a085,0xbdc3c7];
+  for(let i=0;i<N;i++){ cars.push({lane:i % Math.max(1,lanes.length), t:rnd(), speed:10 + rnd()*8}); cI.setColorAt(i, tmpC.setHex(i%5===0 ? 0xf1c40f : carCols[i % carCols.length])); }
+  if(N && lanes.length) scene.add(cI, tI);
+  live.cars = {cars, lanes, cI, tI};
+}
+// garden fountains: small arcs of spray
+{
+  const per = LITE ? 10 : 18, N = LIVE ? FOUNTAINS.length*per : 0;
+  const pos = new Float32Array(Math.max(1,N)*3);
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({color:0xeaf6ff, size:.9, transparent:true, opacity:.85, depthWrite:false}));
+  if(N) scene.add(pts);
+  live.fountains = {pts, pos, per, seeds:Array.from({length:N}, () => rnd())};
+}
+// drifting clouds (fade out when the camera is high, so they never block the map)
+{
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  for(let i=0;i<7;i++){ const x = 30 + rnd()*68, y = 50 + rnd()*28, r = 22 + rnd()*20; const gr = g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(255,255,255,.9)'); gr.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0,0,128,128); }
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  live.clouds = [];
+  const N = LIVE ? (LITE ? 4 : 8) : 0;
+  for(let i=0;i<N;i++){
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, opacity:.6, fog:false}));
+    m.position.set(-1400 + rnd()*2800, 300 + rnd()*90, -1300 + rnd()*2600); m.scale.set(420 + rnd()*260, 170 + rnd()*80, 1);
+    scene.add(m); live.clouds.push(m);
+  }
+}
+function updateLive(dt){
+  if(!LIVE) return;
+  live.t += dt; const t = live.t, eyeView = mode === 'eye' && eye.altCur < 10;
+  // visitors
+  const V = live.visitors, vs = eyeView ? 1 : 3.4;
+  V.people.forEach((p, i) => {
+    const A = BASE[p.a], B = BASE[p.b], L = Math.hypot(B[0]-A[0], B[1]-A[1]) || 1;
+    if(p.pause > 0) p.pause -= dt; else p.t += dt*p.speed/L;
+    if(p.t >= 1){
+      const opts = V.adj[p.b].filter(n => n !== p.a); const nx = opts.length ? opts[Math.floor(rnd()*opts.length)] : p.a;
+      p.a = p.b; p.b = nx; p.t = 0; if(rnd() < .25) p.pause = 2 + rnd()*5;
+    }
+    const x = A[0] + (B[0]-A[0])*p.t, z = A[1] + (B[1]-A[1])*p.t, side = ((i % 3) - 1)*1.6; p.x = x; p.z = z;
+    const yaw = Math.atan2(B[0]-A[0], B[1]-A[1]), walking = p.pause <= 0;
+    tmpO.position.set(x + Math.cos(yaw)*side, walking ? Math.abs(Math.sin(t*7 + p.ph))*.06*vs : 0, z - Math.sin(yaw)*side);
+    tmpO.rotation.set(0, yaw, walking ? Math.sin(t*7 + p.ph)*.05 : 0); tmpO.scale.setScalar(vs); tmpO.updateMatrix();
+    for(const m of V.sets[p.v]) m.setMatrixAt(p.idx, tmpO.matrix);
+    tmpO.position.y = 0; tmpO.rotation.set(0,0,0); tmpO.updateMatrix(); V.sI.setMatrixAt(i, tmpO.matrix);
+  });
+  for(const m of V.sets.flat()) m.instanceMatrix.needsUpdate = true; V.sI.instanceMatrix.needsUpdate = true;
+  // birds
+  const Bd = live.birds; let k = 0;
+  Bd.fl.forEach(f => {
+    f.a += f.w*dt;
+    for(let j=0;j<Bd.per;j++){
+      const row = Math.ceil(j/2), sideB = j === 0 ? 0 : (j%2 ? -1 : 1);
+      const ang = f.a - f.w*row*.06, r = f.r + sideB*row*7;
+      const x = f.cx + Math.cos(ang)*r, z = f.cz + Math.sin(ang)*r, y = f.y + Math.sin(t*.7 + j)*2;
+      const flap = .55 + .45*Math.abs(Math.sin(t*9 + j*1.3));
+      tmpO.position.set(x,y,z); tmpO.rotation.set(0, -ang + (f.w > 0 ? Math.PI : 0), 0); tmpO.scale.set(3*flap, 3, 3); tmpO.updateMatrix(); Bd.bI.setMatrixAt(k++, tmpO.matrix);
+    }
+  });
+  Bd.bI.instanceMatrix.needsUpdate = true;
+  // traffic
+  const C = live.cars, cs = eyeView ? 1 : 1.5;
+  C.cars.forEach((c, i) => {
+    const [x0,z0,x1,z1] = C.lanes[c.lane]; const L = Math.hypot(x1-x0, z1-z0);
+    c.t = (c.t + dt*c.speed/L) % 1;
+    tmpO.position.set(x0 + (x1-x0)*c.t, 0, z0 + (z1-z0)*c.t); tmpO.rotation.set(0, Math.atan2(x1-x0, z1-z0), 0); tmpO.scale.setScalar(cs); tmpO.updateMatrix();
+    C.cI.setMatrixAt(i, tmpO.matrix); C.tI.setMatrixAt(i, tmpO.matrix);
+  });
+  C.cI.instanceMatrix.needsUpdate = C.tI.instanceMatrix.needsUpdate = true;
+  // boats
+  for(const b of BOATS){
+    b.a += b.w*dt;
+    const x = b.cx + Math.cos(b.a)*b.rx, z = b.cz + Math.sin(b.a)*b.rz;
+    const tx = -Math.sin(b.a)*b.rx*Math.sign(b.w), tz = Math.cos(b.a)*b.rz*Math.sign(b.w);
+    b.g.position.set(x, Math.sin(t*1.6 + b.bob)*.12, z);
+    b.g.rotation.set(Math.sin(t*1.3 + b.bob)*.03, Math.atan2(tx, tz), Math.sin(t*1.1 + b.bob)*.04);
+    b.oars.rotation.y = Math.sin(t*2.4 + b.bob)*.35;
+    b.wake.material.opacity = .25 + Math.sin(t*3 + b.bob)*.07;
+  }
+  // fountains
+  const F = live.fountains;
+  if(FOUNTAINS.length){
+    let n = 0;
+    FOUNTAINS.forEach(([fx,fz,big]) => {
+      const h = big ? 6 : 2.6;
+      for(let j=0;j<F.per;j++){
+        const s = F.seeds[n], ph = (t*.9 + s) % 1, ang = s*Math.PI*2*7 + j, r = ph*(big ? 2.4 : 1.2);
+        F.pos[n*3] = fx + Math.cos(ang)*r; F.pos[n*3+1] = .9 + 4*h*ph*(1-ph); F.pos[n*3+2] = fz + Math.sin(ang)*r; n++;
+      }
+    });
+    F.pts.geometry.attributes.position.needsUpdate = true;
+  }
+  // clouds
+  const op = THREE.MathUtils.clamp((760 - camera.position.y)/500, 0, .7);
+  for(const c of live.clouds){ c.position.x += dt*6; if(c.position.x > 1500) c.position.x = -1500; c.material.opacity = op; }
+}
+
+const attachGroup = new THREE.Group(); scene.add(attachGroup);
+
+let G = null; // {nodes:{id:[x,z]}, adj:{id:[[id,w]]}}
+function buildGraph(){
+  const nodes = {}; for(const k in BASE) nodes[k] = BASE[k].slice();
+  const perEdge = BASE_EDGES.map(() => []);
+  const links = [];
+  for(const p of pois){
+    let best = null;
+    BASE_EDGES.forEach(([a,b],ei) => {
+      const [ax,az] = BASE[a], [bx,bz] = BASE[b];
+      const vx=bx-ax, vz=bz-az, L2 = vx*vx+vz*vz;
+      let t = ((p.x-ax)*vx + (p.z-az)*vz)/L2; t = Math.max(0,Math.min(1,t));
+      const qx = ax+vx*t, qz = az+vz*t, d = Math.hypot(p.x-qx,p.z-qz);
+      if(!best || d < best.d) best = {d,ei,t,qx,qz};
+    });
+    nodes['p:'+p.id] = [p.x,p.z];
+    if(best.t < .02 || best.t > .98){
+      const end = best.t < .5 ? BASE_EDGES[best.ei][0] : BASE_EDGES[best.ei][1];
+      links.push(['p:'+p.id, end]);
+    }else{
+      const jid = 'j:'+p.id; nodes[jid] = [best.qx,best.qz];
+      perEdge[best.ei].push({id:jid,t:best.t});
+      links.push(['p:'+p.id, jid]);
+    }
+  }
+  const edges = [...links];
+  BASE_EDGES.forEach(([a,b],ei) => {
+    const mids = perEdge[ei].sort((u,v) => u.t-v.t).map(m => m.id);
+    const chain = [a, ...mids, b];
+    for(let i=0;i<chain.length-1;i++) edges.push([chain[i],chain[i+1]]);
+  });
+  const adj = {}; for(const k in nodes) adj[k] = [];
+  for(const [a,b] of edges){ const w = Math.hypot(nodes[a][0]-nodes[b][0], nodes[a][1]-nodes[b][1]); adj[a].push([b,w]); adj[b].push([a,w]); }
+  G = {nodes,adj}; if(typeof standCache !== 'undefined') standCache.clear();
+  attachGroup.clear();
+  for(const [a,b] of links){ const pa = nodes[a], pb = nodes[b]; if(Math.hypot(pa[0]-pb[0],pa[1]-pb[1]) < 2) continue;
+    const dx=pb[0]-pa[0], dz=pb[1]-pa[1], len=Math.hypot(dx,dz);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(len+2,.22,4), M.path); m.position.set((pa[0]+pb[0])/2,.11,(pa[1]+pb[1])/2); m.rotation.y = -Math.atan2(dz,dx); m.receiveShadow = true; attachGroup.add(m); }
+}
+function dijkstra(src){
+  const dist = {}, prev = {}, done = new Set();
+  for(const k in G.nodes) dist[k] = Infinity; dist[src] = 0;
+  while(true){
+    let u = null, best = Infinity;
+    for(const k in dist) if(!done.has(k) && dist[k] < best){ best = dist[k]; u = k; }
+    if(u === null) break; done.add(u);
+    for(const [v,w] of G.adj[u]) if(dist[u]+w < dist[v]){ dist[v] = dist[u]+w; prev[v] = u; }
+  }
+  return {dist,prev};
+}
+function pathTo(prev, src, dst){ const out = [dst]; let c = dst; while(c !== src){ c = prev[c]; if(c === undefined) return null; out.push(c); } return out.reverse(); }
+
+/* ================= pins ================= */
+const pinObjs = new Map();
+let numbers = new Map();
+const byId = id => pois.find(p => p.id === id);
+const pinHeight = p => ({gate:36, monument:16, museum:16, garden:6, biennale:6, facility:6})[p.cat] ?? 8;
+function sortedPois(){ return [...pois].sort((a,b) => CAT_ORDER.indexOf(a.cat)-CAT_ORDER.indexOf(b.cat)); }
+function rebuildPins(){
+  for(const o of pinObjs.values()){ scene.remove(o); o.element.remove(); }
+  pinObjs.clear(); numbers = new Map();
+  sortedPois().forEach((p,i) => numbers.set(p.id, i+1));
+  for(const p of pois){
+    const el = document.createElement('div');
+    el.className = 'pin' + (['gate','monument','museum','garden'].includes(p.cat) ? ' major':'') + (p.cat === 'facility' ? ' fac' : '');
+    el.style.setProperty('--cat', `var(--c-${p.cat})`);
+    const dot = document.createElement('div'); dot.className='dot'; dot.setAttribute('role','button'); dot.tabIndex = 0; dot.setAttribute('aria-label', p.name);
+    const num = document.createElement('span'); num.innerHTML = iconSvg(iconKey(p)); dot.appendChild(num); dot.title = `${p.name} · ${ICON_NAMES[iconKey(p)]}`;
+    const nm = document.createElement('div'); nm.className='name'; nm.textContent = p.name;
+    el.append(dot, nm);
+    dot.addEventListener('pointerdown', e => e.stopPropagation());
+    dot.addEventListener('click', e => { e.stopPropagation(); onPinClick(p.id); });
+    dot.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onPinClick(p.id); } });
+    const o = new CSS2DObject(el); o.position.set(p.x, pinHeight(p), p.z); scene.add(o); pinObjs.set(p.id, o);
+  }
+  refreshPinStates();
+}
+let selectedId = null;
+let routeIds = null; // array of poi ids in the current route
+let shownOrder = null; // sequence of stop ids currently drawn
+function refreshPinStates(){
+  const order = shownOrder || (tab === 'route' ? stops : null);
+  for(const [id,o] of pinObjs){
+    const el = o.element; el.classList.toggle('sel', id === selectedId);
+    const idx = order ? order.indexOf(id) : -1;
+    el.classList.toggle('stopnum', idx >= 0);
+    const sp = el.querySelector('.dot span'), want = idx >= 0 ? 'n' + (idx+1) : 'i'; if(sp.dataset.k !== want){ sp.dataset.k = want; sp.innerHTML = idx >= 0 ? `<b>${idx+1}</b>` : iconSvg(iconKey(byId(id))); }
+    el.classList.toggle('dim', !!routeIds && !routeIds.includes(id) && id !== selectedId);
+    el.classList.toggle('dim-cat', false);
+    const hiddenCat = !catOn[byId(id)?.cat];
+    o.visible = !hiddenCat || id === selectedId || idx >= 0 || (routeIds && routeIds.includes(id));
+  }
+}
+
+/* ================= route drawing ================= */
+const routeMat = new THREE.MeshBasicMaterial({color:0x1659c7, transparent:true, opacity:.9, polygonOffset:true, polygonOffsetFactor:-2});
+const routeGroup = new THREE.Group(); routeGroup.renderOrder = 10; scene.add(routeGroup);
+/* The guide: a life-like figure in Indian dress — ivory kurta and churidar, a maroon Nehru jacket,
+   a stole and jhola bag in the route colour, mojari shoes — with jointed hips, knees, shoulders and elbows. */
+function makePerson(){
+  const mat = (c, r=.85) => new THREE.MeshStandardMaterial({color:c, roughness:r});
+  const skin = mat(0x9a6440, .6), kurta = mat(0xf3ede0), churidar = mat(0xe9e2d2), jacket = mat(0x6e1f2b, .7), hair = mat(0x17110d, .5), shoe = mat(0x5a3a22, .6), gold = mat(0xc9a227, .4);
+  const accent = new THREE.MeshStandardMaterial({color:0x1659c7, roughness:.75});
+  const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
+  const hips = new THREE.Group(); hips.position.y = .94; body.add(hips);
+  const torso = new THREE.Group(); hips.add(torso);
+  const mesh = (geo, m, x=0, y=0, z=0) => { const o = new THREE.Mesh(geo, m); o.position.set(x,y,z); return o; };
+  // legs: thigh → knee → shin → mojari with a curled toe
+  const leg = side => {
+    const thigh = new THREE.Group(); thigh.position.set(side*.095, 0, 0);
+    thigh.add(mesh(new THREE.CapsuleGeometry(.068,.34,4,10), churidar, 0, -.21, 0));
+    const knee = new THREE.Group(); knee.position.y = -.44; thigh.add(knee);
+    knee.add(mesh(new THREE.CapsuleGeometry(.054,.36,4,10), churidar, 0, -.22, 0));
+    const foot = mesh(new THREE.CapsuleGeometry(.045,.16,4,8), shoe, 0, -.47, .05); foot.rotation.x = Math.PI/2; foot.scale.set(1.15,1,.75); knee.add(foot);
+    const toe = mesh(new THREE.ConeGeometry(.03,.07,6), shoe, 0, -.45, .17); toe.rotation.x = -1.1; knee.add(toe);
+    hips.add(thigh); return {thigh, knee};
+  };
+  const L = leg(-1), R = leg(1);
+  // kurta: fitted chest, flared skirt to the knee (the skirt sways with the hips)
+  torso.add(mesh(lathe([[0,0],[.175,0],[.168,.12],[.185,.3],[.2,.44],[.17,.52],[.08,.56],[0,.565]]), kurta));
+  const skirt = mesh(lathe([[.27,-.42],[.24,-.2],[.2,-.02],[.176,.02],[0,.02]]), kurta); hips.add(skirt);
+  // Nehru jacket: open at the front so the kurta shows, with a band collar and gold buttons
+  torso.add(mesh(lathe([[.19,-.04],[.18,.12],[.197,.3],[.212,.44],[.18,.52],[.11,.555]], 18, .8, Math.PI*.12, Math.PI*1.76), jacket));
+  const collar = mesh(new THREE.CylinderGeometry(.062,.068,.05,14,1,true), jacket, 0, .585, 0); torso.add(collar);
+  for(let i=0;i<4;i++) torso.add(mesh(new THREE.SphereGeometry(.009,6,4), gold, .028, .46 - i*.1, .158 - i*.004));
+  // neck and head with hair, ears, eyes, brows and a moustache
+  const neck = mesh(new THREE.CylinderGeometry(.048,.055,.1,10), skin, 0, .6, 0); torso.add(neck);
+  const head = new THREE.Group(); head.position.y = .72; torso.add(head);
+  const skull = mesh(new THREE.SphereGeometry(.102,20,16), skin); skull.scale.set(.88,1.08,1); head.add(skull);
+  const jaw = mesh(new THREE.SphereGeometry(.07,14,10), skin, 0, -.055, .025); jaw.scale.set(1,.8,1); head.add(jaw);
+  const hairCap = mesh(new THREE.SphereGeometry(.106,20,12,0,Math.PI*2,0,Math.PI*.58), hair, 0, .012, -.008); hairCap.scale.set(.9,1.06,1.03); hairCap.rotation.x = -.35; head.add(hairCap);
+  for(const s of [-1,1]){
+    head.add(mesh(new THREE.SphereGeometry(.022,8,6), skin, s*.09, -.005, 0));
+    head.add(mesh(new THREE.SphereGeometry(.011,8,6), hair, s*.034, .012, .088));
+    const brow = mesh(new THREE.BoxGeometry(.03,.006,.008), hair, s*.035, .036, .092); brow.rotation.z = -s*.15; head.add(brow);
+  }
+  const nose = mesh(new THREE.ConeGeometry(.014,.04,6), skin, 0, -.008, .1); nose.rotation.x = Math.PI/2.4; head.add(nose);
+  const mou = mesh(new THREE.CapsuleGeometry(.008,.04,3,6), hair, 0, -.04, .093); mou.rotation.z = Math.PI/2; head.add(mou);
+  // arms: shoulder → elbow → hand, full kurta sleeves
+  const arm = side => {
+    const sh = new THREE.Group(); sh.position.set(side*.215, .49, 0); torso.add(sh);
+    sh.add(mesh(new THREE.CapsuleGeometry(.05,.22,4,10), kurta, 0, -.15, 0));
+    const el = new THREE.Group(); el.position.y = -.3; sh.add(el);
+    el.add(mesh(new THREE.CapsuleGeometry(.043,.2,4,10), kurta, 0, -.13, 0));
+    const hand = mesh(new THREE.SphereGeometry(.042,10,8), skin, 0, -.29, .005); hand.scale.set(.75,1.25,.95); el.add(hand);
+    return {sh, el};
+  };
+  const AL = arm(-1), AR = arm(1);
+  // stole over the left shoulder, jhola bag on a cross strap
+  const stoleF = mesh(new THREE.BoxGeometry(.11,.62,.012), accent, -.1, .2, .16); stoleF.rotation.set(-.12,0,.08); torso.add(stoleF);
+  const stoleB = mesh(new THREE.BoxGeometry(.11,.5,.012), accent, -.1, .26, -.15); stoleB.rotation.set(.1,0,.08); torso.add(stoleB);
+  const stoleT = mesh(new THREE.BoxGeometry(.12,.016,.3), accent, -.12, .52, 0); torso.add(stoleT);
+  const strap = mesh(new THREE.BoxGeometry(.03,.66,.012), accent, .02, .24, .17); strap.rotation.z = .62; torso.add(strap);
+  const bag = mesh(new THREE.BoxGeometry(.26,.28,.07), accent, .2, -.06, .08); bag.rotation.y = -.3; torso.add(bag);
+  body.traverse(o => { if(o.isMesh){ o.castShadow = false; } });
+  return {g, body, hips, torso, skirt, head, legL:L.thigh, legR:R.thigh, kneeL:L.knee, kneeR:R.knee, armL:AL.sh, armR:AR.sh, elbowL:AL.el, elbowR:AR.el, accent};
+}
+const walker = new THREE.Group();
+const PERSON = makePerson();
+const walkerRing = new THREE.Mesh(new THREE.RingGeometry(.5,.72,32), new THREE.MeshBasicMaterial({color:0x1659c7, transparent:true, opacity:.85, depthWrite:false}));
+walkerRing.rotation.x = -Math.PI/2; walkerRing.position.y = .3;
+const walkerBlob = new THREE.Mesh(new THREE.CircleGeometry(.42,20), new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:.25, depthWrite:false}));
+walkerBlob.rotation.x = -Math.PI/2; walkerBlob.position.y = .25;
+walker.add(PERSON.g, walkerRing, walkerBlob);
+walker.visible = false; scene.add(walker);
+const pose = {phase:0, yaw:0, swing:0, point:0};
+function animatePerson(dt){
+  if(!walker.visible) return;
+  const moving = walk.active && walk.state === 'moving' && !walk.paused;
+  const atStop = walk.active && (walk.state === 'speaking' || walk.state === 'dwell');
+  if(moving) pose.phase += dt*(mode === 'eye' && eye.alt < 20 ? 3.2*(walk.speedMul || 1)/1.6*Math.PI*2 : 7.5);
+  pose.swing += ((moving ? 1 : 0) - pose.swing)*Math.min(1, dt*6);
+  pose.point += ((atStop ? 1 : 0) - pose.point)*Math.min(1, dt*3);
+  pose.idle = (pose.idle || 0) + dt;
+  const P = PERSON, w = pose.swing, p = pose.phase, s = Math.sin(p), c = Math.cos(p);
+  // natural gait: thighs swing, knees bend on the forward swing, slight hip roll and counter-rotating shoulders
+  P.legL.rotation.x = -s*.42*w; P.legR.rotation.x = s*.42*w;
+  P.kneeL.rotation.x = Math.max(0, Math.sin(p + 1.1))*.75*w; P.kneeR.rotation.x = Math.max(0, Math.sin(p + 1.1 + Math.PI))*.75*w;
+  P.hips.rotation.y = s*.08*w; P.hips.rotation.z = c*.025*w; P.torso.rotation.y = -s*.12*w;
+  P.skirt.rotation.x = -c*.05*w;
+  P.body.position.y = (Math.abs(c)*.035 - .02)*w;
+  // arms swing opposite the legs with relaxed elbows; at a stop the right arm points at the place
+  P.armL.rotation.x = s*.38*w; P.elbowL.rotation.x = -.18 - Math.max(0, s)*.3*w; P.armL.rotation.z = -.06;
+  const swingR = -s*.38*w;
+  P.armR.rotation.x = swingR*(1 - pose.point) - 1.25*pose.point; P.armR.rotation.z = .06 + .12*pose.point;
+  P.elbowR.rotation.x = (-.18 - Math.max(0, -s)*.3*w)*(1 - pose.point) - .05*pose.point;
+  // breathing and a gentle look around when standing
+  P.torso.scale.y = 1 + Math.sin(pose.idle*2.2)*.006*(1 - w);
+  P.head.rotation.y = (1 - w)*(Math.sin(pose.idle*.5)*.25)*(1 - pose.point);
+  P.head.rotation.x = .04*w;
+  let target = pose.yaw;
+  if(routeCurve){
+    if(atStop){ const q = byId(routeSeq[walk.stopIdx]); if(q){ const dx = q.x - walker.position.x, dz = q.z - walker.position.z; if(Math.hypot(dx,dz) > 1) target = Math.atan2(dx, dz); } }
+    else { const tg = routeCurve.getTangentAt(Math.min(.999, walk.active ? walk.t : 0)); target = Math.atan2(tg.x, tg.z); }
+  }
+  pose.yaw = lerpAngle(pose.yaw, target, Math.min(1, dt*5));
+  P.g.rotation.y = pose.yaw;
+}
+let routeCurve = null, walkT = 0, walking = false, routeLen = 0;
+let routeSeq = [], routeStopT = [];
+function drawRoute(pts, seq=[], stopT=[]){
+  if(typeof walk !== 'undefined' && walk.active){ endWalk(); toast('The route changed, so the guided walk stopped.'); }
+  routeGroup.clear(); routeSeq = seq; routeStopT = stopT;
+  if(!pts || pts.length < 2){ routeCurve = null; return; }
+  const v = pts.map(([x,z]) => new THREE.Vector3(x,.7,z));
+  const cp = new THREE.CurvePath();
+  for(let i=0;i<v.length-1;i++) if(v[i].distanceTo(v[i+1]) > .01) cp.add(new THREE.LineCurve3(v[i],v[i+1]));
+  routeCurve = cp; routeLen = cp.getLength();
+  const tube = new THREE.Mesh(new THREE.TubeGeometry(cp, Math.min(2000, Math.max(80, cp.curves.length*6)), 1.6, 6, false), routeMat);
+  tube.scale.set(1,.28,1);   // a flat ribbon on the path, so it never hides the guide's legs
+  tube.renderOrder = 10; routeGroup.add(tube);
+  for(const [p,col] of [[v[0],0x2C7F45],[v.at(-1),0xAE3820]]){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(5,5,1,24), new THREE.MeshBasicMaterial({color:col}));
+    m.position.copy(p); m.renderOrder = 11; m.userData.disc = true; routeGroup.add(m);
+  }
+  if(mode === 'eye') routeGroup.children.forEach(c => { if(c.userData.disc) c.visible = false; });
+  walkT = 0; walker.position.set(v[0].x, 0, v[0].z); { const tg = cp.getTangentAt(0); pose.yaw = Math.atan2(tg.x, tg.z); }
+}
+
+/* ================= camera motion ================= */
+let fly = null;
+function flyTo(x, z, dist){
+  const curDir = camera.position.clone().sub(controls.target);
+  const d = dist ?? Math.min(curDir.length(), 420);
+  const toT = new THREE.Vector3(x,0,z);
+  const toP = toT.clone().add(curDir.normalize().multiplyScalar(d));
+  fly = {t0:performance.now(), dur:850, fp:camera.position.clone(), ft:controls.target.clone(), tp:toP, tt:toT};
+}
+const homePos = () => { const narrow = mapEl.clientWidth < 760; const k = narrow ? Math.min(2.3, 1.2 * 760 / Math.max(320, mapEl.clientWidth)) : 1; return HOME.target.clone().add(HOME.pos.clone().sub(HOME.target).multiplyScalar(k)); };
+function flyHome(){ fly = {t0:performance.now(), dur:900, fp:camera.position.clone(), ft:controls.target.clone(), tp:homePos(), tt:HOME.target.clone()}; topBtn.setAttribute('aria-pressed','false'); }
+const topBtn = $('#topview');
+topBtn.addEventListener('click', () => {
+  if(mode === 'eye') setMode('map');
+  const on = topBtn.getAttribute('aria-pressed') !== 'true';
+  topBtn.setAttribute('aria-pressed', String(on));
+  const t = controls.target.clone();
+  const tp = on ? new THREE.Vector3(t.x, 1250, t.z+1) : t.clone().add(HOME.pos.clone().sub(HOME.target).normalize().multiplyScalar(900));
+  fly = {t0:performance.now(), dur:800, fp:camera.position.clone(), ft:t.clone(), tp, tt:t};
+});
+$('#home').addEventListener('click', () => { if(mode === 'eye'){ setMode('map'); return; } flyHome(); });
+function zoom(f){ const dir = camera.position.clone().sub(controls.target); const len = THREE.MathUtils.clamp(dir.length()*f, controls.minDistance, controls.maxDistance);
+  fly = {t0:performance.now(), dur:350, fp:camera.position.clone(), ft:controls.target.clone(), tp:controls.target.clone().add(dir.setLength(len)), tt:controls.target.clone()}; }
+$('#zin').addEventListener('click', () => mode === 'eye' ? eyeZoom(.72) : zoom(.7));
+$('#zout').addEventListener('click', () => mode === 'eye' ? eyeZoom(1.4) : zoom(1.4));
+$('#compass').addEventListener('click', () => {
+  if(mode === 'eye'){ eye.yawTarget = 0; return; }
+  const t = controls.target.clone(), dir = camera.position.clone().sub(t);
+  const h = Math.hypot(dir.x, dir.z), y = dir.y;
+  fly = {t0:performance.now(), dur:600, fp:camera.position.clone(), ft:t.clone(), tp:new THREE.Vector3(t.x, y, t.z + Math.max(h,1)), tt:t};
+});
+const compassSvg = $('#compass svg');
+
+/* ================= layout & render loop ================= */
+const panel = $('#panel');
+function layout(){
+  const w = mapEl.clientWidth, h = mapEl.clientHeight;
+  renderer.setSize(w,h); labelRenderer.setSize(w,h);
+  camera.aspect = w/h;
+  const mobile = matchMedia('(max-width:760px)').matches;
+  const pr = panel.getBoundingClientRect();
+  if(mobile) camera.setViewOffset(w,h,0,Math.round(pr.height/2),w,h);
+  else camera.setViewOffset(w,h,-Math.round((pr.right)/2),0,w,h);
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(layout).observe(mapEl);
+new ResizeObserver(layout).observe(panel);
+
+const ease = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+let last = performance.now();
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tick(now){
+  const dt = Math.min(.05, (now-last)/1000); last = now;
+  if(fly){ const t = Math.min(1,(now-fly.t0)/(reduceMotion?1:fly.dur)), e = ease(t);
+    camera.position.lerpVectors(fly.fp, fly.tp, e); controls.target.lerpVectors(fly.ft, fly.tt, e); if(t>=1) fly = null; }
+  if(mode === 'map') controls.update();
+  if(walk.active && routeCurve) stepWalk(now, dt);
+  if(mode === 'eye') stepEye(dt);
+  walker.visible = !!routeCurve && (mode === 'map' || eye.altCur > 10 || (eye.chase && walk.active));
+  if(walker.visible){ const d = camera.position.distanceTo(walker.position); walker.scale.setScalar(mode === 'map' ? THREE.MathUtils.clamp(d*.018, 3, 16) : (eye.chase && eye.altCur < 10 ? 1 : 2.6)); }
+  animatePerson(dt);
+  updateLive(dt);
+  updateDoors(dt);
+  if(FLAG){ FLAG.t += dt; const a = FLAG.mesh.geometry.attributes.position, b = FLAG.base;
+    for(let i=0;i<a.count;i++){ const x = b[i*3], y = b[i*3+1]; a.setZ(i, Math.sin(x*.8 - FLAG.t*4 + y*.25)*.45*(x/9)); }
+    a.needsUpdate = true; FLAG.mesh.geometry.computeVertexNormals(); }
+  TEX.water.offset.x = (TEX.water.offset.x + dt*.012) % 1; TEX.water.offset.y = (TEX.water.offset.y + dt*.004) % 1;
+  if(mode === 'map'){
+    const dist = camera.position.distanceTo(controls.target);
+    mapEl.classList.toggle('l-major', dist < 1150);
+    mapEl.classList.toggle('l-all', dist < 520);
+    compassSvg.style.transform = `rotate(${controls.getAzimuthalAngle()}rad)`;
+  }else{
+    mapEl.classList.add('l-major'); mapEl.classList.remove('l-all');
+    compassSvg.style.transform = `rotate(${eye.yaw}rad)`;
+    for(const [id,o] of pinObjs){ const d = Math.hypot(o.position.x-camera.position.x, o.position.z-camera.position.z); o.element.classList.toggle('far', d > 420 + eye.altCur*4); }
+  }
+  if(panoActive){ panoMesh.position.copy(camera.position); renderer.render(panoScene,camera); }
+  else renderer.render(scene,camera);
+  labelRenderer.render(scene,camera);
+  requestAnimationFrame(tick);
+}
+
+/* ================= theme ================= */
+function applyTheme(){
+  const cs = getComputedStyle(document.documentElement);
+  const v = n => cs.getPropertyValue(n).trim() || '#888';
+  for(const m of themed) m.color.set(v(m.userData.token));
+  const sky = new THREE.Color(v('--sky')), hsl = {}; sky.getHSL(hsl);
+  const top = sky.clone().lerp(new THREE.Color(hsl.l < .3 ? 0x02060c : 0x5b8ec8), .55), hor = sky.clone().lerp(new THREE.Color(0xffffff), hsl.l < .3 ? .05 : .3);
+  const c = document.createElement('canvas'); c.width = 4; c.height = 256; const g = c.getContext('2d'); const gr = g.createLinearGradient(0,0,0,256);
+  gr.addColorStop(0, '#' + top.getHexString()); gr.addColorStop(.62, '#' + sky.getHexString()); gr.addColorStop(1, '#' + hor.getHexString()); g.fillStyle = gr; g.fillRect(0,0,4,256);
+  if(scene.background?.isTexture) scene.background.dispose();
+  const bg = new THREE.CanvasTexture(c); bg.colorSpace = THREE.SRGBColorSpace; scene.background = bg; scene.fog.color.copy(hor);
+  routeMat.color.set(v('--route')); PERSON.accent.color.set(v('--route')); walkerRing.material.color.set(v('--route'));
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme','class','style']});
+
+/* ================= panel UI ================= */
+let tab = 'explore';
+function setTab(t){
+  tab = t;
+  for(const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', String(b.dataset.tab === t));
+  $('#tab-explore').hidden = t !== 'explore'; $('#tab-route').hidden = t !== 'route'; $('#tab-manage').hidden = t !== 'manage';
+  if(t !== 'manage') stopPlacing();
+  refreshPinStates();
+  expandSheet();
+}
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+const handle = $('#handle');
+handle.addEventListener('click', () => panel.classList.toggle('collapsed'));
+function expandSheet(){ panel.classList.remove('collapsed'); }
+
+const catOn = Object.fromEntries(CAT_ORDER.map(c => [c,true]));
+function renderChips(){
+  const box = $('#chips'); box.textContent = '';
+  for(const c of CAT_ORDER){
+    if(!pois.some(p => p.cat === c)) continue;
+    const b = document.createElement('button'); b.className='chip'; b.type='button'; b.setAttribute('aria-pressed', String(catOn[c]));
+    b.style.setProperty('--cat', `var(--c-${c})`);
+    const i = document.createElement('i'); i.innerHTML = iconSvg(CAT_ICON[c]); b.append(i, document.createTextNode(CATS[c].label));
+    b.addEventListener('click', () => { catOn[c] = !catOn[c]; renderChips(); renderList(); refreshPinStates(); });
+    box.appendChild(b);
+  }
+}
+function renderList(){
+  const q = $('#q').value.trim().toLowerCase();
+  const list = $('#list'); list.textContent = '';
+  for(const c of CAT_ORDER){
+    const items = sortedPois().filter(p => p.cat === c && catOn[c] && (!q || (p.name+' '+p.desc+' '+(p.note||'')).toLowerCase().includes(q)));
+    if(!items.length) continue;
+    const h = document.createElement('div'); h.className='grp-h'; h.textContent = CATS[c].label; list.appendChild(h);
+    const wrap = document.createElement('div'); wrap.className='list';
+    for(const p of items){
+      const b = document.createElement('button'); b.type='button'; b.className='item'; b.style.setProperty('--cat', `var(--c-${p.cat})`);
+      const n = document.createElement('span'); n.className='n'; n.innerHTML = iconSvg(iconKey(p));
+      const d = document.createElement('div'); const t = document.createElement('b'); t.textContent = p.name; const s = document.createElement('small'); s.textContent = p.desc;
+      d.append(t,s); b.append(n,d); b.addEventListener('click', () => selectPoi(p.id, true)); wrap.appendChild(b);
+    }
+    list.appendChild(wrap);
+  }
+  if(!list.children.length){ const p = document.createElement('p'); p.className='hint'; p.textContent = 'No places match. Clear the search or turn a category back on.'; list.appendChild(p); }
+}
+$('#q').addEventListener('input', renderList);
+
+function selectPoi(id, fly_=false){
+  selectedId = id; const p = byId(id); refreshPinStates();
+  if(!p) return;
+  if(fly_) flyTo(p.x, p.z, 360);
+  if(tab === 'manage'){ $('#mPick').value = id; fillForm(); return; }
+  if(tab !== 'explore') setTab('explore');
+  const d = $('#detail'); d.textContent = ''; d.style.setProperty('--cat', `var(--c-${p.cat})`);
+  const back = document.createElement('button'); back.className='back'; back.type='button'; back.textContent = '← All places';
+  back.addEventListener('click', () => { d.hidden = true; $('#exploreList').hidden = false; selectedId = null; refreshPinStates(); });
+  const cl = document.createElement('div'); cl.className='catline'; { const ic = document.createElement('i'); ic.innerHTML = iconSvg(iconKey(p)); cl.append(ic, document.createTextNode(ICON_NAMES[iconKey(p)] === CATS[p.cat]?.one ? CATS[p.cat]?.one : `${ICON_NAMES[iconKey(p)]} · ${CATS[p.cat]?.one || p.cat}`)); }
+  const h = document.createElement('h2'); h.textContent = p.name;
+  const desc = document.createElement('p'); desc.textContent = p.desc;
+  d.append(back, cl, h, desc);
+  if(p.photo){ const im = document.createElement('img'); im.className = 'photo'; im.alt = p.name; im.loading = 'lazy'; im.src = /[\/.]/.test(p.photo) ? p.photo : '/_blob/' + p.photo; im.onerror = () => im.remove(); d.insertBefore(im, cl); }
+  if(p.note){ const n = document.createElement('div'); n.className='note'; const b = document.createElement('b'); b.textContent = 'At the Biennale'; n.append(b, document.createTextNode(p.note)); d.appendChild(n); }
+  const row = document.createElement('div'); row.className='btnrow'; row.style.marginTop='14px';
+  const mk = (txt,cls,fn) => { const b = document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent = txt; b.addEventListener('click', fn); row.appendChild(b); };
+  mk(stops.includes(p.id) ? 'Already in my stops' : 'Add to my stops','route', () => { setTab('route'); addStop(p.id); });
+  mk('Directions from entrance','', () => { const s0 = byId(VENUE.entrance) && p.id !== VENUE.entrance ? VENUE.entrance : (pois.find(q => q.id !== p.id)?.id); stops = [s0, p.id]; setTab('route'); renderStops(); doRoute(); });
+  mk('Open 360° view','', () => { setMode('eye'); goEye(p.id, false); });
+  mk('Show on map','', () => { setMode('map'); flyTo(p.x,p.z,300); });
+  d.appendChild(row);
+  $('#exploreList').hidden = true; d.hidden = false; expandSheet();
+  $('#tab-explore').scrollTop = 0;
+}
+function onPinClick(id){
+  if(placing) return;
+  if(walk.active && walk.state === 'done') endWalk();
+  if(mode === 'eye'){ if(walk.active){ askEndWalk(`go to ${byId(id)?.name}`, () => goEye(id, true)); return; } goEye(id, true); return; }
+  if(tab === 'route'){ if(walk.active){ askEndWalk(`add ${byId(id)?.name} as a stop`, () => addStop(id)); return; } addStop(id); return; }
+  selectPoi(id, false);
+}
+
+/* ---------- directions ---------- */
+function poiOptions(sel, value){
+  sel.textContent = '';
+  for(const c of CAT_ORDER){
+    const items = sortedPois().filter(p => p.cat === c); if(!items.length) continue;
+    const g = document.createElement('optgroup'); g.label = CATS[c].label;
+    for(const p of items){ const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; g.appendChild(o); }
+    sel.appendChild(g);
+  }
+  if(value && byId(value)) sel.value = value;
+}
+function fillSelects(){ const sel = $('#mPick'); poiOptions(sel, sel.value); renderStops(); }
+
+let stops = [];
+const ICONS = {
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  grip:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg>',
+  replay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5"/><path d="M4 4v4.5h4.5"/></svg>',
+  sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+  muted:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="m16.5 9.5 5 5M21.5 9.5l-5 5"/></svg>',
+  skip:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5.5v13l9-6.5z"/><rect x="16" y="5.5" width="2.6" height="13" rx="1"/></svg>',
+  follow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/></svg>'
+};
+function defaultStops(){ stops = VENUE.defaultStops.filter(id => byId(id)); if(stops.length < 2) stops = pois.slice(0,2).map(p => p.id); }
+function renderStops(){
+  stops = stops.filter(id => byId(id));
+  const ol = $('#stops'); ol.textContent = '';
+  if(!stops.length){ const li = document.createElement('li'); li.className = 'empty'; li.style.display = 'block'; li.textContent = 'No stops yet. Tap places on the map or use “Add stop”.'; ol.appendChild(li); }
+  stops.forEach((id,i) => {
+    const li = document.createElement('li'); li.dataset.id = id;
+    const grip = document.createElement('button'); grip.type = 'button'; grip.className = 'grip'; grip.innerHTML = ICONS.grip; grip.title = 'Drag to reorder';
+    grip.setAttribute('aria-label', `Move stop ${i+1}, ${byId(id).name}. Drag it, or use the up and down arrow keys.`);
+    grip.addEventListener('keydown', e => {
+      const j = e.key === 'ArrowUp' ? i-1 : e.key === 'ArrowDown' ? i+1 : -1;
+      if(j < 0 || j >= stops.length) return; e.preventDefault();
+      [stops[i],stops[j]] = [stops[j],stops[i]]; manualOrder(); stopsChanged();
+      document.querySelector(`#stops li:nth-child(${j+1}) .grip`)?.focus();
+    });
+    grip.addEventListener('pointerdown', e => startDrag(e, li));
+    const k = document.createElement('span'); k.className = 'k'; k.textContent = i+1;
+    const sel = document.createElement('select'); sel.id = 'stop-'+i; sel.setAttribute('aria-label', `Stop ${i+1}`); poiOptions(sel, id);
+    sel.addEventListener('change', () => { stops[i] = sel.value; stopsChanged(); });
+    const acts = document.createElement('div'); acts.className = 'acts';
+    const ic = (name, label, disabled, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'icon'; b.innerHTML = ICONS[name]; b.title = label; b.setAttribute('aria-label', `${label} (stop ${i+1})`); b.disabled = disabled; b.addEventListener('click', fn); acts.appendChild(b); };
+    ic('x','Remove', false, () => { stops.splice(i,1); stopsChanged(); });
+    li.append(grip, k, sel, acts); ol.appendChild(li);
+  });
+  $('#stopCount').textContent = stops.length === 1 ? '1 stop' : `${stops.length} stops`;
+  $('#goRoute').disabled = stops.length < 2;
+  refreshPinStates();
+}
+function manualOrder(){
+  if($('#optOrder').checked){ $('#optOrder').checked = false; $('#keepEnd').disabled = true; toast('Using your order. Tick “Find the shortest order” to let the map reorder stops.'); }
+}
+function startDrag(e, li){
+  if(e.button !== undefined && e.button !== 0) return;
+  e.preventDefault();
+  const ol = $('#stops'), grip = e.currentTarget;
+  try{ grip.setPointerCapture(e.pointerId); }catch{}
+  let startY = e.clientY;
+  li.classList.add('dragging'); ol.classList.add('sorting');
+  const renumber = () => [...ol.children].forEach((x,n) => { const k = x.querySelector('.k'); if(k) k.textContent = n+1; });
+  const move = ev => {
+    let dy = ev.clientY - startY;
+    let before = null;
+    for(const sib of ol.children){ if(sib === li) continue; const r = sib.getBoundingClientRect(); if(ev.clientY < r.top + r.height/2){ before = sib; break; } }
+    if(before !== li.nextElementSibling){ const top0 = li.offsetTop; ol.insertBefore(li, before); startY += li.offsetTop - top0; dy = ev.clientY - startY; renumber(); }
+    li.style.transform = `translateY(${dy}px)`;
+  };
+  const up = () => {
+    grip.removeEventListener('pointermove', move); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up);
+    li.classList.remove('dragging'); ol.classList.remove('sorting'); li.style.transform = '';
+    const order = [...ol.children].map(x => x.dataset.id).filter(Boolean);
+    if(order.join() !== stops.join()){ stops = order; manualOrder(); stopsChanged(); } else renderStops();
+  };
+  grip.addEventListener('pointermove', move); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
+}
+let lastWasTour = false;
+function stopsChanged(){ renderStops(); if(!$('#result').hidden && !lastWasTour && stops.length >= 2) doRoute(false); else if(stops.length < 2 && !lastWasTour) clearRoute(); }
+function addStop(id){
+  const p = byId(id); if(!p) return;
+  if(stops.includes(id)){ toast(`${p.name} is already stop ${stops.indexOf(id)+1}`); return; }
+  stops.push(id); renderStops(); expandSheet();
+  toast(`Added ${p.name} as stop ${stops.length}`);
+  if(stops.length >= 2 && (!$('#result').hidden || stops.length === 2)) doRoute(false);
+}
+$('#addStop').addEventListener('click', () => {
+  const next = sortedPois().find(p => !stops.includes(p.id) && p.cat !== 'facility') || sortedPois().find(p => !stops.includes(p.id));
+  if(!next) return; stops.push(next.id); renderStops(); $('#stop-'+(stops.length-1))?.focus();
+});
+$('#resetStops').addEventListener('click', () => { stops = []; clearRoute(); renderStops(); });
+const fmtM = m => m >= 1000 ? (m/1000).toFixed(2)+' km' : Math.round(m/5)*5+' m';
+const fmtMin = m => { const t = Math.max(1, Math.round(m/WALK_M_PER_MIN)); return t >= 60 ? `${Math.floor(t/60)} h${t%60 ? ' '+(t%60)+' min' : ''}` : `${t} min`; };
+function routeGeom(legs){
+  const pts = [], stopIdx = [];
+  const push = q => { const l = pts.at(-1); if(!l || Math.hypot(l[0]-q[0], l[1]-q[1]) > .01) pts.push(q); };
+  legs.forEach((leg, li) => {
+    const nodes = leg.slice();
+    if(nodes.length > 2 && nodes[0].startsWith('p:')) nodes.shift();
+    if(nodes.length > 2 && nodes.at(-1).startsWith('p:')) nodes.pop();
+    nodes.forEach((n, k) => { push(G.nodes[n]); if(li === 0 && k === 0) stopIdx.push(pts.length-1); });
+    stopIdx.push(pts.length-1);
+  });
+  const cum = [0]; for(let i=1; i<pts.length; i++) cum.push(cum[i-1] + Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]));
+  const total = cum.at(-1) || 1;
+  return {pts, stopT: stopIdx.map(i => cum[i]/total)};
+}
+function legsToPts(legs){ const pts = []; for(const leg of legs) for(const n of leg){ const q = G.nodes[n]; const lastP = pts.at(-1); if(!lastP || lastP[0]!==q[0] || lastP[1]!==q[1]) pts.push(q); } return pts; }
+function passedPois(nodePath, exclude){ const ids = []; for(const n of nodePath){ if(n.startsWith('j:')){ const id = n.slice(2); if(!exclude.includes(id) && byId(id)?.cat !== 'facility') ids.push(id); } } return ids; }
+
+function optimizeOrder(seq, d, keepEnd){
+  const start = seq[0], end = keepEnd ? seq.at(-1) : null;
+  const rest = new Set(seq.slice(1, keepEnd ? -1 : undefined));
+  const order = [start]; let cur = start;
+  while(rest.size){ let best = null; for(const id of rest) if(best === null || d(cur,id) < d(cur,best)) best = id; order.push(best); rest.delete(best); cur = best; }
+  if(end) order.push(end);
+  const len = o => o.slice(1).reduce((sum,id,i) => sum + d(o[i],id), 0);
+  const last = order.length - (end ? 1 : 0);
+  let improved = true, guard = 0;
+  while(improved && guard++ < 50){
+    improved = false;
+    for(let i=1;i<last-1;i++) for(let j=i+1;j<last;j++){
+      const cand = [...order.slice(0,i), ...order.slice(i,j+1).reverse(), ...order.slice(j+1)];
+      if(len(cand) < len(order) - .5){ order.splice(0, order.length, ...cand); improved = true; }
+    }
+  }
+  return order;
+}
+function doRoute(fit=true){
+  let seq = [...new Set(stops.filter(id => byId(id)))];
+  if(seq.length < 2){ toast('Add at least two stops.'); return; }
+  const memo = {}; const D = id => (memo[id] ??= dijkstra('p:'+id));
+  const d = (a,b) => D(a).dist['p:'+b];
+  if($('#optOrder').checked && seq.length > 2){
+    const before = seq.join();
+    seq = optimizeOrder(seq, d, $('#keepEnd').checked);
+    if(seq.join() !== before){ stops = seq.slice(); renderStops(); }
+  }
+  const legs = [], legLen = [];
+  for(let i=0;i<seq.length-1;i++){
+    const path = pathTo(D(seq[i]).prev, 'p:'+seq[i], 'p:'+seq[i+1]);
+    if(!path){ toast(`No walkway reaches ${byId(seq[i+1]).name}.`); return; }
+    legs.push(path); legLen.push(d(seq[i], seq[i+1]));
+  }
+  const {pts, stopT} = routeGeom(legs);
+  drawRoute(pts, seq, stopT);
+  const vias = legs.map(l => passedPois(l, seq));
+  routeIds = [...seq, ...vias.flat()]; shownOrder = seq; lastWasTour = false; refreshPinStates();
+  let acc = 0;
+  const steps = seq.map((id,i) => {
+    if(i > 0) acc += legLen[i-1];
+    const via = i > 0 && vias[i-1].length ? ' · via ' + [...new Set(vias[i-1])].map(v => byId(v).name).join(', ') : '';
+    return {id, label:byId(id).name, sub: i === 0 ? 'Start here' : `${fmtM(legLen[i-1])} from stop ${i}, about ${fmtMin(legLen[i-1])}${via}`, d:acc};
+  });
+  const total = legLen.reduce((a,b) => a+b, 0);
+  walking = true;
+  showResult({title: seq.length === 2 ? `${byId(seq[0]).name} → ${byId(seq[1]).name}` : `Your route · ${seq.length} stops`, dist:total, steps, tour:true});
+  if(fit) fitTo(pts);
+}
+function doTour(){
+  const start = (stops[0] && byId(stops[0])) ? stops[0] : (byId(VENUE.entrance) ? VENUE.entrance : pois[0]?.id); if(!start) return;
+  const inc = $('#incFac').checked;
+  const remaining = new Set(pois.filter(p => p.id !== start && (inc || p.cat !== 'facility')).map(p => p.id));
+  let cur = start, total = 0; const order = [start], legs = [], legD = [0];
+  while(remaining.size){
+    const {dist, prev} = dijkstra('p:'+cur);
+    let best = null; for(const id of remaining) if(!best || dist['p:'+id] < dist['p:'+best]) best = id;
+    if(dist['p:'+best] === Infinity) break;
+    legs.push(pathTo(prev, 'p:'+cur, 'p:'+best)); total += dist['p:'+best]; legD.push(total);
+    order.push(best); remaining.delete(best); cur = best;
+  }
+  const {pts, stopT} = routeGeom(legs);
+  drawRoute(pts, order, stopT); routeIds = order; shownOrder = order; lastWasTour = true; refreshPinStates(); walking = true;
+  showResult({title:`Full tour from ${byId(start).name}`, dist:total, tour:true,
+    steps: order.map((id,i) => ({id, label:byId(id).name, sub:i===0 ? 'Start' : CATS[byId(id).cat]?.one, d:legD[i]}))});
+  fitTo(pts); walking = true;
+}
+function showResult({title, dist, steps, tour}){
+  const r = $('#result'); r.textContent = ''; r.hidden = false;
+  const div = document.createElement('div'); div.className='divider'; r.appendChild(div);
+  const h = document.createElement('b'); h.style.cssText = 'font-family:var(--f-display);font-size:16px'; h.textContent = title; r.appendChild(h);
+  const st = document.createElement('div'); st.className='stats';
+  const stat = (v,l) => { const d = document.createElement('div'); const s = document.createElement('strong'); s.textContent = v; const t = document.createElement('span'); t.textContent = l; d.append(s,t); st.appendChild(d); };
+  stat(fmtM(dist),'walking distance'); stat(fmtMin(dist), tour ? 'walking time, plus visits' : 'at an easy pace');
+  if(tour) stat(String(steps.length),'stops');
+  r.appendChild(st);
+  if(steps.length){
+    const ol = document.createElement('ol'); ol.className='steps';
+    steps.forEach((s,i) => {
+      const li = document.createElement('li'); const b = document.createElement('button'); b.type='button';
+      const k = document.createElement('span'); k.className='k'; k.textContent = tour ? i+1 : (i===0 ? 'A' : i===steps.length-1 ? 'B' : '·');
+      const t = document.createElement('span'); t.className='t'; t.textContent = s.label; if(s.sub){ const sm = document.createElement('small'); sm.textContent = s.sub; t.appendChild(sm); }
+      const d = document.createElement('span'); d.className='d'; d.textContent = fmtM(s.d);
+      b.append(k,t,d); b.addEventListener('click', () => { const p = byId(s.id); if(p){ selectedId = p.id; refreshPinStates(); flyTo(p.x,p.z,300); } });
+      li.appendChild(b); ol.appendChild(li);
+    });
+    r.appendChild(ol);
+  }
+  if(routeCurve){
+    const row = document.createElement('div'); row.className='btnrow';
+    const pb = document.createElement('button'); pb.type='button'; pb.className='btn route'; pb.textContent = 'Start guided walk';
+    pb.addEventListener('click', startWalk);
+    const eb = document.createElement('button'); eb.type='button'; eb.className='btn danger'; eb.id = 'resEnd'; eb.textContent = 'End guided walk'; eb.hidden = !walk.active; eb.addEventListener('click', endWalk);
+    const mb = document.createElement('button'); mb.type='button'; mb.className='btn'; mb.id = 'resMute';
+    mb.addEventListener('click', toggleSound);
+    const tb = document.createElement('button'); tb.type='button'; tb.className='btn'; tb.textContent = 'Test sound';
+    tb.addEventListener('click', testSound);
+    row.append(pb, eb, mb, tb); r.appendChild(row);
+    const note = document.createElement('p'); note.className = 'hint voice-note'; note.id = 'voiceNote';
+    note.textContent = 'The guided walk moves along your route and reads out each stop’s name and description when it gets there.';
+    r.appendChild(note);
+    updateVoiceUI();
+  }
+  r.scrollIntoView({block:'nearest', behavior: reduceMotion ? 'auto' : 'smooth'});
+}
+function fitTo(pts){
+  if(!pts?.length) return;
+  let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+  for(const [x,z] of pts){ minX=Math.min(minX,x); maxX=Math.max(maxX,x); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z); }
+  const span = Math.max(maxX-minX, maxZ-minZ, 120);
+  const k = mapEl.clientWidth < 760 ? 2.4 : 1.55;
+  flyTo((minX+maxX)/2, (minZ+maxZ)/2, Math.min(1900, span*k+180));
+}
+function clearRoute(){ drawRoute(null); routeIds = null; shownOrder = null; walking = false; $('#result').hidden = true; refreshPinStates(); }
+$('#goRoute').addEventListener('click', () => doRoute(true));
+$('#optOrder').addEventListener('change', () => { $('#keepEnd').disabled = !$('#optOrder').checked; });
+$('#goTour').addEventListener('click', doTour);
+$('#clearRoute').addEventListener('click', clearRoute);
+
+/* ================= voice ================= */
+/* Each stop is spoken when the walker arrives. Claude's voice is used on claude.ai where offered;
+   otherwise the browser's own speech engine. Sound is only switched off by the viewer, never silently. */
+const voice = { tts:null, synth:('speechSynthesis' in window) ? window.speechSynthesis : null, synthVoice:null, synthTok:0,
+  denied:false, broken:false, muted:false, blocked:false, speaking:false, lastStart:0, ttsStalled:false };
+try{ voice.muted = localStorage.getItem('rf-muted') === '1'; }catch{}
+function pickSynthVoice(){
+  try{ const vs = voice.synth.getVoices();
+    voice.synthVoice = vs.find(v => /^en[-_]IN/i.test(v.lang)) || vs.find(v => /^en[-_]GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || vs[0] || null; }catch{}
+}
+async function initVoice(){
+  if(voice.synth){ pickSynthVoice(); try{ voice.synth.addEventListener('voiceschanged', pickSynthVoice); }catch{} }
+  if(window.claude?.use){ try{ voice.tts = await window.claude.use('tts'); }catch{} }
+  if(voice.tts){
+    try{ voice.tts.onState(e => {
+      voice.speaking = e.state === 'speaking' || e.state === 'starting';
+      if(e.state === 'speaking') voice.lastStart = performance.now();
+      if(e.state === 'idle' && e.reason === 'viewer_stopped') voice.blocked = true;
+      if(e.state === 'idle' && (e.reason === 'not_granted' || e.reason === 'unavailable')) voice.denied = true;
+      updateVoiceUI();
+    }); }catch{}
+  }
+  updateVoiceUI();
+}
+const useTts = () => !!voice.tts && !voice.ttsStalled;
+const hasVoice = () => useTts() || !!voice.synth;
+const canSpeak = () => hasVoice() && !voice.denied && !voice.broken;
+function speakNow(text){
+  if(voice.muted || voice.blocked || !canSpeak() || !text) return Promise.resolve(false);
+  if(useTts()){
+    let call;
+    try{ call = voice.tts.speak(text.slice(0, 1900), {language:'en'}); }catch{ call = null; }
+    if(!call || typeof call.then !== 'function'){ voice.ttsStalled = true; updateVoiceUI(); return voice.synth ? synthSpeak(text) : Promise.resolve(false); }
+    return call.then(() => true, err => {
+      const c = err?.code;
+      if(c === 'not_granted') voice.denied = true;
+      else if(c === 'unavailable' || c === 'upstream_error' || c === 'rate_limited'){ voice.ttsStalled = true; updateVoiceUI(); return voice.synth ? synthSpeak(text) : false; }
+      else if(c === 'no_gesture' || (c === 'stopped' && err?.reason === 'viewer_stopped')) voice.blocked = true;
+      updateVoiceUI(); return false;
+    });
+  }
+  return synthSpeak(text);
+}
+function synthSpeak(text){
+  return new Promise(res => {
+    const s = voice.synth, tok = ++voice.synthTok;
+    let finished = false, started = false, i = 0;
+    const fin = ok => { if(!finished){ finished = true; voice.speaking = false; updateVoiceUI(); res(ok); } };
+    try{ s.cancel(); }catch{}
+    // Short sentence-sized utterances: some browsers cut off long ones after about 15 seconds.
+    const parts = (text.match(/[^.!?]+[.!?]*/g) || [text]).map(x => x.trim()).filter(Boolean);
+    const next = () => {
+      if(tok !== voice.synthTok) return fin(false);
+      if(i >= parts.length) return fin(true);
+      const u = new SpeechSynthesisUtterance(parts[i++]);
+      if(voice.synthVoice){ u.voice = voice.synthVoice; u.lang = voice.synthVoice.lang; } else u.lang = 'en-IN';
+      u.onstart = () => { started = true; voice.speaking = true; voice.lastStart = performance.now(); updateVoiceUI(); };
+      u.onend = () => next();
+      u.onerror = e => { if(e.error === 'not-allowed'){ voice.blocked = true; fin(false); } else if(e.error === 'interrupted' || e.error === 'canceled') fin(false); else next(); };
+      try{ s.speak(u); }catch{ fin(false); }
+    };
+    setTimeout(next, 80);
+    setTimeout(() => { if(!started && !finished && tok === voice.synthTok){ voice.broken = true; try{ s.cancel(); }catch{} fin(false); } }, 5000);
+  });
+}
+function stopSpeech(){ voice.synthTok++; try{ voice.tts?.stop()?.catch?.(() => {}); }catch{} try{ voice.synth?.cancel(); }catch{} voice.speaking = false; }
+function pauseSpeech(){ try{ if(useTts()) voice.tts.pause()?.catch?.(() => {}); else voice.synth?.pause(); }catch{} }
+function resumeSpeech(){ try{ if(useTts()) voice.tts.resume()?.catch?.(() => {}); else voice.synth?.resume(); }catch{} }
+function soundIsOn(){ return !voice.muted && !voice.blocked && canSpeak(); }
+function toggleSound(){
+  if(soundIsOn()){
+    voice.muted = true; try{ localStorage.setItem('rf-muted','1'); }catch{}
+    stopSpeech();
+  }else{
+    voice.muted = false; voice.blocked = false; voice.broken = false; try{ localStorage.setItem('rf-muted','0'); }catch{}
+    // This click is a fresh tap, so speech is allowed: read the current stop again, or confirm sound works.
+    if(walk.active && (walk.state === 'speaking' || walk.state === 'dwell')) speakStop(walk.stopIdx);
+    else if(!walk.active) speakNow('Sound is on.');
+  }
+  updateVoiceUI();
+}
+function testSound(){
+  voice.blocked = false; voice.broken = false;
+  if(voice.muted){ voice.muted = false; try{ localStorage.setItem('rf-muted','0'); }catch{} }
+  updateVoiceUI();
+  speakNow('Sound check. Each stop will be read out like this when the walker arrives.').then(ok => {
+    if(!ok && !voice.speaking) toast(voice.broken ? 'This device has no voice for reading aloud. Descriptions show on screen instead.' : voice.denied ? 'Reading aloud is turned off for this page.' : 'Could not play sound. Check the device volume and try again.');
+  });
+}
+function voiceStatus(){
+  if(!hasVoice()) return 'Reading aloud is not available on this device. Descriptions show on screen.';
+  if(voice.denied) return 'Reading aloud is turned off for this page. Descriptions show on screen.';
+  if(voice.broken) return 'No voice found on this device. Descriptions show on screen.';
+  if(voice.muted) return '';
+  if(voice.blocked) return 'Sound paused. Tap “Sound” to hear it again.';
+  if(voice.speaking) return 'Reading aloud…';
+  return '';
+}
+function updateVoiceUI(){
+  const on = soundIsOn();
+  const pm = $('#plMute');
+  pm.hidden = !hasVoice();
+  pm.innerHTML = (on ? ICONS.sound : ICONS.muted) + `<span>${on ? 'Sound on' : 'Sound off'}</span>`;
+  pm.setAttribute('aria-pressed', String(on)); pm.setAttribute('aria-label', on ? 'Sound is on. Turn sound off' : 'Sound is off. Turn sound on');
+  pm.title = on ? 'Turn sound off' : 'Turn sound on';
+  const vs = $('#plVoice'); if(vs){ const t = voiceStatus(); vs.textContent = t; vs.hidden = !t; vs.classList.toggle('live', voice.speaking && on); }
+  const rm = $('#resMute'); if(rm){ rm.hidden = !hasVoice(); rm.textContent = on ? 'Sound: on' : 'Sound: off'; rm.setAttribute('aria-pressed', String(on)); }
+  const n = $('#voiceNote'); if(n && !canSpeak()) n.textContent = voiceStatus();
+}
+
+/* ================= guided walk ================= */
+const walk = { active:false, state:'idle', paused:false, t:0, next:0, stopIdx:0, resumeAt:0, token:0, follow:true, last:false };
+function setPlayer(status, name, desc, photo){
+  const im = $('#plImg'); if(photo){ im.src = /[\/.]/.test(photo) ? photo : '/_blob/' + photo; im.hidden = false; im.onerror = () => { im.hidden = true; }; } else im.hidden = true;
+  $('#plStatus').textContent = status; $('#plName').textContent = name;
+  const d = $('#plDesc'); d.textContent = desc || ''; d.hidden = !desc;
+}
+function updatePlayerButtons(){
+  const pb = $('#plPlay');
+  if(walk.state === 'done'){ pb.innerHTML = ICONS.replay; pb.setAttribute('aria-label','Walk again'); pb.title = 'Walk again'; }
+  else if(walk.paused){ pb.innerHTML = ICONS.play; pb.setAttribute('aria-label','Resume walk'); pb.title = 'Resume walk'; }
+  else { pb.innerHTML = ICONS.pause; pb.setAttribute('aria-label','Pause walk'); pb.title = 'Pause walk'; }
+  const nb = $('#plNext'); nb.innerHTML = ICONS.skip; nb.disabled = walk.state === 'done' || walk.last;
+  const fb = $('#plFollow'); fb.innerHTML = ICONS.follow; fb.hidden = mode !== 'map'; fb.setAttribute('aria-pressed', String(walk.follow));
+  $('#plStop').innerHTML = ICONS.x + '<span>End walk</span>';
+  const wv = mode === 'map' ? 'map' : (eye.chase ? 'behind' : 'eyes');
+  document.querySelectorAll('.wviews button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.wv === wv)));
+  $('#plSpeed').textContent = (walk.speedMul || 1) + '×';
+  const re = $('#resEnd'); if(re) re.hidden = !walk.active;
+  updateVoiceUI();
+}
+const placeText = p => `${p.name}. ${p.desc || ''} ${p.note ? 'At the Biennale: ' + p.note : ''}`.replace(/\s+/g,' ').trim();
+function stopText(i){
+  const p = byId(routeSeq[i]); if(!p) return '';
+  const last = i === routeSeq.length-1;
+  return `${i === 0 ? 'Starting at' : 'Stop ' + (i+1) + '.'} ${placeText(p)} ${last && i > 0 ? 'This is your last stop.' : ''}`.trim();
+}
+function speakStop(i){
+  const tok = ++walk.token;
+  walk.state = 'speaking'; walk.t0 = performance.now(); walk.speechDone = false; walk.spoken = false;
+  walk.readMs = Math.min(10000, Math.max(3500, 1800 + stopText(i).length*45));   // time to read the text when silent
+  let pr; try{ pr = speakNow(stopText(i)); }catch{ pr = Promise.resolve(false); }
+  pr.then(sp => { if(tok !== walk.token) return; walk.speechDone = true; walk.spoken = sp; walk.doneAt = performance.now(); },
+          () => { if(tok !== walk.token) return; walk.speechDone = true; walk.doneAt = performance.now(); });
+}
+/* The walk never hangs on speech: it moves on when speech ends, when sound is off and the reading time has
+   passed, or when speech fails to start. If Claude's voice doesn't start, it switches to the device voice. */
+function checkSpeech(now){
+  const el = now - walk.t0;
+  if(walk.speechDone){ walk.state = 'dwell'; walk.resumeAt = walk.spoken ? walk.doneAt + 900 : Math.max(walk.t0 + walk.readMs, now); return; }
+  if(!soundIsOn() && el > walk.readMs){ walk.state = 'dwell'; walk.resumeAt = now; return; }
+  if(useTts() && voice.lastStart < walk.t0 && el > 4500){
+    voice.ttsStalled = true; try{ voice.tts.stop()?.catch?.(() => {}); }catch{}
+    if(voice.synth){ toast('Claude’s voice did not start here, so the device voice is used instead.'); speakStop(walk.stopIdx); }
+    else { voice.broken = true; walk.state = 'dwell'; walk.resumeAt = Math.max(walk.t0 + walk.readMs, now); }
+    updateVoiceUI(); return;
+  }
+  if(el > walk.readMs + 30000){ walk.state = 'dwell'; walk.resumeAt = now; }
+}
+function startWalk(){
+  if(!routeCurve || !routeSeq.length) return;
+  if(voice.speaking) stopSpeech();
+  walk.active = true; walk.paused = false; walk.follow = true; walk.token++; walk.t = 0; eye.glide = null;
+  if(voice.blocked) voice.blocked = false;          // this click counts as a fresh tap
+  $('#player').hidden = false;
+  if(matchMedia('(max-width:760px)').matches) panel.classList.add('collapsed');
+  if(mode === 'map'){ const p = routeCurve.getPointAt(0); flyTo(p.x, p.z, 360); }
+  arriveAt(0); updatePlayerButtons();
+}
+function arriveAt(i){
+  const id = routeSeq[i], p = byId(id); if(!p){ finishWalk(); return; }
+  walk.t = routeStopT[i] ?? walk.t; walk.next = i+1; walk.stopIdx = i; walk.last = i === routeSeq.length-1;
+  selectedId = id; refreshPinStates();
+  setPlayer(i === 0 ? `Start · stop 1 of ${routeSeq.length}` : `Stop ${i+1} of ${routeSeq.length}`, p.name,
+    [p.desc, p.note && ('At the Biennale: ' + p.note)].filter(Boolean).join(' '), p.photo);
+  if(mode === 'eye'){
+    const sp = standPoint(id);
+    eye.glide = {from:eye.base.slice(), to:sp, t:0}; eye.pivot = [p.x, p.z];
+    faceToward(p, sp); updatePlacebar(id); maybeShowPano(id);
+  }
+  updatePlayerButtons();
+  speakStop(i);
+}
+function depart(){
+  if(walk.last){ finishWalk(); return; }
+  walk.state = 'moving'; hidePano();
+  if(mode === 'eye'){ const q = routeCurve.getPointAt(walk.t); eye.glide = {from:eye.base.slice(), to:[q.x, q.z], t:0}; }
+  const nx = byId(routeSeq[walk.next]);
+  setPlayer(`Walking to stop ${walk.next+1} of ${routeSeq.length}`, nx?.name || '', '');
+  updatePlayerButtons();
+}
+function skipToNext(){
+  if(!walk.active || walk.state === 'done' || walk.last) return;
+  stopSpeech(); walk.paused = false;
+  const i = walk.state === 'moving' ? walk.next : walk.stopIdx + 1;
+  if(i < routeSeq.length) arriveAt(i);
+}
+function finishWalk(){
+  walk.state = 'done'; walk.paused = false;
+  setPlayer('Walk complete', `${routeSeq.length} stops · ${fmtM(routeLen)}`, 'Press play to walk it again, or close the player.');
+  updatePlayerButtons();
+}
+function endWalk(){ if(!walk.active) return; eye.chase = false; walk.active = false; walk.state = 'idle'; walk.token++; stopSpeech(); hidePano(); eye.glide = null; $('#player').hidden = true; const re = $('#resEnd'); if(re) re.hidden = true; refreshPinStates(); }
+function stepWalk(now, dt){
+  const gliding = mode === 'eye' && !!eye.glide;
+  if(walk.state === 'moving' && !walk.paused && !gliding){
+    const speed = mode === 'eye' ? (eye.alt > 20 ? 30 : 3.2) : THREE.MathUtils.clamp(routeLen/60, 18, 40);
+    walk.t = Math.min(1, walk.t + dt*speed*(walk.speedMul || 1)/Math.max(1, routeLen));
+    const target = routeStopT[walk.next] ?? 1;
+    if(walk.t >= target - 1e-6){ walk.t = target; arriveAt(walk.next); }
+  }else if(walk.state === 'speaking' && !walk.paused) checkSpeech(now);
+  else if(walk.state === 'dwell' && !walk.paused && now >= walk.resumeAt) depart();
+  const pt = routeCurve.getPointAt(walk.t);
+  walker.position.set(pt.x, 0, pt.z);
+  if(mode === 'map' && walk.follow && !fly && walk.state !== 'done'){
+    const d = new THREE.Vector3(pt.x - controls.target.x, 0, pt.z - controls.target.z).multiplyScalar(Math.min(1, dt*2.5));
+    controls.target.add(d); camera.position.add(d);
+  }
+  if(mode === 'eye' && !eye.anim){
+    if(eye.glide){
+      const g = eye.glide; g.t = Math.min(1, g.t + dt/0.9); const e = ease(g.t);
+      eye.base = [g.from[0] + (g.to[0]-g.from[0])*e, g.from[1] + (g.to[1]-g.from[1])*e];
+      if(walk.state === 'moving') eye.pivot = eye.base;
+      if(g.t >= 1) eye.glide = null;
+    }else if(walk.state === 'moving'){
+      eye.base = [pt.x, pt.z]; eye.pivot = eye.base; eye.bob = Math.sin(pose.phase*2)*.035;
+      const tg = routeCurve.getTangentAt(walk.t); eye.yawTarget = Math.atan2(-tg.x, -tg.z);
+      eye.pitchTarget = eye.alt > EYE + .05 ? aerialPitch() : 0;
+    }
+  }
+}
+$('#plPlay').addEventListener('click', () => {
+  if(walk.state === 'done'){ startWalk(); return; }
+  walk.paused = !walk.paused;
+  if(walk.paused){ pauseSpeech(); walk.pausedAt = performance.now(); }
+  else { resumeSpeech(); const held = performance.now() - (walk.pausedAt || performance.now()); walk.t0 = (walk.t0 || 0) + held; if(walk.state === 'dwell') walk.resumeAt = Math.min(walk.resumeAt + held, performance.now() + 600); }
+  updatePlayerButtons();
+});
+$('#plMute').addEventListener('click', toggleSound);
+$('#plNext').addEventListener('click', skipToNext);
+$('#plFollow').addEventListener('click', () => { walk.follow = !walk.follow; updatePlayerButtons(); });
+$('#plStop').addEventListener('click', endWalk);
+function setWalkView(v){
+  if(v === 'map'){ eye.chase = false; setMode('map'); }
+  else{
+    eye.chase = v === 'behind'; eye.chaseOff = 0;
+    if(mode !== 'eye') setMode('eye');
+    eye.alt = eye.altCur = EYE; setFov(baseFov());
+    if(eye.chase) hidePano(); else if(walk.state !== 'moving') maybeShowPano(routeSeq[walk.stopIdx]);
+    if(eye.chase) camera.position.set(walker.position.x - Math.sin(pose.yaw)*7, 4, walker.position.z - Math.cos(pose.yaw)*7);
+  }
+  updatePlayerButtons();
+}
+document.querySelectorAll('.wviews button').forEach(b => b.addEventListener('click', () => setWalkView(b.dataset.wv)));
+$('#plSpeed').addEventListener('click', () => { walk.speedMul = ({1:2, 2:4, 4:1})[walk.speedMul || 1]; updatePlayerButtons(); });
+controls.addEventListener('start', () => { if(walk.active && walk.follow && mode === 'map'){ walk.follow = false; updatePlayerButtons(); } });
+
+/* ================= 360° view ================= */
+const EYE = 1.7;                // eye height in metres
+let mode = 'map';
+camera.rotation.order = 'YXZ';
+const eye = { yaw:0, pitch:0, yawTarget:null, pitchTarget:null, fov:70, at:null, saved:null, anim:null, glide:null, drag:null, photoOn:true, alt:EYE, altCur:EYE, pointers:new Map(), pinch:0, base:[0,0], pivot:[0,0] };
+const lerpAngle = (a, b, t) => { const d = ((b - a + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI; return a + d*t; };
+const aerialPitch = () => -Math.atan2(Math.max(0, eye.alt - 6), eye.alt*1.5 + 25);
+const baseFov = () => mapEl.clientWidth < 760 ? 84 : 70;   // wider on phones so whole buildings fit
+function setFov(f){ camera.fov = eye.fov = THREE.MathUtils.clamp(f, 30, 95); camera.updateProjectionMatrix(); }
+const panoScene = new THREE.Scene();
+const panoGeo = new THREE.SphereGeometry(400, 64, 40); panoGeo.scale(-1, 1, 1);
+const panoMesh = new THREE.Mesh(panoGeo, new THREE.MeshBasicMaterial({color:0xffffff})); panoScene.add(panoMesh);
+let panoActive = false;
+const texCache = new Map(), texLoader = new THREE.TextureLoader();
+function loadTex(p){
+  const url = /[\/.]/.test(p.pano) ? p.pano : '/_blob/' + p.pano;
+  if(!texCache.has(url)){
+    const pr = new Promise((res, rej) => texLoader.load(url, t => { t.colorSpace = THREE.SRGBColorSpace; res(t); }, undefined, rej));
+    pr.catch(() => texCache.delete(url)); texCache.set(url, pr);
+  }
+  return texCache.get(url);
+}
+const currentEyeId = () => walk.active ? routeSeq[walk.stopIdx] : eye.at;
+function maybeShowPano(id){
+  if(eye.chase && walk.active) return;
+  const p = byId(id); if(mode !== 'eye' || !p?.pano || !eye.photoOn || eye.alt > EYE + .05) return;
+  loadTex(p).then(tex => {
+    const still = mode === 'eye' && eye.alt <= EYE + .05 && !eye.anim && (walk.active ? routeSeq[walk.stopIdx] === id && walk.state !== 'moving' : eye.at === id);
+    if(!still) return;
+    panoMesh.material.map = tex; panoMesh.material.needsUpdate = true; panoActive = true; mapEl.classList.add('pano');
+    eye.pitchTarget = 0;
+  }).catch(() => toast(`Could not load the 360° photo for ${p.name}.`));
+}
+function hidePano(){ panoActive = false; mapEl.classList.remove('pano'); }
+
+/* Where to stand for a place: a clear spot 20–110 m away (about 45 m preferred), on a walkway where possible,
+   not inside a building or against the fort wall, with an unblocked line of sight to the place. */
+const standCache = new Map();
+let solidBoxes = null;
+const insideFort = (x, z) => { let c = false; for(let i=0, j=FORT.length-1; i<FORT.length; j=i++){ const [xi,zi] = FORT[i], [xj,zj] = FORT[j]; if((zi > z) !== (zj > z) && x < (xj-xi)*(z-zi)/(zj-zi) + xi) c = !c; } return c; };
+const wallDist = (x, z) => { let m = Infinity; FORT.forEach((a,i) => { const b = FORT[(i+1)%FORT.length]; const vx=b[0]-a[0], vz=b[1]-a[1]; const t = Math.max(0, Math.min(1, ((x-a[0])*vx + (z-a[1])*vz)/(vx*vx+vz*vz))); m = Math.min(m, Math.hypot(x-a[0]-vx*t, z-a[1]-vz*t)); }); return m; };
+const standRay = new THREE.Raycaster();
+function standPoint(id){
+  if(standCache.has(id)) return standCache.get(id);
+  const p = byId(id); if(!p) return [0, 0];
+  if(!solidBoxes) solidBoxes = solids.filter(m => m.rotation.y === 0).map(m => new THREE.Box3().setFromObject(m).expandByScalar(2.5));
+  const target = new THREE.Vector3(p.x, Math.min(pinHeight(p)*.5, 9), p.z);
+  const pIn = insideFort(p.x, p.z), isGate = p.cat === 'gate';
+  const cands = [];
+  for(const k in G.adj) for(const [n] of G.adj[k]){
+    if(k >= n || k.startsWith('p:') || n.startsWith('p:')) continue;
+    const a = G.nodes[k], b = G.nodes[n], L = Math.hypot(b[0]-a[0], b[1]-a[1]), steps = Math.max(1, Math.ceil(L/6));
+    for(let s=0; s<=steps; s++) cands.push([a[0]+(b[0]-a[0])*s/steps, a[1]+(b[1]-a[1])*s/steps, 0]);
+  }
+  for(const r of [26,36,48,62,78,95]) for(let k=0; k<24; k++){ const ang = k/24*Math.PI*2; cands.push([p.x + Math.cos(ang)*r, p.z + Math.sin(ang)*r, 5]); }
+  const want = p.cat === 'gate' ? 70 : (p.cat === 'monument' || p.cat === 'museum') ? 52 : 38;
+  const from = new THREE.Vector3(), dir = new THREE.Vector3();
+  let best = null, bestS = Infinity;
+  for(const [x, z, pen] of cands){
+    const d = Math.hypot(x-p.x, z-p.z); if(d < 20 || d > 110) continue;
+    const ins = insideFort(x, z); if(!isGate && ins !== pIn) continue;
+    if(wallDist(x, z) < 9) continue;
+    if(VENUE.noStand?.some(([x0,z0,x1,z1]) => x > x0 && x < x1 && z > z0 && z < z1)) continue;   // not in the lake or river
+    if(solidBoxes.some(b => x > b.min.x && x < b.max.x && z > b.min.z && z < b.max.z)) continue;
+    from.set(x, EYE, z); dir.copy(target).sub(from); const L = dir.length(); dir.normalize();
+    standRay.set(from, dir); standRay.far = L;
+    const hit = standRay.intersectObjects(solids, false)[0];
+    const blocked = hit && Math.hypot(hit.point.x - p.x, hit.point.z - p.z) > 32;
+    let clear = wallDist(x, z) - 5;
+    for(const b of solidBoxes){ const ex = Math.max(b.min.x - x, 0, x - b.max.x), ez = Math.max(b.min.z - z, 0, z - b.max.z); clear = Math.min(clear, Math.hypot(ex, ez)); }
+    const hv = {n:[0,-1], s:[0,1], e:[1,0], w:[-1,0]}[VENUE.views?.[p.id]];
+    const face = hv ? (1 - (hv[0]*(x-p.x) + hv[1]*(z-p.z))/d)*30 : 0;   // prefer the side the building faces
+    const s = Math.abs(d - want) + pen + face + (blocked ? 400 : 0) + (ins ? 0 : 4) + (clear < 10 ? (10 - clear)*4 : 0);
+    if(s < bestS){ bestS = s; best = [x, z]; }
+  }
+  if(!best) best = [p.x, p.z + 35];
+  standCache.set(id, best); return best;
+}
+function faceToward(p, from){
+  const fx = from ? from[0] : eye.base[0], fz = from ? from[1] : eye.base[1];
+  const dx = p.x - fx, dz = p.z - fz, d = Math.hypot(dx, dz);
+  if(d > 1) eye.yawTarget = Math.atan2(-dx, -dz);
+  const ty = Math.min(pinHeight(p)*.5, 9);
+  eye.pitchTarget = eye.alt > EYE + .05 ? aerialPitch() : THREE.MathUtils.clamp(Math.atan2(ty - eye.alt, Math.max(d, 1)), -1.3, .45);
+}
+const eyeList = () => (shownOrder?.length ? shownOrder : sortedPois().map(p => p.id)).filter(id => byId(id));
+function updatePlacebar(id){
+  const p = byId(id); if(!p) return;
+  const list = eyeList(), i = list.indexOf(id);
+  const aerial = eye.alt > EYE + .05;
+  $('#pName').textContent = p.name;
+  $('#pSub').textContent = (shownOrder?.length && i >= 0 ? `Stop ${i+1} of ${list.length}` : (CATS[p.cat]?.one || '')) +
+    (aerial ? ` · Aerial view, ${Math.round(eye.alt)} m up` : (p.pano ? ' · 360° photo' : ' · Ground level'));
+  $('#pDesc').textContent = p.desc || '';
+  const pb = $('#pPhoto'); pb.hidden = !p.pano || aerial; pb.setAttribute('aria-pressed', String(eye.photoOn)); pb.textContent = eye.photoOn ? '360° photo on' : 'Show 360° photo';
+  $('#pGround').hidden = !aerial;
+}
+function eyeZoom(f){          // f > 1 zooms out, f < 1 zooms in
+  if(eye.chase && walk.active){ eye.chaseDist = THREE.MathUtils.clamp((eye.chaseDist || 6.5)*f, 3, 60); return; }
+  if(f > 1){
+    if(panoActive){ if(camera.fov < 94){ setFov(camera.fov*f); return; } hidePano(); }
+    if(camera.fov < baseFov() - .5 && eye.alt <= EYE + .05){ setFov(Math.min(baseFov(), camera.fov*f)); return; }
+    eye.alt = eye.alt <= EYE + .05 ? 12 : Math.min(320, eye.alt*f);
+  }else{
+    if(eye.alt > EYE + .05){ eye.alt = eye.alt*f < 9 ? EYE : eye.alt*f; if(eye.alt === EYE){ setFov(baseFov()); maybeShowPano(currentEyeId()); } }
+    else { setFov(Math.max(30, camera.fov*f)); return; }
+  }
+  if(camera.fov > baseFov() && eye.alt > EYE) setFov(baseFov());
+  eye.pitchTarget = eye.alt > EYE + .05 ? aerialPitch() : (() => { const p = byId(currentEyeId()); if(p) faceToward(p, eye.base); return eye.pitchTarget; })();
+  updatePlacebar(currentEyeId());
+}
+function goEye(id, animate=true){
+  const p = byId(id); if(!p) return;
+  const sp = standPoint(id);
+  selectedId = id; refreshPinStates(); hidePano();
+  if(animate && eye.at && eye.at !== id){
+    const path = pathTo(dijkstra('p:' + eye.at).prev, 'p:' + eye.at, 'p:' + id);
+    if(path){
+      const mid = routeGeom([path]).pts;
+      const v = [eye.base, ...mid, sp].map(([x,z]) => new THREE.Vector3(x, 0, z));
+      const cp = new THREE.CurvePath(); for(let i=0; i<v.length-1; i++) if(v[i].distanceTo(v[i+1]) > .01) cp.add(new THREE.LineCurve3(v[i], v[i+1]));
+      if(cp.curves.length){ eye.anim = {curve:cp, len:cp.getLength(), t:0, id}; eye.at = id; updatePlacebar(id); return; }
+    }
+  }
+  eye.anim = null; eye.base = sp.slice(); eye.pivot = [p.x, p.z]; faceToward(p, sp); eye.at = id; updatePlacebar(id); maybeShowPano(id);
+}
+function stepEye(dt){
+  if(eye.chase && walk.active){            // Follow: camera behind the guide's shoulder, drag to swing around, zoom to pull back
+    const P = walker.position, yaw = pose.yaw + (eye.chaseOff || 0), d = eye.chaseDist || 6.5;
+    const want = new THREE.Vector3(P.x - Math.sin(yaw)*d, 1.9 + d*.32, P.z - Math.cos(yaw)*d);
+    camera.position.lerp(want, Math.min(1, dt*3.5));
+    camera.lookAt(P.x + Math.sin(yaw)*5, 1.5, P.z + Math.cos(yaw)*5);
+    eye.yaw = camera.rotation.y; eye.pitch = camera.rotation.x;
+    return;
+  }
+  if(eye.anim){
+    const a = eye.anim; a.t = Math.min(1, a.t + dt*Math.max(eye.alt > 20 ? 60 : 24, a.len/8)/a.len);
+    const q = a.curve.getPointAt(a.t); eye.base = [q.x, q.z]; eye.pivot = eye.base;
+    const tg = a.curve.getTangentAt(a.t); eye.yawTarget = Math.atan2(-tg.x, -tg.z);
+    eye.pitchTarget = eye.alt > EYE + .05 ? aerialPitch() : 0;
+    if(a.t >= 1){ eye.anim = null; const p = byId(a.id); if(p){ eye.pivot = [p.x, p.z]; faceToward(p, eye.base); maybeShowPano(a.id); speakNow(placeText(p)); } }
+  }
+  eye.altCur += (eye.alt - eye.altCur)*Math.min(1, dt*3.5);
+  // Ground: stand at eye.base. Aerial: rise and pull back behind eye.pivot along the view, so dragging orbits the place.
+  const k = THREE.MathUtils.clamp((eye.altCur - EYE)/14, 0, 1), R = eye.altCur*1.5 + 25;
+  const ax = eye.pivot[0] + Math.sin(eye.yaw)*R, az = eye.pivot[1] + Math.cos(eye.yaw)*R;
+  camera.position.set(eye.base[0] + (ax - eye.base[0])*k, eye.altCur + (walk.active && walk.state === 'moving' && eye.altCur < 5 ? (eye.bob || 0) : 0), eye.base[1] + (az - eye.base[1])*k);
+  if(!eye.drag){
+    if(eye.yawTarget !== null) eye.yaw = lerpAngle(eye.yaw, eye.yawTarget, Math.min(1, dt*4));
+    if(eye.pitchTarget !== null) eye.pitch += (eye.pitchTarget - eye.pitch)*Math.min(1, dt*4);
+  }
+  camera.rotation.set(eye.pitch, eye.yaw, 0);
+}
+function setMode(m){
+  if(m === mode) return;
+  document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === m)));
+  if(m === 'eye'){
+    stopPlacing(); fly = null;
+    eye.saved = {pos:camera.position.clone(), target:controls.target.clone()};
+    mode = 'eye'; mapEl.classList.add('eye'); controls.enabled = false;
+    eye.alt = eye.altCur = EYE; camera.near = .3; setFov(baseFov());
+    routeGroup.position.y = -.4; routeMat.opacity = .5; routeGroup.children.forEach(c => { if(c.userData.disc) c.visible = false; });
+    $('#placebar').hidden = false; eye.at = null; eye.yaw = controls.getAzimuthalAngle(); eye.pitch = 0; eye.glide = null;
+    if(walk.active){
+      const id = routeSeq[walk.stopIdx];
+      if(walk.state === 'moving'){ const q = routeCurve.getPointAt(walk.t); eye.base = [q.x, q.z]; eye.pivot = eye.base; }
+      else { const sp = standPoint(id), pp = byId(id); eye.base = sp.slice(); eye.pivot = [pp.x, pp.z]; faceToward(pp, sp); maybeShowPano(id); }
+      updatePlacebar(id);
+    }
+    else goEye(selectedId && byId(selectedId) ? selectedId : (shownOrder?.[0] || stops[0] || pois[0]?.id), false);
+    toast('Drag to look around. Zoom out to rise into an aerial view.');
+  }else{
+    eye.chase = false; mode = 'map'; mapEl.classList.remove('eye'); hidePano(); eye.anim = null; eye.glide = null;
+    controls.enabled = true; camera.near = 5; camera.fov = 40; camera.updateProjectionMatrix();
+    routeGroup.position.y = 0; routeMat.opacity = .9; routeGroup.children.forEach(c => { c.visible = true; });
+    $('#placebar').hidden = true;
+    if(eye.saved){ camera.position.copy(eye.saved.pos); controls.target.copy(eye.saved.target); }
+    if(walk.active) walk.follow = true;
+    controls.update();
+  }
+  if(walk.active) updatePlayerButtons();
+  layout();
+}
+document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+function eyeStep(dir){ if(walk.active && walk.state === 'done') endWalk(); if(walk.active){ askEndWalk('move to another place', () => eyeStep(dir)); return; } const l = eyeList(); const i = l.indexOf(eye.at); goEye(l[(i + dir + l.length) % l.length], true); }
+$('#pPrev').addEventListener('click', () => eyeStep(-1));
+$('#pNext').addEventListener('click', () => eyeStep(1));
+$('#pPhoto').addEventListener('click', () => { eye.photoOn = !eye.photoOn; const id = currentEyeId(); if(eye.photoOn) maybeShowPano(id); else hidePano(); updatePlacebar(id); });
+$('#pGround').addEventListener('click', () => { eye.alt = EYE; setFov(baseFov()); const id = currentEyeId(); const p = byId(id); if(p) faceToward(p, eye.base); maybeShowPano(id); updatePlacebar(id); });
+{
+  const el = labelRenderer.domElement;
+  el.addEventListener('pointerdown', e => {
+    if(mode !== 'eye') return;
+    eye.pointers.set(e.pointerId, [e.clientX, e.clientY]);
+    try{ el.setPointerCapture(e.pointerId); }catch{}
+    if(eye.pointers.size === 2){ const [a,b] = [...eye.pointers.values()]; eye.pinch = Math.hypot(a[0]-b[0], a[1]-b[1]); eye.drag = null; }
+    else { eye.drag = {x:e.clientX, y:e.clientY}; eye.yawTarget = null; eye.pitchTarget = null; }
+  });
+  el.addEventListener('pointermove', e => {
+    if(mode !== 'eye' || !eye.pointers.has(e.pointerId)) return;
+    if(eye.chase && walk.active && eye.drag && eye.pointers.size < 2){ eye.chaseOff = (eye.chaseOff || 0) - (e.clientX - eye.drag.x)*.008; eye.drag = {x:e.clientX, y:e.clientY}; return; }
+    eye.pointers.set(e.pointerId, [e.clientX, e.clientY]);
+    if(eye.pointers.size === 2){
+      const [a,b] = [...eye.pointers.values()], d = Math.hypot(a[0]-b[0], a[1]-b[1]);
+      if(eye.pinch > 0 && Math.abs(d - eye.pinch) > 4){ eyeZoom(eye.pinch / d); eye.pinch = d; }
+      return;
+    }
+    if(!eye.drag) return;
+    const k = .0045 * camera.fov / 70;
+    eye.yaw += (e.clientX - eye.drag.x)*k;
+    eye.pitch = THREE.MathUtils.clamp(eye.pitch + (e.clientY - eye.drag.y)*k, -1.45, 1.25);
+    eye.drag = {x:e.clientX, y:e.clientY};
+  });
+  const endPtr = e => { eye.pointers.delete(e.pointerId); if(eye.pointers.size < 2) eye.pinch = 0; if(!eye.pointers.size) eye.drag = null; };
+  el.addEventListener('pointerup', endPtr); el.addEventListener('pointercancel', endPtr);
+  el.addEventListener('wheel', e => { if(mode !== 'eye') return; e.preventDefault(); eyeZoom(Math.exp(THREE.MathUtils.clamp(e.deltaY, -120, 120)*.0015)); }, {passive:false});
+  el.addEventListener('keydown', e => { if(mode !== 'eye') return; if(e.key === 'ArrowLeft'){ eye.yawTarget = null; eye.yaw += .15; } if(e.key === 'ArrowRight'){ eye.yawTarget = null; eye.yaw -= .15; } });
+}
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg, action){
+  const t = $('#toast'); t.textContent = msg;
+  if(action){ const b = document.createElement('button'); b.type = 'button'; b.className = 'toast-btn'; b.textContent = action.label; b.addEventListener('click', () => { t.hidden = true; action.fn(); }); t.append(b); }
+  t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, action ? 7000 : 3200);
+}
+function askEndWalk(what, then){ toast(`A guided walk is running. End it to ${what}?`, {label:'End walk', fn:() => { endWalk(); then(); }}); }
+
+/* ================= manage (editors only) ================= */
+let ART = null, ASSETS = null;
+$('#fPano').addEventListener('change', async e => {
+  const f = e.target.files?.[0]; e.target.value = '';
+  const p = byId(selectedId); if(!f || !p || !ASSETS) return;
+  if(f.size > 20*1024*1024){ toast('That photo is over 20 MB. Export a smaller JPEG and try again.'); return; }
+  $('#fPanoState').textContent = 'Uploading…';
+  try{ const r = await ASSETS.upload(f); p.pano = r.id; markDirty(); toast('Photo added. Press “Save for everyone” to publish it.'); }
+  catch(err){ toast(err?.code === 'unsupported_type' ? 'Use a JPEG, PNG or WebP photo.' : err?.code === 'not_granted' ? 'Only editors can upload photos.' : 'Upload failed. Try again.'); }
+  fillForm(); if(mode === 'eye' && eye.at === p.id){ updatePlacebar(p.id); maybeShowPano(p.id); }
+});
+const assetUrl = v => /[\/.]/.test(v) ? v : '/_blob/' + v;
+$('#fPhoto').addEventListener('change', async e => {
+  const f = e.target.files?.[0]; e.target.value = '';
+  const p = byId(selectedId); if(!f || !p || !ASSETS) return;
+  if(f.size > 20*1024*1024){ toast('That photo is over 20 MB. Export a smaller JPEG and try again.'); return; }
+  $('#fPhotoState').textContent = 'Uploading…';
+  try{ const r = await ASSETS.upload(f); p.photo = r.id; markDirty(); toast('Photo added. Press “Save for everyone” to publish it.'); }
+  catch(err){ toast(err?.code === 'unsupported_type' ? 'Use a JPEG, PNG or WebP photo.' : 'Upload failed. Try again.'); }
+  fillForm();
+});
+$('#fPhotoDel').addEventListener('click', () => { const p = byId(selectedId); if(!p) return; delete p.photo; markDirty(); fillForm(); });
+$('#fPanoDel').addEventListener('click', () => { const p = byId(selectedId); if(!p) return; delete p.pano; markDirty(); fillForm(); if(eye.at === p.id){ hidePano(); updatePlacebar(p.id); } });
+let placing = null; // 'add' | 'move'
+const raycaster = new THREE.Raycaster();
+function stopPlacing(){ placing = null; $('#banner').hidden = true; }
+function startPlacing(mode){ placing = mode; $('#bannerText').textContent = mode === 'add' ? 'Tap the map where the new point goes' : 'Tap the map to move this point'; $('#banner').hidden = false; if(matchMedia('(max-width:760px)').matches) panel.classList.add('collapsed'); }
+$('#bannerCancel').addEventListener('click', stopPlacing);
+let downXY = null;
+labelRenderer.domElement.addEventListener('pointerdown', e => { downXY = [e.clientX, e.clientY]; });
+labelRenderer.domElement.addEventListener('pointerup', e => {
+  if(mode === 'eye' || !placing || !downXY || Math.hypot(e.clientX-downXY[0], e.clientY-downXY[1]) > 6) return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
+  raycaster.setFromCamera(ndc, camera);
+  const hit = raycaster.intersectObject(ground)[0]; if(!hit) return;
+  const x = Math.round(hit.point.x), z = Math.round(hit.point.z);
+  if(placing === 'add'){
+    let i = 1; while(byId('pt'+i)) i++;
+    const p = {id:'pt'+i, name:'New point', cat:'biennale', x, z, desc:'', note:''};
+    pois.push(p); selectedId = p.id;
+  }else{
+    const p = byId(selectedId); if(p){ p.x = x; p.z = z; }
+  }
+  stopPlacing(); expandSheet(); markDirty(); rebuildAll(); $('#mPick').value = selectedId; fillForm();
+  if(placing === null) setTimeout(() => $('#fName').focus(), 50);
+});
+
+function markDirty(){ dirty = true; updateManageStatus(); }
+function updateManageStatus(){
+  $('#mCount').textContent = `${pois.length} points`;
+  const b = $('#mBadge'); b.textContent = dirty ? 'Unsaved changes' : 'Saved'; b.className = 'badge ' + (dirty ? 'dirty' : 'saved');
+  $('#mSave').disabled = !dirty; $('#mDiscard').disabled = !dirty;
+}
+function fillForm(){
+  const p = byId($('#mPick').value) || pois[0]; if(!p) return;
+  selectedId = p.id; refreshPinStates();
+  $('#fName').value = p.name; $('#fCat').value = p.cat; $('#fIcon').value = p.icon || ''; $('#fDesc').value = p.desc || ''; $('#fNote').value = p.note || '';
+  $('#fPanoState').textContent = p.pano ? 'Photo attached' : 'No photo';
+  $('#fPhotoState').textContent = p.photo ? 'Photo attached' : 'No photo';
+  $('#fPhotoDel').hidden = !p.photo; $('#fPhotoBtn').textContent = p.photo ? 'Replace photo' : 'Upload photo';
+  $('#fPanoDel').hidden = !p.pano; $('#fPanoBtn').textContent = p.pano ? 'Replace photo' : 'Upload photo';
+  $('#fConfirm').hidden = true;
+}
+for(const c of CAT_ORDER){ const o = document.createElement('option'); o.value = c; o.textContent = CATS[c].one; $('#fCat').appendChild(o); }
+{ const o = document.createElement('option'); o.value = ''; o.textContent = 'Same as category'; $('#fIcon').appendChild(o); for(const k in ICON_NAMES){ const q = document.createElement('option'); q.value = k; q.textContent = ICON_NAMES[k]; $('#fIcon').appendChild(q); } }
+$('#mPick').addEventListener('change', () => { fillForm(); const p = byId($('#mPick').value); if(p) flyTo(p.x,p.z,360); });
+$('#mForm').addEventListener('submit', e => e.preventDefault());
+function editField(key, el, rebuild){
+  el.addEventListener('input', () => { const p = byId(selectedId); if(!p) return; p[key] = el.value; markDirty();
+    if(rebuild) rebuildAll(); else { const o = pinObjs.get(p.id); if(o && key === 'name'){ o.element.querySelector('.name').textContent = p.name; } } });
+  if(!rebuild) el.addEventListener('change', () => { fillSelects(); renderList(); });
+}
+editField('name', $('#fName'), false); editField('desc', $('#fDesc'), false); editField('note', $('#fNote'), false); editField('cat', $('#fCat'), true); editField('icon', $('#fIcon'), true);
+$('#mAdd').addEventListener('click', () => startPlacing('add'));
+$('#fMove').addEventListener('click', () => { if(selectedId) startPlacing('move'); });
+$('#fDel').addEventListener('click', () => { const p = byId(selectedId); if(!p) return; $('#fConfirmText').textContent = `Delete “${p.name}”?`; $('#fConfirm').hidden = false; });
+$('#fDelNo').addEventListener('click', () => $('#fConfirm').hidden = true);
+$('#fDelYes').addEventListener('click', () => { pois = pois.filter(p => p.id !== selectedId); selectedId = pois[0]?.id || null; markDirty(); rebuildAll(); if(selectedId){ $('#mPick').value = selectedId; fillForm(); } });
+$('#mDiscard').addEventListener('click', () => { pois = structuredClone(saved.pois); dirty = false; updateManageStatus(); rebuildAll(); fillForm(); toast('Changes discarded'); });
+function dataJson(){ return JSON.stringify({version:1, updated:new Date().toISOString().slice(0,10), pois}, null, 2); }
+$('#mCopy').addEventListener('click', () => {
+  const txt = dataJson();
+  navigator.clipboard.writeText(txt).then(() => toast('Map data copied')).catch(() => { const b = $('#mCopyBox'); b.value = txt; b.hidden = false; b.select(); toast('Select the text below and copy it'); });
+});
+$('#mSave').addEventListener('click', async () => {
+  if(!ART) return;
+  const btn = $('#mSave'); btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    await ART.publish({[VENUE.file]: {content:dataJson(), contentType:'application/json'}});
+    saved = {pois: structuredClone(pois)}; dirty = false; updateManageStatus(); toast('Saved. Everyone now sees this version.');
+  }catch(err){
+    const code = err?.code;
+    const msg = code === 'conflict' ? 'Someone else saved first. The map will reload with their version.'
+      : (code === 'not_writer' || code === 'not_granted') ? 'Your account can view this map but cannot save changes.'
+      : code === 'capability_disabled' ? 'Saving is not available in this view. Open the artifact on claude.ai to save.'
+      : code === 'rate_limited' ? 'Saving too often. Wait a moment and try again.'
+      : 'Could not save. Your edits are still here; try again.';
+    toast(msg); btn.disabled = false;
+  }finally{ btn.textContent = 'Save for everyone'; updateManageStatus(); }
+});
+
+async function initManage(){
+  if(!window.claude?.use) return;
+  try{
+    const [user, art] = await Promise.all([window.claude.use('user'), window.claude.use('artifact')]);
+    if(!art || !user) return;
+    const can = await user.canEdit().catch(() => false);
+    if(!can) return;
+    ART = art; $('#t-manage').hidden = false; updateManageStatus(); fillForm();
+    ASSETS = await window.claude.use('assets').catch(() => null);
+    $('#fPanoField').hidden = !ASSETS; $('#fPhotoField').hidden = !ASSETS;
+  }catch{}
+}
+
+/* ================= boot ================= */
+function rebuildAll(){ buildGraph(); rebuildPins(); renderChips(); fillSelects(); renderList(); updateManageStatus(); if(routeIds && !routeIds.every(id => byId(id))) clearRoute(); }
+(async () => {
+  $('#venueName').textContent = VENUE.name;
+  if(LOCKED_VENUE) document.querySelector('.venues').hidden = true;
+  document.querySelectorAll('.venues button').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.venue === VENUE.key));
+    b.addEventListener('click', () => {
+      if(b.dataset.venue === VENUE.key) return;
+      if(dirty){ toast('Save or discard your changes before switching venue.'); return; }
+      stopSpeech(); location.hash = b.dataset.venue; location.reload();
+    });
+  });
+  if(!LOCKED_VENUE) addEventListener('hashchange', () => { const k = location.hash.slice(1); if(VENUES[k] && k !== VENUE.key && !dirty) location.reload(); });
+  applyTheme(); layout(); camera.position.copy(homePos()); controls.update(); requestAnimationFrame(tick);
+  await loadData();
+  defaultStops();
+  rebuildAll();
+  initManage();
+  initVoice();
+  if(location.search.includes('rfdebug')) window.__rf = {goEye, setMode, eyeZoom, startWalk, standPoint, get walk(){ return walk; }, get eye(){ return eye; }, camera, controls, walker, get fly(){ return fly; }, set fly(v){ fly = v; }, DOORS, setWalkView, pose, live};
+})();
+</script>
+
+</body>
+</html>

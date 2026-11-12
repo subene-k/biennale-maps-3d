@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "updated": "2026-11-11",
+  "pois": [
+    {
+      "id": "entry",
+      "name": "Entry plaza & Biennale Pass check",
+      "cat": "facility",
+      "x": -345,
+      "z": 58,
+      "desc": "Security check and pass scanning outside Lahori Gate. The Biennale Pass covers entry to the fort, so no separate monument ticket is needed.",
+      "note": ""
+    },
+    {
+      "id": "lahori",
+      "name": "Lahori Gate",
+      "cat": "gate",
+      "x": -280,
+      "z": 30,
+      "desc": "Main entrance on the west wall, facing Lahore. The Prime Minister addresses the nation from its ramparts every Independence Day.",
+      "note": ""
+    },
+    {
+      "id": "chhatta",
+      "name": "Chhatta Chowk",
+      "cat": "monument",
+      "x": -205,
+      "z": 30,
+      "desc": "Covered bazaar arcade just inside Lahori Gate, once the royal Meena Bazaar. Craft shops still line both sides.",
+      "note": ""
+    },
+    {
+      "id": "naubat",
+      "name": "Naubat Khana",
+      "cat": "museum",
+      "x": -60,
+      "z": 30,
+      "desc": "The drum house, where court musicians played for the emperor. The upper floor holds the Indian War Memorial Museum.",
+      "note": ""
+    },
+    {
+      "id": "diwaniam",
+      "name": "Diwan-i-Aam",
+      "cat": "monument",
+      "x": 62,
+      "z": 30,
+      "desc": "Hall of Public Audience. Red sandstone arcades frame the marble throne canopy where the emperor heard petitions.",
+      "note": ""
+    },
+    {
+      "id": "mumtaz",
+      "name": "Mumtaz Mahal",
+      "cat": "museum",
+      "x": 222,
+      "z": 120,
+      "desc": "Southernmost of the riverside palaces. It now houses a museum.",
+      "note": ""
+    },
+    {
+      "id": "rang",
+      "name": "Rang Mahal",
+      "cat": "monument",
+      "x": 222,
+      "z": 30,
+      "desc": "Palace of Colours. The Nahr-i-Bihisht water channel flowed through it into a carved marble lotus basin.",
+      "note": ""
+    },
+    {
+      "id": "khas",
+      "name": "Khas Mahal",
+      "cat": "monument",
+      "x": 222,
+      "z": -50,
+      "desc": "The emperor's private chambers, with the Muthamman Burj tower where he appeared to people gathered by the river.",
+      "note": ""
+    },
+    {
+      "id": "diwanikhas",
+      "name": "Diwan-i-Khas",
+      "cat": "monument",
+      "x": 222,
+      "z": -120,
+      "desc": "Hall of Private Audience in white marble, once home to the Peacock Throne.",
+      "note": ""
+    },
+    {
+      "id": "hammam",
+      "name": "Hammam",
+      "cat": "monument",
+      "x": 222,
+      "z": -185,
+      "desc": "The royal baths, with marble floors and inlaid fountains.",
+      "note": ""
+    },
+    {
+      "id": "moti",
+      "name": "Moti Masjid",
+      "cat": "monument",
+      "x": 150,
+      "z": -200,
+      "desc": "Small white marble mosque built by Aurangzeb in 1659 for his private use.",
+      "note": ""
+    },
+    {
+      "id": "hayat",
+      "name": "Hayat Bakhsh Bagh",
+      "cat": "garden",
+      "x": -10,
+      "z": -385,
+      "desc": "The Life-Giving Garden: a Mughal charbagh with water channels, flanked by the Sawan and Bhadon pavilions.",
+      "note": ""
+    },
+    {
+      "id": "zafar",
+      "name": "Zafar Mahal",
+      "cat": "monument",
+      "x": 55,
+      "z": -320,
+      "desc": "Red sandstone pavilion in the garden tank, added by Bahadur Shah Zafar in 1842.",
+      "note": ""
+    },
+    {
+      "id": "shahburj",
+      "name": "Shah Burj",
+      "cat": "monument",
+      "x": 228,
+      "z": -400,
+      "desc": "Tower at the north-east corner where the Nahr-i-Bihisht channel entered the palace complex.",
+      "note": ""
+    },
+    {
+      "id": "baoli",
+      "name": "Baoli (stepwell)",
+      "cat": "monument",
+      "x": -22,
+      "z": -200,
+      "desc": "Stepwell that descends in stages to the water level.",
+      "note": ""
+    },
+    {
+      "id": "kranti",
+      "name": "Kranti Mandir museums",
+      "cat": "museum",
+      "x": -150,
+      "z": -130,
+      "desc": "British-era barracks now used as museums on India's freedom struggle, including the Subhas Chandra Bose and INA Museum.",
+      "note": ""
+    },
+    {
+      "id": "delhi",
+      "name": "Delhi Gate",
+      "cat": "gate",
+      "x": -40,
+      "z": 470,
+      "desc": "Southern gate of the fort, flanked by two life-size stone elephants.",
+      "note": ""
+    },
+    {
+      "id": "infodesk",
+      "name": "Biennale info desk (example)",
+      "cat": "facility",
+      "x": -235,
+      "z": 72,
+      "desc": "Example point. Edit or delete it in Manage.",
+      "note": "Maps, programme guides and help with the Biennale app."
+    },
+    {
+      "id": "toilets",
+      "name": "Toilets (approximate)",
+      "cat": "facility",
+      "x": -165,
+      "z": 72,
+      "desc": "Approximate location. Confirm on site and adjust in Manage.",
+      "note": ""
+    },
+    {
+      "id": "cafe",
+      "name": "Cafe (approximate)",
+      "cat": "facility",
+      "x": 10,
+      "z": 118,
+      "desc": "Approximate location. Confirm on site and adjust in Manage.",
+      "note": ""
+    },
+    {
+      "id": "exhibitA",
+      "name": "Exhibit spot A (example)",
+      "cat": "biennale",
+      "x": 95,
+      "z": 125,
+      "desc": "Example exhibit position on the lawn south of Diwan-i-Aam.",
+      "note": "Replace with the real installation name, artist and timings."
+    },
+    {
+      "id": "exhibitB",
+      "name": "Exhibit spot B (example)",
+      "cat": "biennale",
+      "x": -75,
+      "z": -290,
+      "desc": "Example exhibit position near the garden.",
+      "note": "Replace with the real installation name, artist and timings."
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+ "version": 1,
+ "updated": "2026-11-12",
+ "pois": [
+  {
+   "id": "entry",
+   "name": "Entry & Biennale Pass check",
+   "cat": "facility",
+   "icon": "ticket",
+   "x": -232,
+   "z": 24,
+   "desc": "Pass scanning outside Bara Darwaza, by the lake. The Biennale Pass covers entry to the fort, so no separate monument ticket is needed.",
+   "note": ""
+  },
+  {
+   "id": "bara",
+   "name": "Bara Darwaza",
+   "cat": "gate",
+   "x": -178,
+   "z": 0,
+   "desc": "The main western gateway in red sandstone, flanked by massive bastions and topped with domed kiosks. It looks out over the lake.",
+   "note": ""
+  },
+  {
+   "id": "humayun",
+   "name": "Humayun Darwaza",
+   "cat": "gate",
+   "x": -10,
+   "z": 249,
+   "desc": "The southern gate, named after the Mughal emperor Humayun.",
+   "note": ""
+  },
+  {
+   "id": "talaqi",
+   "name": "Talaqi Darwaza",
+   "cat": "gate",
+   "x": 10,
+   "z": -245,
+   "desc": "The northern gate, often called the Forbidden Gate.",
+   "note": ""
+  },
+  {
+   "id": "mosque",
+   "name": "Qila-i-Kuhna Mosque",
+   "cat": "monument",
+   "x": 0,
+   "z": -70,
+   "desc": "Built by Sher Shah Suri in 1541, this single-domed mosque has a prayer hall with five arched bays in red sandstone, with marble and slate inlay.",
+   "note": ""
+  },
+  {
+   "id": "shermandal",
+   "name": "Sher Mandal",
+   "cat": "monument",
+   "x": 60,
+   "z": 30,
+   "desc": "A two-storey octagonal tower of red sandstone. Humayun used it as a library and died in 1556 after a fall on its stairs.",
+   "note": ""
+  },
+  {
+   "id": "baoli",
+   "name": "Baoli (stepwell)",
+   "cat": "monument",
+   "x": 95,
+   "z": -150,
+   "desc": "A stepwell that descends in stages to the water.",
+   "note": ""
+  },
+  {
+   "id": "museum",
+   "name": "Archaeological Site Museum",
+   "cat": "museum",
+   "x": -120,
+   "z": 72,
+   "desc": "Objects found in excavations at the fort, from pottery to coins.",
+   "note": ""
+  },
+  {
+   "id": "excavation",
+   "name": "Excavation site",
+   "cat": "monument",
+   "icon": "dig",
+   "x": 110,
+   "z": 95,
+   "desc": "Excavated trenches showing layers of settlement across many centuries. Tradition links the site with Indraprastha of the Mahabharata.",
+   "note": ""
+  },
+  {
+   "id": "lake",
+   "name": "Purana Qila lake",
+   "cat": "garden",
+   "icon": "boat",
+   "x": -330,
+   "z": 20,
+   "desc": "The lake along the west side of the fort, with boating.",
+   "note": ""
+  },
+  {
+   "id": "infodesk",
+   "name": "Biennale info desk (example)",
+   "cat": "facility",
+   "icon": "info",
+   "x": -150,
+   "z": -22,
+   "desc": "Example point. Edit or delete it in Manage.",
+   "note": "Maps, programme guides and help with the Biennale app."
+  },
+  {
+   "id": "toilets",
+   "name": "Toilets (approximate)",
+   "cat": "facility",
+   "icon": "toilet",
+   "x": -150,
+   "z": 38,
+   "desc": "Approximate location. Confirm on site and adjust in Manage.",
+   "note": ""
+  },
+  {
+   "id": "cafe",
+   "name": "Cafe (approximate)",
+   "cat": "facility",
+   "icon": "cafe",
+   "x": -90,
+   "z": -40,
+   "desc": "Approximate location. Confirm on site and adjust in Manage.",
+   "note": ""
+  },
+  {
+   "id": "parking",
+   "name": "Parking (approximate)",
+   "cat": "facility",
+   "icon": "parking",
+   "x": -262,
+   "z": 250,
+   "desc": "Approximate location. Confirm on site and adjust in Manage.",
+   "note": ""
+  },
+  {
+   "id": "exhibitA",
+   "name": "Exhibit spot A (example)",
+   "cat": "biennale",
+   "x": -60,
+   "z": -120,
+   "desc": "Example exhibit position on the north lawn.",
+   "note": "Replace with the real installation name, artist and timings."
+  },
+  {
+   "id": "exhibitB",
+   "name": "Exhibit spot B (example)",
+   "cat": "biennale",
+   "x": 20,
+   "z": 120,
+   "desc": "Example exhibit position on the south lawn.",
+   "note": "Replace with the real installation name, artist and timings."
+  }
+ ]
+}
