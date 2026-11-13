@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Biennale Fort Maps</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#AE3820">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="leaflet-src" content="./vendor/leaflet/leaflet.js">
 <meta name="description" content="3D walking maps of the Red Fort and Purana Qila for The India Biennale '26.">
 <style>html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
@@ -127,7 +131,7 @@ button{cursor:pointer}
 .detail .photo{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;margin:10px 0 2px;background:var(--panel-2)}
 .player .plimg{float:left;width:58px;height:58px;object-fit:cover;border-radius:8px;margin:2px 10px 4px 0}
 .detail h2{font:700 22px/1.15 var(--f-display);margin:4px 0 6px;text-wrap:balance}
-.back{border:0;background:none;color:var(--muted);padding:0;font-weight:600}
+.back{border:0;background:none;color:var(--muted);padding:0;font-weight:600;display:block;margin-bottom:8px}
 .catline{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);font-weight:600}
 .catline i{width:20px;height:20px;border-radius:50%;background:var(--cat);color:#fff;display:grid;place-items:center}
 .catline i svg{width:12px;height:12px}
@@ -250,11 +254,131 @@ button{cursor:pointer}
   .tabs{padding:0 12px}
   .banner{max-width:calc(100% - 96px);font-size:13px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- language, exhibits, info ---------- */
+.brand{position:relative}
+.lang{margin-left:auto;align-self:flex-start;display:flex;background:var(--panel-2);border-radius:999px;padding:2px;flex:none}
+.lang button{border:0;background:none;border-radius:999px;padding:5px 9px;font-weight:600;font-size:12px;color:var(--muted);min-width:34px}
+.lang button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.tabs{overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{white-space:nowrap;flex:none}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.xitem{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:0;background:none;padding:8px;border-radius:10px;width:100%}
+.xitem:hover{background:var(--panel-2)}
+.xitem .xn{width:34px;height:34px;border-radius:9px;background:var(--c-biennale);color:#fff;display:grid;place-items:center;font:600 13px/1 var(--f-mono)}
+.xitem .xn svg{width:17px;height:17px}
+.xitem b{display:block;font-weight:600}
+.xitem small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xitem .xs{font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap;display:flex;gap:6px;align-items:center}
+.xitem .xs .star{color:var(--warn)}
+.xitem.done .xn{background:var(--ok)}
+.xitem.done .xs{color:var(--ok)}
+.tick{width:16px;height:16px}
+.vis-badge{display:inline-flex;gap:5px;align-items:center;font-size:12px;font-weight:600;color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--panel));border-radius:999px;padding:3px 9px}
+.artist{font-size:13.5px;color:var(--muted);margin:-2px 0 0}
+.exnum{font:600 11px/1 var(--f-mono);letter-spacing:.06em;color:var(--c-biennale);background:color-mix(in srgb,var(--c-biennale) 12%,var(--panel));border-radius:6px;padding:4px 6px;margin-left:6px}
+.check-note{font-size:12px;color:var(--warn);margin-top:8px}
+.info h3{font:700 15px/1.2 var(--f-display);margin:12px 0 4px}
+.info p{margin:0;font-size:13.5px}
+.info .first{margin-top:0}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.legend button{display:flex;gap:8px;align-items:center;border:0;background:none;padding:6px;border-radius:8px;text-align:left;font-size:13px}
+.legend button:hover{background:var(--panel-2)}
+.legend i{width:24px;height:24px;border-radius:50%;background:var(--cat);color:#fff;display:grid;place-items:center;flex:none}
+.legend i svg{width:14px;height:14px}
+.legend small{color:var(--muted);margin-left:auto;font:500 11px/1 var(--f-mono)}
+.attrib{font-size:11.5px;color:var(--muted)}
+/* pin states: visited, highlight, you are here */
+.pin.visited .dot::after{content:"";position:absolute;right:-5px;top:-5px;width:13px;height:13px;border-radius:50%;background:var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center/9px no-repeat;border:1.5px solid var(--panel);transform:rotate(45deg)}
+.pin.feat .dot::before{content:"";position:absolute;inset:-7px;border-radius:50% 50% 50% 2px;border:2px solid var(--cat);opacity:0;animation:halo 2.4s ease-out infinite;pointer-events:none}
+@keyframes halo{0%{opacity:.7;transform:scale(.8)}100%{opacity:0;transform:scale(1.5)}}
+.you{width:0;height:0;position:relative;pointer-events:none}
+.you .yd{position:absolute;left:-10px;top:-10px;width:20px;height:20px;border-radius:50%;background:#1A73E8;border:3px solid #fff;box-shadow:0 0 0 0 rgba(26,115,232,.5);animation:youp 2s infinite}
+.you .yl{position:absolute;left:16px;top:-12px;white-space:nowrap;background:#1A73E8;color:#fff;font:600 12px/1 var(--f-body);padding:6px 9px;border-radius:7px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+@keyframes youp{0%{box-shadow:0 0 0 0 rgba(26,115,232,.55)}100%{box-shadow:0 0 0 22px rgba(26,115,232,0)}}
+/* street map (OpenStreetMap) */
+.street{position:absolute;inset:0;z-index:2;background:var(--sky)}
+.street .lf{position:absolute;inset:0}
+.street .snote{position:absolute;z-index:500;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--panel);color:var(--fg);border-radius:10px;box-shadow:var(--shadow);padding:8px 12px;font-size:12.5px;max-width:min(520px,calc(100% - 32px))}
+.street .snote a{color:var(--route)}
+@media (max-width:760px){.street .snote{bottom:auto;top:calc(110px + env(safe-area-inset-top,0px))}}
+.lpin{width:26px;height:26px;border-radius:50% 50% 50% 2px;transform:rotate(-45deg);background:var(--cat);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);display:grid;place-items:center}
+.lpin span{transform:rotate(45deg);color:#fff;display:grid;place-items:center}
+.lpin svg{width:14px;height:14px}
+
+/* Leaflet 1.9.4 essentials (BSD-2-Clause), inlined so the street map needs no extra stylesheet */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;-webkit-tap-highlight-color:transparent;background:var(--sky);font-family:var(--f-body);touch-action:none}
+.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+.leaflet-tile{filter:inherit;visibility:hidden}.leaflet-tile-loaded{visibility:inherit}
+.leaflet-container .leaflet-tile-pane img,.leaflet-container .leaflet-marker-pane img{max-width:none!important;max-height:none!important;width:auto;padding:0}
+.leaflet-container img.leaflet-tile{mix-blend-mode:plus-lighter}
+.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
+.leaflet-pane>svg path{pointer-events:none}.leaflet-pane>svg path.leaflet-interactive,.leaflet-marker-icon.leaflet-interactive{pointer-events:auto}
+.leaflet-zoom-animated{transform-origin:0 0}
+.leaflet-zoom-anim .leaflet-zoom-animated{transition:transform .25s cubic-bezier(0,0,.25,1)}
+.leaflet-zoom-anim .leaflet-tile,.leaflet-pan-anim .leaflet-tile{transition:none}.leaflet-zoom-anim .leaflet-zoom-hide{visibility:hidden}
+.leaflet-fade-anim .leaflet-popup{opacity:0;transition:opacity .2s linear}.leaflet-fade-anim .leaflet-map-pane .leaflet-popup{opacity:1}
+.leaflet-interactive{cursor:pointer}.leaflet-grab{cursor:grab}.leaflet-dragging .leaflet-grab,.leaflet-dragging .leaflet-marker-draggable{cursor:move}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto;float:left;clear:both}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-right .leaflet-control{float:right}
+.leaflet-control-attribution{background:rgba(255,255,255,.85);margin:0;padding:1px 6px;font-size:11px;line-height:1.4;color:#333}
+.leaflet-control-attribution a{color:#0b5cad;text-decoration:none}
+.leaflet-tooltip{position:absolute;padding:4px 8px;background:var(--panel);color:var(--fg);border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.3);white-space:nowrap;pointer-events:none;font:600 12px/1.2 var(--f-body)}
+.leaflet-tooltip-top::before,.leaflet-tooltip-right::before{display:none}
+.leaflet-div-icon{background:none;border:0}
+/* attract screen and admin */
+.attract{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:linear-gradient(180deg,rgba(10,12,14,.15),rgba(10,12,14,.55));cursor:pointer}
+.attract[hidden]{display:none}
+.at-card{background:var(--panel);color:var(--fg);border-radius:20px;box-shadow:var(--shadow);padding:34px 38px;max-width:min(640px,calc(100% - 32px));text-align:center}
+.at-k{margin:0;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:13px;color:var(--accent)}
+.at-card h2{font:700 clamp(30px,5vw,52px)/1.05 var(--f-display);margin:10px 0 2px;letter-spacing:-.02em}
+.at-hi{font:700 clamp(24px,3.6vw,38px)/1.2 var(--f-display);margin:0;color:var(--muted)}
+.at-v{margin:14px 0 0;font-size:17px}
+.at-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.at-btns button{border:0;border-radius:14px;padding:18px 26px;font:600 19px/1.1 var(--f-body);background:var(--accent);color:var(--accent-fg);min-width:200px}
+.at-btns button+button{background:var(--route);color:#fff}
+.at-foot{margin:18px 0 0;color:var(--muted);font-size:14px}
+.at-hand{display:inline-block;animation:tap 1.6s ease-in-out infinite}
+@keyframes tap{50%{transform:translateY(-5px)}}
+.dlg{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:rgba(0,0,0,.4)}
+.dlg[hidden]{display:none}
+.dlg .box{background:var(--panel);color:var(--fg);border-radius:16px;box-shadow:var(--shadow);width:min(560px,calc(100% - 24px));max-height:calc(100% - 40px);overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.dlg h2{font:700 20px/1.2 var(--f-display);margin:0}
+.dlg table{width:100%;border-collapse:collapse;font-size:13px}
+.dlg td,.dlg th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left}
+.dlg td.r,.dlg th.r{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.kpis div{background:var(--panel-2);border-radius:10px;padding:10px}
+.kpis strong{display:block;font:500 22px/1.1 var(--f-mono)}
+.kpis span{font-size:12px;color:var(--muted)}
+.pinpad{font:600 22px/1 var(--f-mono);letter-spacing:.3em;text-align:center}
+/* kiosk: bigger touch targets, no text selection */
+body.kiosk{font-size:16px;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+body.kiosk input,body.kiosk textarea{-webkit-user-select:text;user-select:text}
+body.kiosk .panel{width:min(470px,calc(100% - 32px))}
+body.kiosk .topc{--mapleft:502px}
+body.kiosk .btn{padding:12px 16px;font-size:15.5px}
+body.kiosk .tabs button{padding:14px 12px 15px;font-size:15.5px}
+body.kiosk .item,body.kiosk .xitem{padding:12px 10px}
+body.kiosk .search{padding:13px 14px;font-size:16px}
+body.kiosk .ctl button,body.kiosk .compass{width:54px;height:54px}
+body.kiosk .chip,body.kiosk .seg button{padding:8px 14px;font-size:14.5px}
+body.kiosk .lang button{padding:8px 14px;font-size:14px}
+body.kiosk .modes button{padding:11px 20px;font-size:15px}
+body.kiosk .pin .dot{width:34px;height:34px;left:-17px}
+body.kiosk .pin .dot svg{width:18px;height:18px}
+body.kiosk .ext{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.pin.feat .dot::before,.you .yd,.at-hand{animation:none}}
 </style>
 
 <div class="app">
-  <div id="map" class="map" role="application" aria-label="3D map of the Red Fort. Drag to rotate, scroll or pinch to zoom."></div>
+  <div id="map" class="map" role="application" aria-label="3D map. Drag to rotate, scroll or pinch to zoom."></div>
+  <div id="street" class="street" hidden><div class="lf" id="lf"></div><div class="snote" id="snote"></div></div>
 
   <div class="ctl" aria-label="Map controls">
     <button class="compass" id="compass" title="Face north" aria-label="Face north">
@@ -267,6 +391,9 @@ button{cursor:pointer}
     <div class="grp">
       <button id="topview" title="Top view" aria-label="Top view" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/></svg></button>
       <button id="home" title="Reset view" aria-label="Reset view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7M6 10v10h12V10"/></svg></button>
+    </div>
+    <div class="grp">
+      <button id="streetBtn" title="Street map" aria-label="Street map" aria-pressed="false" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m3 6 6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg></button>
     </div>
   </div>
 
@@ -306,7 +433,8 @@ button{cursor:pointer}
     <button class="handle" id="handle" type="button" aria-label="Expand or collapse panel"></button>
     <div class="brand">
       <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><path d="M3 21V11h3v-2h2v2h8V9h2v2h3v10Z"/><path d="M10 21v-5a2 2 0 0 1 4 0v5"/><path d="M12 4c1.5 1 1.5 3 0 4-1.5-1-1.5-3 0-4Z"/></svg></div>
-      <div><h1 id="venueName">Red Fort · Lal Qila</h1><p>The India Biennale ’26 · 4 Dec 2026 – 21 Mar 2027</p></div>
+      <div><h1 id="venueName">Red Fort · Lal Qila</h1><p id="brandSub">The India Biennale ’26 · 4 Dec 2026 – 21 Mar 2027</p></div>
+      <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button><button type="button" data-lang="hi" aria-pressed="false" lang="hi">हिं</button></div>
     </div>
     <div class="venues" role="group" aria-label="Venue">
       <button type="button" data-venue="red-fort" aria-pressed="true">Red Fort</button>
@@ -314,7 +442,9 @@ button{cursor:pointer}
     </div>
     <nav class="tabs" role="tablist">
       <button role="tab" id="t-explore" aria-selected="true" data-tab="explore">Explore</button>
+      <button role="tab" id="t-exhibits" aria-selected="false" data-tab="exhibits">Exhibits</button>
       <button role="tab" id="t-route" aria-selected="false" data-tab="route">Directions</button>
+      <button role="tab" id="t-info" aria-selected="false" data-tab="info">Info</button>
       <button role="tab" id="t-manage" aria-selected="false" data-tab="manage" hidden>Manage</button>
     </nav>
 
@@ -323,16 +453,34 @@ button{cursor:pointer}
         <input class="search" id="q" type="search" placeholder="Search places" aria-label="Search places">
         <div class="chips" id="chips"></div>
         <div id="list"></div>
-        <p class="foot">Positions are approximate. Drag the map to rotate it, pinch or scroll to zoom.</p>
+        <p class="foot">Drag the map to rotate it, pinch or scroll to zoom.</p>
       </div>
       <div id="detail" class="detail" hidden></div>
     </section>
+
+    <section class="body" id="tab-exhibits" hidden>
+      <input class="search" id="xq" type="search" placeholder="Search exhibits or artists" aria-label="Search exhibits or artists">
+      <div class="seg" id="xFilter" role="group" aria-label="Show">
+        <button type="button" data-f="all" aria-pressed="true">All</button><button type="button" data-f="todo" aria-pressed="false">To visit</button><button type="button" data-f="done" aria-pressed="false">Visited</button><button type="button" data-f="feat" aria-pressed="false">Highlights</button>
+      </div>
+      <p class="hint" id="xCount"></p>
+      <div class="list" id="xList"></div>
+      <div class="divider"></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <b style="font-family:var(--f-display);font-size:16px">Highlights</b>
+        <p class="hint">A walk through the highlighted exhibits, or a 360° walkthrough that shows each one at eye level with the guide reading it out.</p>
+        <div class="btnrow"><button class="btn route" id="xTour" type="button">Plan highlights walk</button><button class="btn" id="xVirtual" type="button">360° walkthrough</button></div>
+        <button class="btn" id="xClear" type="button">Clear visited</button>
+      </div>
+    </section>
+
+    <section class="body info" id="tab-info" hidden><div id="infoBody" style="display:flex;flex-direction:column;gap:4px"></div></section>
 
     <section class="body" id="tab-route" hidden>
       <div class="stophead"><b>My stops</b><span class="hint" id="stopCount"></span></div>
       <ol class="stoplist" id="stops" aria-label="Stops in visiting order"></ol>
       <p class="hint">Tap places on the map to add them, or use “Add stop”. Stop 1 is where you start.</p>
-      <div class="btnrow"><button class="btn" id="addStop" type="button">+ Add stop</button><button class="btn" id="resetStops" type="button">Clear stops</button></div>
+      <div class="btnrow"><button class="btn" id="addStop" type="button">+ Add stop</button><button class="btn" id="resetStops" type="button">Clear stops</button><button class="btn" id="myLoc" type="button" hidden>Use my location</button></div>
       <label class="check"><input type="checkbox" id="optOrder" checked> Find the shortest order</label>
       <label class="check" style="margin-top:-6px"><input type="checkbox" id="keepEnd"> Keep my last stop last</label>
       <div class="btnrow"><button class="btn route" id="goRoute" type="button">Show route</button><button class="btn" id="clearRoute" type="button">Hide route</button></div>
@@ -360,6 +508,20 @@ button{cursor:pointer}
         <div class="field"><label for="fIcon">Map icon</label><select id="fIcon"></select></div>
         <div class="field"><label for="fDesc">Description</label><textarea id="fDesc" maxlength="400"></textarea></div>
         <div class="field"><label for="fNote">Biennale note (shown highlighted)</label><textarea id="fNote" maxlength="400" placeholder="Installation, artist, timings…"></textarea></div>
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px">
+          <div class="field"><label for="fNum">Exhibit no.</label><input id="fNum" maxlength="6"></div>
+          <div class="field"><label for="fArtist">Artist(s)</label><input id="fArtist" maxlength="120"></div>
+        </div>
+        <div class="field"><label for="fNameHi">Name in Hindi</label><input id="fNameHi" maxlength="80" lang="hi"></div>
+        <div class="field"><label for="fDescHi">Description in Hindi</label><textarea id="fDescHi" maxlength="500" lang="hi"></textarea></div>
+        <div class="field"><label for="fNoteHi">Biennale note in Hindi</label><textarea id="fNoteHi" maxlength="500" lang="hi"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="fGeo">
+          <div class="field"><label for="fLat">Latitude</label><input id="fLat" inputmode="decimal" maxlength="14"></div>
+          <div class="field"><label for="fLng">Longitude</label><input id="fLng" inputmode="decimal" maxlength="14"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="fFeat"> Highlight (pulsing pin, highlights walk)</label>
+        <label class="check" style="margin-top:-4px"><input type="checkbox" id="fStaff"> Staff only (hidden from visitors)</label>
+        <p class="check-note" id="fCheck" hidden></p>
         <div class="field" id="fPhotoField" hidden>
           <label for="fPhoto">Photo</label>
           <div class="btnrow" style="align-items:center"><label class="btn" id="fPhotoBtn" for="fPhoto">Upload photo</label><input type="file" id="fPhoto" accept="image/jpeg,image/png,image/webp" hidden><button class="btn danger" id="fPhotoDel" type="button" hidden>Remove photo</button><span class="hint" id="fPhotoState">No photo</span></div>
@@ -375,17 +537,58 @@ button{cursor:pointer}
       </form>
       <div class="divider"></div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn" id="mCopy" type="button">Copy data as JSON</button>
+        <b style="font-family:var(--f-display);font-size:16px">Visitor information</b>
+        <div class="field"><label for="iKey">Section</label><select id="iKey"></select></div>
+        <div class="field"><label for="iEn">English</label><textarea id="iEn" maxlength="800"></textarea></div>
+        <div class="field"><label for="iHi">Hindi</label><textarea id="iHi" maxlength="800" lang="hi"></textarea></div>
+        <div class="divider"></div>
+        <div class="btnrow"><button class="btn" id="mCopy" type="button">Copy data as JSON</button><label class="btn" for="mImport">Import JSON file</label><input type="file" id="mImport" accept="application/json,.json" hidden></div>
         <textarea class="copybox" id="mCopyBox" hidden readonly aria-label="Map data JSON"></textarea>
         <p class="hint">New points connect to the nearest walkway automatically. “Save for everyone” updates the map for all visitors.</p>
       </div>
     </section>
   </aside>
+
+  <div id="attract" class="attract" hidden>
+    <div class="at-card">
+      <p class="at-k">The India Biennale ’26</p>
+      <h2 lang="en">Explore the Biennale</h2>
+      <p class="at-hi" lang="hi">बिएनाले देखें</p>
+      <p class="at-v" id="atVenue"></p>
+      <div class="at-btns"><button type="button" data-start="en" lang="en"><span class="at-hand">☝</span> Touch to start</button><button type="button" data-start="hi" lang="hi"><span class="at-hand">☝</span> शुरू करने के लिए छुएँ</button></div>
+      <p class="at-foot">Map · Exhibits · 360° views · Guided walks &nbsp;|&nbsp; नक़्शा · प्रदर्शनियाँ · 360° दृश्य · निर्देशित सैर</p>
+    </div>
+  </div>
+
+  <div id="admin" class="dlg" hidden role="dialog" aria-modal="true" aria-labelledby="admTitle">
+    <div class="box">
+      <div class="stophead"><h2 id="admTitle">Kiosk and reports</h2><button class="btn" id="admClose" type="button">Close</button></div>
+      <div id="admLock" style="display:flex;flex-direction:column;gap:8px">
+        <p class="hint">Enter the staff PIN.</p>
+        <input id="admPin" class="search pinpad" type="password" inputmode="numeric" maxlength="8" autocomplete="off" aria-label="Staff PIN">
+        <button class="btn primary" id="admUnlock" type="button">Unlock</button>
+      </div>
+      <div id="admBody" hidden style="display:flex;flex-direction:column;gap:12px">
+        <label class="check"><input type="checkbox" id="kOn"> Kiosk mode on this device (welcome screen, auto-reset, large buttons)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="field"><label for="kHere">“You are here” (kiosk location)</label><select id="kHere"></select></div>
+          <div class="field"><label for="kIdle">Reset after no touch for</label><select id="kIdle"><option value="60">1 minute</option><option value="90">1.5 minutes</option><option value="120">2 minutes</option><option value="180">3 minutes</option><option value="300">5 minutes</option></select></div>
+        </div>
+        <div class="btnrow"><button class="btn" id="kFull" type="button">Full screen</button><button class="btn" id="kAttract" type="button">Show welcome screen</button></div>
+        <div class="divider"></div>
+        <div class="stophead"><b>Visitor engagement</b><span class="hint" id="aRange"></span></div>
+        <div class="kpis" id="aKpis"></div>
+        <div id="aTop"></div>
+        <div class="btnrow"><button class="btn" id="aCsv" type="button">Export CSV</button><button class="btn" id="aJson" type="button">Export JSON</button><button class="btn danger" id="aClear" type="button">Clear data</button></div>
+        <p class="hint">Counts are kept on this device only and contain no personal data. Export them regularly from each kiosk.</p>
+      </div>
+    </div>
+  </div>
 </div>
 
-<script type="application/json" id="poi-fallback">{"version":1,"updated":"2026-11-12","pois":[{"id":"entry","name":"Entry plaza & Biennale Pass check","cat":"facility","x":-345,"z":58,"desc":"Security check and pass scanning outside Lahori Gate. The Biennale Pass covers entry to the fort, so no separate monument ticket is needed.","note":"","icon":"ticket"},{"id":"lahori","name":"Lahori Gate","cat":"gate","x":-280,"z":30,"desc":"Main entrance on the west wall, facing Lahore. The Prime Minister addresses the nation from its ramparts every Independence Day.","note":""},{"id":"chhatta","name":"Chhatta Chowk","cat":"monument","x":-205,"z":30,"desc":"Covered bazaar arcade just inside Lahori Gate, once the royal Meena Bazaar. Craft shops still line both sides.","note":""},{"id":"naubat","name":"Naubat Khana","cat":"museum","x":-60,"z":30,"desc":"The drum house, where court musicians played for the emperor. The upper floor holds the Indian War Memorial Museum.","note":""},{"id":"diwaniam","name":"Diwan-i-Aam","cat":"monument","x":62,"z":30,"desc":"Hall of Public Audience. Red sandstone arcades frame the marble throne canopy where the emperor heard petitions.","note":""},{"id":"mumtaz","name":"Mumtaz Mahal","cat":"museum","x":222,"z":120,"desc":"Southernmost of the riverside palaces. It now houses a museum.","note":""},{"id":"rang","name":"Rang Mahal","cat":"monument","x":222,"z":30,"desc":"Palace of Colours. The Nahr-i-Bihisht water channel flowed through it into a carved marble lotus basin.","note":""},{"id":"khas","name":"Khas Mahal","cat":"monument","x":222,"z":-50,"desc":"The emperor's private chambers, with the Muthamman Burj tower where he appeared to people gathered by the river.","note":""},{"id":"diwanikhas","name":"Diwan-i-Khas","cat":"monument","x":222,"z":-120,"desc":"Hall of Private Audience in white marble, once home to the Peacock Throne.","note":""},{"id":"hammam","name":"Hammam","cat":"monument","x":222,"z":-185,"desc":"The royal baths, with marble floors and inlaid fountains.","note":""},{"id":"moti","name":"Moti Masjid","cat":"monument","x":150,"z":-200,"desc":"Small white marble mosque built by Aurangzeb in 1659 for his private use.","note":""},{"id":"hayat","name":"Hayat Bakhsh Bagh","cat":"garden","x":-10,"z":-385,"desc":"The Life-Giving Garden: a Mughal charbagh with water channels, flanked by the Sawan and Bhadon pavilions.","note":""},{"id":"zafar","name":"Zafar Mahal","cat":"monument","x":55,"z":-320,"desc":"Red sandstone pavilion in the garden tank, added by Bahadur Shah Zafar in 1842.","note":""},{"id":"shahburj","name":"Shah Burj","cat":"monument","x":228,"z":-400,"desc":"Tower at the north-east corner where the Nahr-i-Bihisht channel entered the palace complex.","note":""},{"id":"baoli","name":"Baoli (stepwell)","cat":"monument","x":-22,"z":-200,"desc":"Stepwell that descends in stages to the water level.","note":""},{"id":"kranti","name":"Kranti Mandir museums","cat":"museum","x":-150,"z":-130,"desc":"British-era barracks now used as museums on India's freedom struggle, including the Subhas Chandra Bose and INA Museum.","note":""},{"id":"delhi","name":"Delhi Gate","cat":"gate","x":-40,"z":470,"desc":"Southern gate of the fort, flanked by two life-size stone elephants.","note":""},{"id":"infodesk","name":"Biennale info desk (example)","cat":"facility","x":-235,"z":72,"desc":"Example point. Edit or delete it in Manage.","note":"Maps, programme guides and help with the Biennale app.","icon":"info"},{"id":"toilets","name":"Toilets (approximate)","cat":"facility","x":-165,"z":72,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":"","icon":"toilet"},{"id":"cafe","name":"Cafe (approximate)","cat":"facility","x":10,"z":118,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":"","icon":"cafe"},{"id":"exhibitA","name":"Exhibit spot A (example)","cat":"biennale","x":95,"z":125,"desc":"Example exhibit position on the lawn south of Diwan-i-Aam.","note":"Replace with the real installation name, artist and timings."},{"id":"exhibitB","name":"Exhibit spot B (example)","cat":"biennale","x":-75,"z":-290,"desc":"Example exhibit position near the garden.","note":"Replace with the real installation name, artist and timings."}]}</script>
-<script type="application/json" id="poi-fallback-pq">{"version":1,"updated":"2026-11-12","pois":[{"id":"entry","name":"Entry & Biennale Pass check","cat":"facility","icon":"ticket","x":-232,"z":24,"desc":"Pass scanning outside Bara Darwaza, by the lake. The Biennale Pass covers entry to the fort, so no separate monument ticket is needed.","note":""},{"id":"bara","name":"Bara Darwaza","cat":"gate","x":-178,"z":0,"desc":"The main western gateway in red sandstone, flanked by massive bastions and topped with domed kiosks. It looks out over the lake.","note":""},{"id":"humayun","name":"Humayun Darwaza","cat":"gate","x":-10,"z":249,"desc":"The southern gate, named after the Mughal emperor Humayun.","note":""},{"id":"talaqi","name":"Talaqi Darwaza","cat":"gate","x":10,"z":-245,"desc":"The northern gate, often called the Forbidden Gate.","note":""},{"id":"mosque","name":"Qila-i-Kuhna Mosque","cat":"monument","x":0,"z":-70,"desc":"Built by Sher Shah Suri in 1541, this single-domed mosque has a prayer hall with five arched bays in red sandstone, with marble and slate inlay.","note":""},{"id":"shermandal","name":"Sher Mandal","cat":"monument","x":60,"z":30,"desc":"A two-storey octagonal tower of red sandstone. Humayun used it as a library and died in 1556 after a fall on its stairs.","note":""},{"id":"baoli","name":"Baoli (stepwell)","cat":"monument","x":95,"z":-150,"desc":"A stepwell that descends in stages to the water.","note":""},{"id":"museum","name":"Archaeological Site Museum","cat":"museum","x":-120,"z":72,"desc":"Objects found in excavations at the fort, from pottery to coins.","note":""},{"id":"excavation","name":"Excavation site","cat":"monument","icon":"dig","x":110,"z":95,"desc":"Excavated trenches showing layers of settlement across many centuries. Tradition links the site with Indraprastha of the Mahabharata.","note":""},{"id":"lake","name":"Purana Qila lake","cat":"garden","icon":"boat","x":-330,"z":20,"desc":"The lake along the west side of the fort, with boating.","note":""},{"id":"infodesk","name":"Biennale info desk (example)","cat":"facility","icon":"info","x":-150,"z":-22,"desc":"Example point. Edit or delete it in Manage.","note":"Maps, programme guides and help with the Biennale app."},{"id":"toilets","name":"Toilets (approximate)","cat":"facility","icon":"toilet","x":-150,"z":38,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":""},{"id":"cafe","name":"Cafe (approximate)","cat":"facility","icon":"cafe","x":-90,"z":-40,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":""},{"id":"parking","name":"Parking (approximate)","cat":"facility","icon":"parking","x":-262,"z":250,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":""},{"id":"exhibitA","name":"Exhibit spot A (example)","cat":"biennale","x":-60,"z":-120,"desc":"Example exhibit position on the north lawn.","note":"Replace with the real installation name, artist and timings."},{"id":"exhibitB","name":"Exhibit spot B (example)","cat":"biennale","x":20,"z":120,"desc":"Example exhibit position on the south lawn.","note":"Replace with the real installation name, artist and timings."}]}</script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="application/json" id="poi-fallback">{"version":2,"updated":"2026-11-13","geo":{"lat":28.656,"lng":77.241,"approx":true},"info":{"dates":{"en":"4 December 2026 – 21 March 2027","hi":"4 दिसंबर 2026 – 21 मार्च 2027"},"hours":{"en":"Opening hours: to be confirmed by the organisers.","hi":"खुलने का समय: आयोजकों द्वारा पुष्टि की जानी है।"},"pass":{"en":"The Biennale Pass covers participating monuments and the exhibitions and programmes within them. No separate monument ticket is needed.","hi":"बिएनाले पास में भाग लेने वाले स्मारक और उनके भीतर की प्रदर्शनियाँ व कार्यक्रम शामिल हैं। अलग स्मारक टिकट की ज़रूरत नहीं।"},"rules":{"en":"Please don't touch the artworks unless invited to. Keep to the paths around monuments and excavations.","hi":"कृपया कलाकृतियों को न छुएँ, जब तक ऐसा करने को न कहा जाए। स्मारकों और उत्खनन के आसपास रास्तों पर ही चलें।"},"help":{"en":"Ask at the Biennale info desk or any volunteer. Emergency contacts: to be added.","hi":"बिएनाले सूचना डेस्क या किसी भी स्वयंसेवक से पूछें। आपातकालीन संपर्क: जोड़े जाने हैं।"},"access":{"en":"Accessibility details: to be confirmed.","hi":"सुगम्यता की जानकारी: पुष्टि होनी है।"}},"pois":[{"id":"entry","name":"Entry plaza & Biennale Pass check","cat":"facility","x":-345,"z":58,"desc":"Security check and pass scanning outside Lahori Gate. The Biennale Pass covers entry to the fort, so no separate monument ticket is needed.","note":"","icon":"ticket","name_hi":"प्रवेश प्लाज़ा और बिएनाले पास जाँच","desc_hi":"लाहौरी गेट के बाहर सुरक्षा जाँच और पास स्कैनिंग। बिएनाले पास से क़िले में प्रवेश होता है, अलग से स्मारक टिकट की ज़रूरत नहीं।"},{"id":"lahori","name":"Lahori Gate","cat":"gate","x":-280,"z":30,"desc":"Main entrance on the west wall, facing Lahore. The Prime Minister addresses the nation from its ramparts every Independence Day.","note":"","name_hi":"लाहौरी गेट","desc_hi":"पश्चिमी दीवार पर मुख्य प्रवेश द्वार, जिसका मुख लाहौर की ओर है। हर स्वतंत्रता दिवस पर प्रधानमंत्री इसकी प्राचीर से राष्ट्र को संबोधित करते हैं।"},{"id":"chhatta","name":"Chhatta Chowk","cat":"monument","x":-205,"z":30,"desc":"Covered bazaar arcade just inside Lahori Gate, once the royal Meena Bazaar. Craft shops still line both sides.","note":"","name_hi":"छत्ता चौक","desc_hi":"लाहौरी गेट के ठीक भीतर ढका हुआ बाज़ार, जो कभी शाही मीना बाज़ार था। आज भी दोनों ओर शिल्प की दुकानें हैं।"},{"id":"naubat","name":"Naubat Khana","cat":"museum","x":-60,"z":30,"desc":"The drum house, where court musicians played for the emperor. The upper floor holds the Indian War Memorial Museum.","note":"","name_hi":"नौबत ख़ाना","desc_hi":"नगाड़ख़ाना, जहाँ दरबारी संगीतकार बादशाह के लिए बजाते थे। ऊपरी मंज़िल में भारतीय युद्ध स्मारक संग्रहालय है।"},{"id":"diwaniam","name":"Diwan-i-Aam","cat":"monument","x":62,"z":30,"desc":"Hall of Public Audience. Red sandstone arcades frame the marble throne canopy where the emperor heard petitions.","note":"","name_hi":"दीवान-ए-आम","desc_hi":"आम दरबार का सभागार। लाल बलुआ पत्थर के मेहराबों के बीच संगमरमर का सिंहासन-छत्र है, जहाँ बादशाह फ़रियादें सुनते थे।"},{"id":"mumtaz","name":"Mumtaz Mahal","cat":"museum","x":222,"z":120,"desc":"Southernmost of the riverside palaces. It now houses a museum.","note":"","name_hi":"मुमताज़ महल","desc_hi":"नदी किनारे के महलों में सबसे दक्षिणी। अब इसमें संग्रहालय है।"},{"id":"rang","name":"Rang Mahal","cat":"monument","x":222,"z":30,"desc":"Palace of Colours. The Nahr-i-Bihisht water channel flowed through it into a carved marble lotus basin.","note":"","name_hi":"रंग महल","desc_hi":"रंगों का महल। नहर-ए-बहिश्त का पानी इसमें से होकर संगमरमर के नक़्क़ाशीदार कमल-कुंड में बहता था।"},{"id":"khas","name":"Khas Mahal","cat":"monument","x":222,"z":-50,"desc":"The emperor's private chambers, with the Muthamman Burj tower where he appeared to people gathered by the river.","note":"","name_hi":"ख़ास महल","desc_hi":"बादशाह के निजी कक्ष, मुसम्मन बुर्ज के साथ, जहाँ से वे नदी किनारे जमा लोगों को दर्शन देते थे।"},{"id":"diwanikhas","name":"Diwan-i-Khas","cat":"monument","x":222,"z":-120,"desc":"Hall of Private Audience in white marble, once home to the Peacock Throne.","note":"","name_hi":"दीवान-ए-ख़ास","desc_hi":"सफ़ेद संगमरमर का ख़ास दरबार का सभागार, जहाँ कभी तख़्त-ए-ताऊस (मयूर सिंहासन) था।"},{"id":"hammam","name":"Hammam","cat":"monument","x":222,"z":-185,"desc":"The royal baths, with marble floors and inlaid fountains.","note":"","name_hi":"हम्माम","desc_hi":"शाही स्नानघर, संगमरमर के फ़र्श और जड़ाऊ फ़व्वारों के साथ।"},{"id":"moti","name":"Moti Masjid","cat":"monument","x":150,"z":-200,"desc":"Small white marble mosque built by Aurangzeb in 1659 for his private use.","note":"","name_hi":"मोती मस्जिद","desc_hi":"सफ़ेद संगमरमर की छोटी मस्जिद, जिसे औरंगज़ेब ने 1659 में अपने निजी उपयोग के लिए बनवाया।"},{"id":"hayat","name":"Hayat Bakhsh Bagh","cat":"garden","x":-10,"z":-385,"desc":"The Life-Giving Garden: a Mughal charbagh with water channels, flanked by the Sawan and Bhadon pavilions.","note":"","name_hi":"हयात बख़्श बाग़","desc_hi":"जीवनदायी बाग़: पानी की नहरों वाला मुग़ल चारबाग़, जिसके दोनों ओर सावन और भादों मंडप हैं।"},{"id":"zafar","name":"Zafar Mahal","cat":"monument","x":55,"z":-320,"desc":"Red sandstone pavilion in the garden tank, added by Bahadur Shah Zafar in 1842.","note":"","name_hi":"ज़फ़र महल","desc_hi":"बाग़ के तालाब में लाल बलुआ पत्थर का मंडप, जिसे बहादुर शाह ज़फ़र ने 1842 में बनवाया।"},{"id":"shahburj","name":"Shah Burj","cat":"monument","x":228,"z":-400,"desc":"Tower at the north-east corner where the Nahr-i-Bihisht channel entered the palace complex.","note":"","name_hi":"शाह बुर्ज","desc_hi":"उत्तर-पूर्वी कोने की मीनार, जहाँ से नहर-ए-बहिश्त महल परिसर में प्रवेश करती थी।"},{"id":"baoli","name":"Baoli (stepwell)","cat":"monument","x":-22,"z":-200,"desc":"Stepwell that descends in stages to the water level.","note":"","name_hi":"बावली","desc_hi":"बावड़ी, जिसकी सीढ़ियाँ चरणों में पानी तक उतरती हैं।"},{"id":"kranti","name":"Kranti Mandir museums","cat":"museum","x":-150,"z":-130,"desc":"British-era barracks now used as museums on India's freedom struggle, including the Subhas Chandra Bose and INA Museum.","note":"","name_hi":"क्रांति मंदिर संग्रहालय","desc_hi":"ब्रिटिश काल की बैरकें, जो अब भारत के स्वतंत्रता संग्राम पर संग्रहालय हैं, जिनमें सुभाष चंद्र बोस और आईएनए संग्रहालय शामिल है।"},{"id":"delhi","name":"Delhi Gate","cat":"gate","x":-40,"z":470,"desc":"Southern gate of the fort, flanked by two life-size stone elephants.","note":"","name_hi":"दिल्ली गेट","desc_hi":"क़िले का दक्षिणी द्वार, जिसके दोनों ओर पत्थर के दो आदमक़द हाथी हैं।"},{"id":"infodesk","name":"Biennale info desk (example)","cat":"facility","x":-235,"z":72,"desc":"Example point. Edit or delete it in Manage.","note":"Maps, programme guides and help with the Biennale app.","icon":"info","name_hi":"बिएनाले सूचना डेस्क (उदाहरण)","desc_hi":"उदाहरण बिंदु। प्रबंधन में इसे बदलें या हटाएँ।","note_hi":"नक़्शे, कार्यक्रम गाइड और बिएनाले ऐप से जुड़ी मदद।"},{"id":"toilets","name":"Toilets (approximate)","cat":"facility","x":-165,"z":72,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":"","icon":"toilet","name_hi":"शौचालय (अनुमानित)","desc_hi":"अनुमानित स्थान। मौक़े पर पुष्टि करें और प्रबंधन में बदलें।"},{"id":"cafe","name":"Cafe (approximate)","cat":"facility","x":10,"z":118,"desc":"Approximate location. Confirm on site and adjust in Manage.","note":"","icon":"cafe","name_hi":"कैफ़े (अनुमानित)","desc_hi":"अनुमानित स्थान। मौक़े पर पुष्टि करें और प्रबंधन में बदलें।"},{"id":"exhibitA","name":"Exhibit spot A (example)","cat":"biennale","x":95,"z":125,"desc":"Example exhibit position on the lawn south of Diwan-i-Aam.","note":"Replace with the real installation name, artist and timings.","name_hi":"प्रदर्शनी स्थल A (उदाहरण)","desc_hi":"दीवान-ए-आम के दक्षिण में लॉन पर उदाहरण प्रदर्शनी स्थान।","note_hi":"असली इंस्टॉलेशन का नाम, कलाकार और समय यहाँ लिखें।","num":"01","featured":true},{"id":"exhibitB","name":"Exhibit spot B (example)","cat":"biennale","x":-75,"z":-290,"desc":"Example exhibit position near the garden.","note":"Replace with the real installation name, artist and timings.","name_hi":"प्रदर्शनी स्थल B (उदाहरण)","desc_hi":"बाग़ के पास उदाहरण प्रदर्शनी स्थान।","note_hi":"असली इंस्टॉलेशन का नाम, कलाकार और समय यहाँ लिखें।","num":"02","featured":true}],"kiosk":{"pin":"2026","idleSeconds":90,"here":"entry","analyticsUrl":""}}</script>
+<script type="application/json" id="poi-fallback-pq">{"version":2,"updated":"2026-11-13","geo":{"lat":28.60945,"lng":77.2434},"info":{"dates":{"en":"4 December 2026 – 21 March 2027","hi":"4 दिसंबर 2026 – 21 मार्च 2027"},"hours":{"en":"Opening hours: to be confirmed by the organisers.","hi":"खुलने का समय: आयोजकों द्वारा पुष्टि की जानी है।"},"pass":{"en":"The Biennale Pass covers participating monuments and the exhibitions and programmes within them. No separate monument ticket is needed.","hi":"बिएनाले पास में भाग लेने वाले स्मारक और उनके भीतर की प्रदर्शनियाँ व कार्यक्रम शामिल हैं। अलग स्मारक टिकट की ज़रूरत नहीं।"},"rules":{"en":"Please don't touch the artworks unless invited to. Keep to the paths around monuments and excavations.","hi":"कृपया कलाकृतियों को न छुएँ, जब तक ऐसा करने को न कहा जाए। स्मारकों और उत्खनन के आसपास रास्तों पर ही चलें।"},"help":{"en":"Ask at the Biennale info desk or any volunteer. Emergency contacts: to be added.","hi":"बिएनाले सूचना डेस्क या किसी भी स्वयंसेवक से पूछें। आपातकालीन संपर्क: जोड़े जाने हैं।"},"access":{"en":"Accessibility details: to be confirmed.","hi":"सुगम्यता की जानकारी: पुष्टि होनी है।"}},"kiosk":{"pin":"2026","idleSeconds":90,"here":"entry","analyticsUrl":""},"pois":[{"id":"entry","name":"Entry & Biennale Pass check","name_hi":"प्रवेश और बिएनाले पास जाँच","cat":"facility","lat":28.6088551,"lng":77.2420698,"x":-130,"z":66,"desc":"Pass scanning outside Bara Darwaza, at the south end of the lake. The Biennale Pass covers entry to the fort, so no separate monument ticket is needed.","desc_hi":"बड़ा दरवाज़ा के बाहर, झील के दक्षिणी छोर पर पास की जाँच। बिएनाले पास से क़िले में प्रवेश होता है, अलग से स्मारक टिकट की ज़रूरत नहीं।","note":"","note_hi":"","icon":"ticket"},{"id":"bara","name":"Bara Darwaza","name_hi":"बड़ा दरवाज़ा","cat":"gate","lat":28.6090534,"lng":77.242387,"x":-99,"z":44,"desc":"The main western gateway in red sandstone, flanked by massive bastions and topped with domed kiosks. It faces the southern end of the lake.","desc_hi":"लाल बलुआ पत्थर का मुख्य पश्चिमी द्वार, विशाल बुर्जों से घिरा और गुंबददार छतरियों से सजा। यह झील के दक्षिणी छोर की ओर खुलता है।","note":"","note_hi":""},{"id":"humayun","name":"Humayun Darwaza","name_hi":"हुमायूँ दरवाज़ा","cat":"gate","lat":28.6062323,"lng":77.2450065,"x":157,"z":357,"desc":"The southern gate, named after the Mughal emperor Humayun.","desc_hi":"दक्षिणी द्वार, मुग़ल बादशाह हुमायूँ के नाम पर।","note":"","note_hi":""},{"id":"talaqi","name":"Talaqi Darwaza","name_hi":"तलाक़ी दरवाज़ा","cat":"gate","lat":28.6121089,"lng":77.24164,"x":-172,"z":-295,"desc":"The northern gate, often called the Forbidden Gate.","desc_hi":"उत्तरी द्वार, जिसे अक्सर 'वर्जित द्वार' कहा जाता है।","note":"","note_hi":""},{"id":"mosque","name":"Qila-i-Kuhna Mosque","name_hi":"क़िला-ए-कुहना मस्जिद","cat":"monument","lat":28.6098556,"lng":77.2445256,"x":110,"z":-45,"desc":"Built by Sher Shah Suri in 1541, this single-domed mosque has a prayer hall with five arched bays in red sandstone, with marble and slate inlay.","desc_hi":"1541 में शेरशाह सूरी द्वारा बनवाई गई एक गुंबद वाली मस्जिद। इसके नमाज़-कक्ष में लाल बलुआ पत्थर के पाँच मेहराब हैं, जिन पर संगमरमर और स्लेट की जड़ाई है।","note":"","note_hi":""},{"id":"shermandal","name":"Sher Mandal","name_hi":"शेर मंडल","cat":"monument","lat":28.6088191,"lng":77.2453442,"x":190,"z":70,"desc":"A two-storey octagonal tower of red sandstone. Humayun used it as a library and died in 1556 after a fall on its stairs.","desc_hi":"लाल बलुआ पत्थर की दो मंज़िला अष्टकोणीय मीनार। हुमायूँ इसे पुस्तकालय के रूप में इस्तेमाल करते थे और 1556 में इसकी सीढ़ियों से गिरने के बाद उनकी मृत्यु हुई।","note":"","note_hi":""},{"id":"baoli","name":"Baoli (stepwell)","name_hi":"बावली","cat":"monument","lat":28.6098556,"lng":77.2457023,"x":225,"z":-45,"desc":"A stepwell that descends in stages to the water.","desc_hi":"एक बावड़ी, जिसकी सीढ़ियाँ चरणों में पानी तक उतरती हैं।","note":"","note_hi":""},{"id":"museum","name":"Archaeological Site Museum (ASI)","name_hi":"पुरातत्व स्थल संग्रहालय (एएसआई)","cat":"museum","lat":28.6083742,"lng":77.2429355,"x":-45.4,"z":119.4,"desc":"Objects found in excavations at the fort, from pottery to coins.","desc_hi":"क़िले की खुदाई में मिली वस्तुएँ, मिट्टी के बर्तनों से लेकर सिक्कों तक।","note":"","note_hi":""},{"id":"excavation","name":"Excavation site","name_hi":"उत्खनन स्थल","cat":"monument","lat":28.6091922,"lng":77.2435802,"x":17.6,"z":28.6,"desc":"Excavated trenches showing layers of settlement across many centuries. Tradition links the site with Indraprastha of the Mahabharata.","desc_hi":"खुदाई की खाइयाँ, जिनमें कई सदियों की बसावट की परतें दिखती हैं। परंपरा इस स्थल को महाभारत के इंद्रप्रस्थ से जोड़ती है।","note":"","note_hi":"","icon":"dig"},{"id":"lake","name":"Purana Qila lake","name_hi":"पुराना क़िला झील","cat":"garden","lat":28.610802,"lng":77.2407191,"x":-262,"z":-150,"desc":"The lake along the west and north-west walls of the fort, with boating.","desc_hi":"क़िले की पश्चिमी और उत्तर-पश्चिमी दीवारों के साथ फैली झील, जहाँ नौका विहार होता है।","note":"","note_hi":"","icon":"boat"},{"id":"parking","name":"Parking (approximate)","name_hi":"पार्किंग (अनुमानित)","cat":"facility","lat":28.608098,"lng":77.2409442,"x":-240,"z":150,"desc":"Approximate location. Confirm on site and adjust in Manage.","desc_hi":"अनुमानित स्थान। मौक़े पर पुष्टि करें और प्रबंधन में बदलें।","note":"","note_hi":"","icon":"parking"},{"id":"swiss","name":"Swiss Embassy","name_hi":"Swiss Embassy","cat":"biennale","lat":28.6092763,"lng":77.2440627,"x":64.8,"z":19.3,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"01","featured":true},{"id":"audi","name":"Audi","name_hi":"Audi","cat":"biennale","lat":28.6089805,"lng":77.2441247,"x":70.8,"z":52.1,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"02"},{"id":"event-sher","name":"Event (Sher Mandal)","name_hi":"Event (Sher Mandal)","cat":"biennale","lat":28.6086005,"lng":77.2453431,"x":189.9,"z":94.3,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","icon":"event","num":"03","featured":true},{"id":"rmz","name":"RMZ","name_hi":"RMZ","cat":"biennale","lat":28.6090114,"lng":77.2449619,"x":152.6,"z":48.7,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"04"},{"id":"pav","name":"PAV","name_hi":"PAV","cat":"biennale","lat":28.6093449,"lng":77.245208,"x":176.7,"z":11.7,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"05"},{"id":"northeast","name":"North East","name_hi":"North East","cat":"biennale","lat":28.6092531,"lng":77.2460499,"x":259.0,"z":21.8,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"06"},{"id":"event-flag","name":"Event (behind tricolour)","name_hi":"Event (behind tricolour)","cat":"biennale","lat":28.6099583,"lng":77.24395,"x":53.8,"z":-56.4,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","icon":"event","num":"07"},{"id":"serendipity","name":"Serendipity","name_hi":"Serendipity","cat":"biennale","lat":28.610406,"lng":77.2441364,"x":72.0,"z":-106.1,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"08","featured":true},{"id":"dag","name":"DAG","name_hi":"DAG","cat":"biennale","lat":28.6107577,"lng":77.2443859,"x":96.4,"z":-145.1,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"09","featured":true},{"id":"pav-pk","name":"PAV (Payal Kapoor + Seema Kohli)","name_hi":"PAV (Payal Kapoor + Seema Kohli)","cat":"biennale","lat":28.6114547,"lng":77.2424607,"x":-91.8,"z":-222.4,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"10","artist":"Payal Kapoor, Seema Kohli"},{"id":"dhoomil","name":"Dhoomil","name_hi":"Dhoomil","cat":"biennale","lat":28.61223,"lng":77.2424624,"x":-91.6,"z":-308.4,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"11"},{"id":"student-ardee","name":"The Student Biennale (Ardee)","name_hi":"The Student Biennale (Ardee)","cat":"biennale","lat":28.6120487,"lng":77.2409319,"x":-241.2,"z":-288.3,"desc":"The Student Biennale: a platform for emerging voices, presented with Ardee Foundation.","desc_hi":"द स्टूडेंट बिएनाले: उभरती आवाज़ों का मंच, आर्डी फ़ाउंडेशन के साथ।","note":"","note_hi":"","num":"12","featured":true,"check":"These coordinates fall at the edge of the lake on the reference map; please confirm."},{"id":"pav-states","name":"PAV States","name_hi":"PAV States","cat":"biennale","lat":28.6113953,"lng":77.2420903,"x":-128.0,"z":-215.8,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"13","check":"Two coordinates were given (28.6111922, 77.2418841 and 28.6113953, 77.2420903); the later one is used."},{"id":"pati","name":"Pati","name_hi":"Pati","cat":"biennale","lat":28.6090035,"lng":77.2424611,"x":-91.8,"z":49.5,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"14","check":"Latitude was given as 20.6090035; corrected to 28.6090035."},{"id":"jsw","name":"JSW","name_hi":"JSW","cat":"biennale","lat":28.6082982,"lng":77.244008,"x":59.4,"z":127.8,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"15","featured":true},{"id":"hungary","name":"Hungary","name_hi":"Hungary","cat":"biennale","lat":28.606981,"lng":77.2453387,"x":189.5,"z":273.9,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"16","check":"Longitude was given as 77.4053387; corrected to 77.2453387."},{"id":"nmacc","name":"NMACC","name_hi":"NMACC","cat":"biennale","lat":28.6102503,"lng":77.2427873,"x":-59.9,"z":-88.8,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"17","featured":true},{"id":"knma-moc","name":"KNMA MOC","name_hi":"KNMA MOC","cat":"biennale","lat":28.6106459,"lng":77.2415055,"x":-185.1,"z":-132.7,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"18"},{"id":"knma","name":"KNMA","name_hi":"KNMA","cat":"biennale","lat":28.6101134,"lng":77.2419122,"x":-145.4,"z":-73.6,"desc":"Exhibit details to be added: title, artist and description.","desc_hi":"प्रदर्शनी का विवरण जोड़ा जाना है: शीर्षक, कलाकार और जानकारी।","note":"","note_hi":"","num":"19","featured":true},{"id":"hospitality","name":"Hospitality","name_hi":"आतिथ्य","cat":"facility","lat":28.6110485,"lng":77.2434699,"x":6.8,"z":-177.4,"desc":"Food and refreshments.","desc_hi":"भोजन और जलपान।","note":"","note_hi":"","icon":"cafe"},{"id":"hospitality-jsw","name":"Hospitality (near JSW)","name_hi":"आतिथ्य (जेएसडब्ल्यू के पास)","cat":"facility","lat":28.6074688,"lng":77.2448318,"x":139.9,"z":219.8,"desc":"Food and refreshments.","desc_hi":"भोजन और जलपान।","note":"","note_hi":"","icon":"cafe"},{"id":"amenities","name":"Amenities","name_hi":"सुविधाएँ","cat":"facility","lat":28.6107445,"lng":77.2432436,"x":-15.3,"z":-143.6,"desc":"Toilets and visitor amenities.","desc_hi":"शौचालय और आगंतुक सुविधाएँ।","note":"","note_hi":"","icon":"toilet"},{"id":"skh-vip","name":"SKH + VIP","name_hi":"SKH + VIP","cat":"facility","lat":28.6088849,"lng":77.243024,"x":-36.7,"z":62.7,"desc":"Details to be confirmed.","desc_hi":"विवरण की पुष्टि होनी है।","note":"","note_hi":"","icon":"star"},{"id":"student-entry","name":"Student entry","name_hi":"विद्यार्थी प्रवेश","cat":"gate","lat":28.6118447,"lng":77.2415521,"x":-180.6,"z":-265.7,"desc":"Entry for students.","desc_hi":"विद्यार्थियों के लिए प्रवेश।","note":"","note_hi":""},{"id":"student-gate","name":"Student Entry Gate","name_hi":"विद्यार्थी प्रवेश द्वार","cat":"gate","lat":28.6117538,"lng":77.241991,"x":-137.7,"z":-255.6,"desc":"Entry gate for students.","desc_hi":"विद्यार्थियों के लिए प्रवेश द्वार।","note":"","note_hi":""},{"id":"storage","name":"Storage","name_hi":"भंडार","cat":"facility","lat":28.6064985,"lng":77.2445492,"x":112.3,"z":327.5,"desc":"Staff only.","desc_hi":"केवल कर्मचारियों के लिए।","note":"","note_hi":"","icon":"lock","staff":true}]}</script>
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}</script>
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -398,7 +601,8 @@ const $ = s => document.querySelector(s);
 /* Each venue has its own model, walkways and places file. Positions are in metres from the venue's centre: x grows east, z grows south. */
 const VENUES = {
   'red-fort': {
-    key:'red-fort', name:'Red Fort · Lal Qila', short:'Red Fort', file:'pois.json', fallback:'poi-fallback',
+    key:'red-fort', name:'Red Fort · Lal Qila', name_hi:'लाल क़िला', short:'Red Fort', file:'pois.json', fallback:'poi-fallback',
+    geo:{lat:28.6560, lng:77.2410, approx:true},   // approximate: the model was drawn to scale but not surveyed
     poly:[[250,-420],[250,400],[170,470],[-150,470],[-260,330],[-280,30],[-250,-280],[-100,-450],[150,-460]],
     lanes:[[306,-1150,306,1150],[318,1150,318,-1150],[-446,-1150,-446,1150],[-434,1150,-434,-1150]],
     gates:[[-280,30],[-40,470]], home:{pos:[-520,600,760], target:[0,0,10]},
@@ -411,16 +615,18 @@ const VENUES = {
     build:() => buildRedFort()
   },
   'purana-qila': {
-    key:'purana-qila', name:'Purana Qila · Old Fort', short:'Purana Qila', file:'pois-purana-qila.json', fallback:'poi-fallback-pq',
-    poly:[[-150,-235],[-40,-245],[60,-245],[150,-230],[172,-120],[175,0],[168,130],[150,235],[40,250],[-60,248],[-155,235],[-172,120],[-178,0],[-170,-125]],
-    lanes:[[324,-1150,324,1150],[336,1150,336,-1150],[-486,-1150,-486,1150],[-474,1150,-474,-1150]],
-    gates:[[-178,0],[-10,249],[10,-245]], home:{pos:[-330,380,470], target:[-20,0,0]},
-    entrance:'bara', defaultStops:['bara','mosque','shermandal','humayun'],
-    noStand:[[-440,-190,-222,210]],
-    views:{bara:'w', humayun:'n', talaqi:'s', mosque:'e', museum:'n', excavation:'w', baoli:'w'},
-    base:{A:[-215,0],B:[-178,0],C:[-120,0],D:[-40,0],M1:[30,-45],S1:[35,30],N1:[10,-170],T:[10,-245],T2:[10,-300],H1:[-10,180],H:[-10,249],H2:[-10,300],
-      X1:[60,-150],E1:[75,70],L1:[-215,-160],L2:[-215,170],P1:[-230,240]},
-    edges:['A-B','B-C','C-D','D-M1','D-S1','M1-S1','M1-N1','N1-T','T-T2','S1-H1','H1-H','H-H2','M1-X1','X1-N1','S1-E1','E1-H1','C-H1','A-L1','A-L2','L2-P1'],
+    key:'purana-qila', name:'Purana Qila · Old Fort', name_hi:'पुराना क़िला', short:'Purana Qila', file:'pois-purana-qila.json', fallback:'poi-fallback-pq',
+    geo:{lat:28.60945, lng:77.2434},   // map origin: positions are metres east (x) and south (z) of this point
+    poly:[[-215,-175],[-205,-288],[-140,-302],[300,-60],[305,345],[10,370],[-80,80]],
+    lake:[[-301,-335],[-264,-341],[-239,-333],[-226,-307],[-227,-264],[-236,-223],[-234,-183],[-218,-143],[-202,-103],[-187,-57],[-172,-11],[-160,35],[-160,64],[-170,75],[-188,70],[-206,47],[-227,7],[-252,-28],[-285,-57],[-303,-91],[-310,-137],[-310,-195],[-306,-252],[-310,-298]],   // traced from the reference map: the lake lies along the west and north-west walls
+    gateAt:{talaqi:[-172,-295,.212], bara:[-99,44,.487], humayun:[157,357.5,.0845]},
+    lanes:[[-352,-1150,-352,1150],[-340,1150,-340,-1150],[-120,-460,-57,-367],[-57,-367,127,-241],[127,-241,369,-252],[369,-252,470,-330],[470,-342,369,-264],[369,-264,127,-253],[127,-253,-57,-379],[-57,-379,-130,-470]],
+    gates:[[-172,-295],[-99,44],[157,357.5]], home:{pos:[-620,700,900], target:[30,0,20]},
+    entrance:'entry', defaultStops:['entry','swiss','event-sher','dag'],
+    noStand:[[[-301,-335],[-264,-341],[-239,-333],[-226,-307],[-227,-264],[-236,-223],[-234,-183],[-218,-143],[-202,-103],[-187,-57],[-172,-11],[-160,35],[-160,64],[-170,75],[-188,70],[-206,47],[-227,7],[-252,-28],[-285,-57],[-303,-91],[-310,-137],[-310,-195],[-306,-252],[-310,-298]]],
+    views:{bara:[.884,-.468], humayun:[-.085,-.996], talaqi:[.21,.977], mosque:'e', museum:'n', excavation:'n', baoli:'w', shermandal:'w'},
+    base:{g00:[-150,-250],g01:[-150,-150],g11:[-50,-150],g12:[-50,-50],g13:[-50,50],g21:[50,-150],g22:[50,-50],g23:[50,50],g24:[50,150],g25:[50,250],g26:[50,330],g32:[150,-50],g33:[150,50],g34:[150,150],g35:[150,250],g36:[150,330],g42:[250,-50],g43:[250,50],g44:[250,150],g45:[250,250],g46:[250,330],TQ:[-172,-295],TQo:[-181,-336],TQi:[-164,-258],BA:[-99,44],BAo:[-136,64],BAi:[-65,26],HU:[157,357.5],HUo:[161,399],HUi:[154,320],E1:[-180,108],E2:[-336,112],L1:[-163,-40],L2:[-211,-150],TQn:[-95,-372],Wa:[-185,-205],Wb:[-162,-110],Wc:[-118,-20]},
+    edges:["g00-g01","g01-g11","g11-g21","g11-g12","g12-g22","g12-g13","g21-g22","g22-g23","g23-g33","g23-g24","g24-g34","g24-g25","g25-g35","g25-g26","g26-g36","g32-g33","g33-g43","g33-g34","g34-g44","g34-g35","g35-g45","g35-g36","g36-g46","g42-g43","g43-g44","g44-g45","g45-g46","TQo-TQ","TQ-TQi","TQi-g00","TQi-g01","BAo-BA","BA-BAi","BAi-g13","BAi-g12","HUo-HU","HU-HUi","HUi-g36","HUi-g35","BAo-E1","E1-E2","BAo-L1","L1-L2","TQo-TQn","TQi-Wa","Wa-Wb","Wb-Wc","Wc-BAi","Wb-g01","Wc-g12"],
     build:() => buildPuranaQila()
   }
 };
@@ -449,10 +655,13 @@ const ICONS_MAP = {
   exit:'<path d="M3 3h11v4.5h-2.2V5.2H5.2v13.6h6.6v-2.3H14V21H3zm12 4.5 6 4.5-6 4.5v-3.2H8.5v-2.6H15z"/>',
   shop:'<path d="M5 7.5h14l1.2 14H3.8zM8.5 7.5a3.5 3.5 0 0 1 7 0h-2.2a1.3 1.3 0 0 0-2.6 0z"/>',
   photo:'<path fill-rule="evenodd" d="M3 7h3.6L8.6 4h6.8l2 3H21v13H3zm9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>',
-  dig:'<path d="M2 20h20v2H2zM3 18v-3h4v-3h4V9h4V6h6v2.4h-3.6v3H13.8v3H9.8v3H5.6V18z"/>'
+  dig:'<path d="M2 20h20v2H2zM3 18v-3h4v-3h4V9h4V6h6v2.4h-3.6v3H13.8v3H9.8v3H5.6V18z"/>',
+  event:'<path fill-rule="evenodd" d="M7 2h2v2h6V2h2v2h4v17H3V4h4zm-2 7v10h14V9zm6.2 1.6.8 2.2h2.4l-1.9 1.4.7 2.3-2-1.4-2 1.4.7-2.3-1.9-1.4h2.4z"/>',
+  lock:'<path fill-rule="evenodd" d="M12 2a5 5 0 0 0-5 5v3H5v12h14V10h-2V7a5 5 0 0 0-5-5zm-2.8 8V7a2.8 2.8 0 0 1 5.6 0v3zM12 13.5a1.8 1.8 0 0 1 1 3.3V19h-2v-2.2a1.8 1.8 0 0 1 1-3.3z"/>',
+  star:'<path d="m12 2.5 2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5-4.9-4.5 6.6-.8z"/>'
 };
 const ICON_NAMES = {gate:'Gate', dome:'Monument', museum:'Museum', tree:'Garden', spark:'Biennale exhibit', toilet:'Toilets', cafe:'Cafe or food', info:'Information', ticket:'Tickets / pass check',
-  firstaid:'First aid', water:'Drinking water', parking:'Parking', accessible:'Accessible facility', boat:'Boating', exit:'Exit', shop:'Shop', photo:'Photo spot', dig:'Excavation'};
+  firstaid:'First aid', water:'Drinking water', parking:'Parking', accessible:'Accessible facility', boat:'Boating', exit:'Exit', shop:'Shop', photo:'Photo spot', dig:'Excavation', event:'Event', lock:'Staff only', star:'VIP / special'};
 const CAT_ICON = {gate:'gate', monument:'dome', museum:'museum', garden:'tree', biennale:'spark', facility:'info'};
 const iconKey = p => (p?.icon && ICONS_MAP[p.icon]) ? p.icon : (CAT_ICON[p?.cat] || 'dome');
 const iconSvg = k => `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${ICONS_MAP[k] || ICONS_MAP.dome}</svg>`;
@@ -462,6 +671,102 @@ const CATS = {
 };
 const CAT_ORDER = ['gate','monument','museum','garden','biennale','facility'];
 const WALK_M_PER_MIN = 70;
+
+/* Hindi interface text, keyed by the English text. */
+const HI = {
+  // categories and map symbols
+  'Gates':'द्वार', 'Gate':'द्वार', 'Palaces & monuments':'महल और स्मारक', 'Monument':'स्मारक', 'Museums':'संग्रहालय', 'Museum':'संग्रहालय',
+  'Gardens':'बाग़', 'Garden':'बाग़', 'Biennale':'बिएनाले', 'Biennale exhibit':'बिएनाले प्रदर्शनी', 'Visitor services':'आगंतुक सुविधाएँ', 'Visitor service':'आगंतुक सुविधा',
+  'Toilets':'शौचालय', 'Cafe or food':'कैफ़े या भोजन', 'Information':'जानकारी', 'Tickets / pass check':'टिकट / पास जाँच', 'First aid':'प्राथमिक चिकित्सा',
+  'Drinking water':'पीने का पानी', 'Parking':'पार्किंग', 'Accessible facility':'सुगम सुविधा', 'Boating':'नौका विहार', 'Exit':'निकास', 'Shop':'दुकान',
+  'Photo spot':'फ़ोटो स्थल', 'Excavation':'उत्खनन', 'Event':'कार्यक्रम', 'Staff only':'केवल कर्मचारी', 'VIP / special':'वीआईपी / विशेष',
+  // info sections
+  'Dates':'तारीख़ें', 'Opening hours':'खुलने का समय', 'Biennale Pass':'बिएनाले पास', 'Visiting the exhibits':'प्रदर्शनियाँ देखते समय', 'Help':'सहायता', 'Accessibility':'सुगम्यता',
+  'Map symbols':'नक़्शे के चिह्न', 'Getting here':'यहाँ कैसे पहुँचें', 'Open street map':'सड़क का नक़्शा खोलें', 'Directions in OpenStreetMap':'OpenStreetMap में रास्ता',
+  'Places follow the venue team’s coordinates. Buildings in the 3D model are simplified.':'स्थान आयोजन टीम के निर्देशांकों पर आधारित हैं। 3D मॉडल में इमारतें सरल रूप में हैं।',
+  'Positions are approximate. Buildings in the 3D model are simplified.':'स्थान अनुमानित हैं। 3D मॉडल में इमारतें सरल रूप में हैं।',
+  'Street map data © OpenStreetMap contributors.':'सड़क नक़्शे का डेटा © OpenStreetMap योगदानकर्ता।',
+  'The India Biennale ’26':'द इंडिया बिएनाले ’26',
+  // static interface
+  '3D map':'3D नक़्शा', '360° view':'360° दृश्य', 'Previous place':'पिछला स्थान', 'Next place':'अगला स्थान', 'Back to ground level':'ज़मीनी स्तर पर लौटें',
+  'Walk view':'सैर का दृश्य', 'Map':'नक़्शा', 'Follow':'पीछे-पीछे', 'Eyes':'आँखों से', 'Watch from above':'ऊपर से देखें', 'Walk behind the guide':'गाइड के पीछे चलें',
+  'See what the guide sees':'गाइड जो देखता है, वह देखें', 'Walking speed':'चलने की गति', 'Pause walk':'सैर रोकें', 'Resume walk':'सैर जारी रखें', 'Walk again':'फिर से सैर करें',
+  'Skip to next stop':'अगले पड़ाव पर जाएँ', 'Sound':'आवाज़', 'Follow the walk':'सैर के साथ चलें', 'End guided walk':'निर्देशित सैर समाप्त करें',
+  'Expand or collapse panel':'पैनल खोलें या बंद करें', 'The India Biennale ’26 · 4 Dec 2026 – 21 Mar 2027':'द इंडिया बिएनाले ’26 · 4 दिसंबर 2026 – 21 मार्च 2027',
+  'Venue':'स्थल', 'Red Fort':'लाल क़िला', 'Purana Qila':'पुराना क़िला', 'Explore':'खोजें', 'Exhibits':'प्रदर्शनियाँ', 'Directions':'रास्ता', 'Info':'जानकारी',
+  'Search places':'स्थान खोजें', 'Drag the map to rotate it, pinch or scroll to zoom.':'नक़्शा घुमाने के लिए खींचें, ज़ूम के लिए पिंच या स्क्रॉल करें।',
+  'Search exhibits or artists':'प्रदर्शनी या कलाकार खोजें', 'Show':'दिखाएँ', 'All':'सभी', 'To visit':'देखना बाकी', 'Visited':'देख लिया', 'Highlights':'मुख्य आकर्षण', 'Highlight':'मुख्य आकर्षण',
+  'A walk through the highlighted exhibits, or a 360° walkthrough that shows each one at eye level with the guide reading it out.':'मुख्य प्रदर्शनियों की सैर, या 360° सैर जिसमें हर प्रदर्शनी आँखों की ऊँचाई से दिखती है और गाइड उसके बारे में पढ़कर सुनाता है।',
+  'Plan highlights walk':'मुख्य आकर्षणों की सैर बनाएँ', '360° walkthrough':'360° सैर', 'Clear visited':'देखे गए हटाएँ',
+  'My stops':'मेरे पड़ाव', 'Stops in visiting order':'देखने के क्रम में पड़ाव', 'Tap places on the map to add them, or use “Add stop”. Stop 1 is where you start.':'जोड़ने के लिए नक़्शे पर स्थान छुएँ, या “पड़ाव जोड़ें” दबाएँ। पड़ाव 1 से आपकी शुरुआत होगी।',
+  '+ Add stop':'+ पड़ाव जोड़ें', 'Clear stops':'पड़ाव हटाएँ', 'Use my location':'मेरी लोकेशन लें', 'Find the shortest order':'सबसे छोटा क्रम खोजें', 'Keep my last stop last':'मेरा आख़िरी पड़ाव आख़िर में रखें',
+  'Show route':'रास्ता दिखाएँ', 'Hide route':'रास्ता छिपाएँ', 'Visit every place':'हर स्थान देखें',
+  'Plans one walking loop through all places, starting from stop 1 and taking the nearest unvisited place next.':'पड़ाव 1 से शुरू करके सभी स्थानों का एक पैदल चक्कर बनाता है, हर बार सबसे नज़दीकी बचा हुआ स्थान चुनते हुए।',
+  'Include visitor services':'आगंतुक सुविधाएँ भी शामिल करें', 'Plan full tour':'पूरी सैर बनाएँ', 'Face north':'उत्तर की ओर करें', 'Zoom in':'पास से देखें', 'Zoom out':'दूर से देखें',
+  'Top view':'ऊपर से दृश्य', 'Reset view':'दृश्य रीसेट करें', 'Street map':'सड़क का नक़्शा', 'Map controls':'नक़्शा नियंत्रण', 'Map view':'नक़्शा दृश्य',
+  'Language':'भाषा', '3D map. Drag to rotate, scroll or pinch to zoom.':'3D नक़्शा। घुमाने के लिए खींचें, ज़ूम के लिए स्क्रॉल या पिंच करें।',
+  // places, stops and routes
+  '← All places':'← सभी स्थान', 'At the Biennale':'बिएनाले में', 'Artist: {a}':'कलाकार: {a}', 'No. {n}':'क्र. {n}', 'Exhibit {n}':'प्रदर्शनी {n}',
+  'Add to my stops':'मेरे पड़ावों में जोड़ें', 'Already in my stops':'पहले से मेरे पड़ावों में', 'Directions from entrance':'प्रवेश द्वार से रास्ता', 'Directions from here':'यहाँ से रास्ता',
+  'Open 360° view':'360° दृश्य खोलें', 'Show on map':'नक़्शे पर दिखाएँ', 'Mark as visited':'देखा हुआ चिह्नित करें', 'Marked {p} as visited':'{p} देखा हुआ चिह्नित',
+  'No places match. Clear the search or turn a category back on.':'कोई स्थान नहीं मिला। खोज हटाएँ या कोई श्रेणी फिर से चालू करें।',
+  'No stops yet. Tap places on the map or use “Add stop”.':'अभी कोई पड़ाव नहीं। नक़्शे पर स्थान छुएँ या “पड़ाव जोड़ें” दबाएँ।',
+  'Drag to reorder':'क्रम बदलने के लिए खींचें', 'Move stop {n}, {p}. Drag it, or use the up and down arrow keys.':'पड़ाव {n}, {p} को खिसकाएँ। खींचें, या ऊपर-नीचे तीर कुंजियाँ दबाएँ।',
+  'Stop {n}':'पड़ाव {n}', 'Stop {n}.':'पड़ाव {n}।', 'Remove':'हटाएँ', '1 stop':'1 पड़ाव', '{n} stops':'{n} पड़ाव', 'stops':'पड़ाव',
+  'Using your order. Tick “Find the shortest order” to let the map reorder stops.':'आपका क्रम रखा गया है। नक़्शे से क्रम बदलवाने के लिए “सबसे छोटा क्रम खोजें” चुनें।',
+  '{p} is already stop {n}':'{p} पहले से पड़ाव {n} है', 'Added {p} as stop {n}':'{p} को पड़ाव {n} के रूप में जोड़ा',
+  '{n} km':'{n} कि.मी.', '{n} m':'{n} मी.', '{n} min':'{n} मिनट', '{h} h':'{h} घंटे',
+  'Add at least two stops.':'कम से कम दो पड़ाव जोड़ें।', 'No walkway reaches {p}.':'{p} तक कोई पैदल रास्ता नहीं पहुँचता।', 'via {list}':'{list} होते हुए',
+  'Start here':'यहाँ से शुरू करें', '{d} from stop {n}, about {t}':'पड़ाव {n} से {d}, लगभग {t}', 'Your route · {n} stops':'आपका रास्ता · {n} पड़ाव',
+  'Full tour from {p}':'{p} से पूरी सैर', 'Start':'शुरुआत', 'walking distance':'पैदल दूरी', 'walking time, plus visits':'पैदल समय, देखने का समय अलग', 'at an easy pace':'आराम की चाल से',
+  'Start guided walk':'निर्देशित सैर शुरू करें', 'Test sound':'आवाज़ जाँचें',
+  'The guided walk moves along your route and reads out each stop’s name and description when it gets there.':'निर्देशित सैर आपके रास्ते पर चलती है और हर पड़ाव पर पहुँचकर उसका नाम और विवरण पढ़कर सुनाती है।',
+  // voice and walk
+  'Sound is on.':'आवाज़ चालू है।', 'Sound check. Each stop will be read out like this when the walker arrives.':'आवाज़ की जाँच। गाइड के पहुँचने पर हर पड़ाव ऐसे ही पढ़कर सुनाया जाएगा।',
+  'This device has no voice for reading aloud. Descriptions show on screen instead.':'इस डिवाइस में पढ़कर सुनाने की आवाज़ नहीं है। विवरण स्क्रीन पर दिखेंगे।',
+  'Reading aloud is turned off for this page.':'इस पेज के लिए पढ़कर सुनाना बंद है।', 'Could not play sound. Check the device volume and try again.':'आवाज़ नहीं चल सकी। डिवाइस की आवाज़ जाँचकर फिर कोशिश करें।',
+  'Reading aloud is not available on this device. Descriptions show on screen.':'इस डिवाइस पर पढ़कर सुनाना उपलब्ध नहीं है। विवरण स्क्रीन पर दिखते हैं।',
+  'Reading aloud is turned off for this page. Descriptions show on screen.':'इस पेज के लिए पढ़कर सुनाना बंद है। विवरण स्क्रीन पर दिखते हैं।',
+  'No voice found on this device. Descriptions show on screen.':'इस डिवाइस पर कोई आवाज़ नहीं मिली। विवरण स्क्रीन पर दिखते हैं।',
+  'Sound paused. Tap “Sound” to hear it again.':'आवाज़ रुकी है। फिर सुनने के लिए “आवाज़” छुएँ।', 'Reading aloud…':'पढ़कर सुनाया जा रहा है…',
+  'No Hindi voice on this device, so stops are read in English.':'इस डिवाइस पर हिन्दी आवाज़ नहीं है, इसलिए पड़ाव अंग्रेज़ी में पढ़े जाते हैं।',
+  'Sound on':'आवाज़ चालू', 'Sound off':'आवाज़ बंद', 'Sound is on. Turn sound off':'आवाज़ चालू है। आवाज़ बंद करें', 'Sound is off. Turn sound on':'आवाज़ बंद है। आवाज़ चालू करें',
+  'Turn sound off':'आवाज़ बंद करें', 'Turn sound on':'आवाज़ चालू करें', 'Sound: on':'आवाज़: चालू', 'Sound: off':'आवाज़: बंद', 'End walk':'सैर समाप्त करें',
+  'Starting at':'शुरुआत', 'This is your last stop.':'यह आपका आख़िरी पड़ाव है।',
+  'Claude’s voice did not start here, so the device voice is used instead.':'यहाँ Claude की आवाज़ शुरू नहीं हुई, इसलिए डिवाइस की आवाज़ इस्तेमाल हो रही है।',
+  'Start · stop 1 of {m}':'शुरुआत · {m} में से पड़ाव 1', 'Stop {n} of {m}':'{m} में से पड़ाव {n}', 'Walking to stop {n} of {m}':'{m} में से पड़ाव {n} की ओर',
+  'Walk complete':'सैर पूरी हुई', 'Press play to walk it again, or close the player.':'फिर से सैर के लिए प्ले दबाएँ, या प्लेयर बंद करें।',
+  'Could not load the 360° photo for {p}.':'{p} की 360° फ़ोटो लोड नहीं हो सकी।', 'Aerial view, {n} m up':'हवाई दृश्य, {n} मी. ऊपर', '360° photo':'360° फ़ोटो', 'Ground level':'ज़मीनी स्तर',
+  '360° photo on':'360° फ़ोटो चालू', 'Show 360° photo':'360° फ़ोटो दिखाएँ', 'Drag to look around. Zoom out to rise into an aerial view.':'चारों ओर देखने के लिए खींचें। हवाई दृश्य के लिए ज़ूम आउट करें।',
+  'move to another place':'दूसरे स्थान पर जाने', 'go to {p}':'{p} जाने', 'add {p} as a stop':'{p} को पड़ाव जोड़ने',
+  'A guided walk is running. End it to {w}?':'निर्देशित सैर चल रही है। {w} के लिए इसे समाप्त करें?', 'The route changed, so the guided walk stopped.':'रास्ता बदल गया, इसलिए निर्देशित सैर रुक गई।',
+  // exhibits
+  '{v} of {n} exhibits visited':'{n} में से {v} प्रदर्शनियाँ देखीं', 'No exhibits match.':'कोई प्रदर्शनी नहीं मिली।', 'No exhibits have been added for this venue yet.':'इस स्थल के लिए अभी कोई प्रदर्शनी नहीं जोड़ी गई है।',
+  // location, street map, kiosk
+  'You are here':'आप यहाँ हैं', 'Finding your location…':'आपकी लोकेशन खोजी जा रही है…', 'You seem to be away from {v}. Choose a starting stop instead.':'लगता है आप {v} से दूर हैं। इसके बजाय शुरुआती पड़ाव चुनें।',
+  'Starting from the nearest place: {p}':'सबसे नज़दीकी स्थान से शुरुआत: {p}', 'Could not get your location. Allow location access, or choose a starting stop.':'आपकी लोकेशन नहीं मिली। लोकेशन की अनुमति दें, या शुरुआती पड़ाव चुनें।',
+  'Loading the street map…':'सड़क का नक़्शा लोड हो रहा है…', 'The street map could not load here (offline or blocked). The 3D map works without it.':'सड़क का नक़्शा यहाँ लोड नहीं हो सका (ऑफ़लाइन या रोका गया)। 3D नक़्शा इसके बिना भी काम करता है।',
+  'Street tiles can’t load here (offline or blocked). Pins and the fort outline still show.':'सड़क के नक़्शे के हिस्से यहाँ लोड नहीं हो सकते (ऑफ़लाइन या रोका गया)। पिन और क़िले की रूपरेखा फिर भी दिखती है।',
+  'Street map © OpenStreetMap contributors. Positions here are approximate.':'सड़क का नक़्शा © OpenStreetMap योगदानकर्ता। यहाँ स्थान अनुमानित हैं।',
+  'Street map © OpenStreetMap contributors. Pins use the venue team’s coordinates.':'सड़क का नक़्शा © OpenStreetMap योगदानकर्ता। पिन आयोजन टीम के निर्देशांकों पर हैं।',
+  'Bhairon Marg':'भैरों मार्ग', 'Delhi Zoo ↓':'दिल्ली चिड़ियाघर ↓', 'Mathura Road':'मथुरा रोड', 'Moat':'खाई', 'Netaji Subhash Marg':'नेताजी सुभाष मार्ग', 'Pragati Maidan ↗':'प्रगति मैदान ↗',
+  'Purana Qila lake':'पुराना क़िला झील', 'Ring Road':'रिंग रोड', 'Salimgarh Fort ↑':'सलीमगढ़ क़िला ↑', 'Yamuna':'यमुना', '← Chandni Chowk':'← चाँदनी चौक',
+  'Still exploring? The map will reset in a few seconds.':'अभी देख रहे हैं? नक़्शा कुछ सेकंड में रीसेट होगा।', 'Keep exploring':'देखना जारी रखें'
+};
+
+/* ================= language: English / हिन्दी =================
+   UI text is written in English and looked up in HI. Place text comes from name_hi / desc_hi / note_hi
+   in the data file, falling back to English where a translation is missing. */
+let LANG = 'en';
+try{ const q = new URLSearchParams(location.search).get('lang'); LANG = (q || localStorage.getItem('bfm-lang')) === 'hi' ? 'hi' : 'en'; }catch{}
+function T(s, v, lang=LANG){ let r = (lang === 'hi' && HI[s]) || s; if(v) r = r.replace(/\{(\w+)\}/g, (m,k) => v[k] ?? m); return r; }
+const pf = (p, k, lang=LANG) => (lang === 'hi' && p?.[k+'_hi']) || p?.[k] || '';
+const pName = (p, lang) => pf(p, 'name', lang);
+/* Geo-reference: positions are metres east (x) and south (z) of VENUE.geo. */
+const GEO = VENUE.geo || null;
+const M_LAT = 110950, M_LNG = GEO ? 111320*Math.cos(GEO.lat*Math.PI/180) : 1;
+const toLocal = (lat, lng) => [Math.round((lng - GEO.lng)*M_LNG*10)/10, Math.round((GEO.lat - lat)*M_LAT*10)/10];
+const toLatLng = (x, z) => [+(GEO.lat - z/M_LAT).toFixed(7), +(GEO.lng + x/M_LNG).toFixed(7)];
 
 /* ================= data ================= */
 let saved = { pois: [] };
@@ -474,8 +779,27 @@ async function loadData(){
     if(!r.ok) throw 0;
     saved = await r.json();
   }catch{ try{ saved = JSON.parse(document.getElementById(VENUE.fallback).textContent); }catch{ saved = {pois:[]}; } }
+  if(GEO) for(const p of saved.pois || []){
+    if(Number.isFinite(+p.lat) && Number.isFinite(+p.lng) && p.lat !== '' && p.lng !== ''){ [p.x, p.z] = toLocal(+p.lat, +p.lng); }
+    else if(Number.isFinite(p.x)){ [p.lat, p.lng] = toLatLng(p.x, p.z); }
+  }
+  INFO = structuredClone(saved.info || DEFAULT_INFO);
   pois = structuredClone(saved.pois || []);
 }
+const DEFAULT_INFO = {
+  dates:{en:'4 December 2026 – 21 March 2027', hi:'4 दिसंबर 2026 – 21 मार्च 2027'},
+  hours:{en:'Opening hours: to be confirmed by the organisers.', hi:'खुलने का समय: आयोजकों द्वारा पुष्टि की जानी है।'},
+  pass:{en:'The Biennale Pass covers participating monuments and the exhibitions and programmes within them.', hi:'बिएनाले पास में भाग लेने वाले स्मारक और उनके भीतर की प्रदर्शनियाँ व कार्यक्रम शामिल हैं।'},
+  rules:{en:'Please don’t touch the artworks unless invited to.', hi:'कृपया कलाकृतियों को न छुएँ, जब तक ऐसा करने को न कहा जाए।'},
+  help:{en:'Ask at the Biennale info desk or any volunteer.', hi:'बिएनाले सूचना डेस्क या किसी भी स्वयंसेवक से पूछें।'},
+  access:{en:'Accessibility details: to be confirmed.', hi:'सुगम्यता की जानकारी: पुष्टि होनी है।'}
+};
+const INFO_KEYS = {dates:'Dates', hours:'Opening hours', pass:'Biennale Pass', rules:'Visiting the exhibits', help:'Help', access:'Accessibility'};
+let INFO = DEFAULT_INFO;
+/* Who sees what: staff-only points are visible in Manage only. */
+let editorMode = false;
+const shown = p => !!p && (!p.staff || editorMode);
+const visPois = () => pois.filter(shown);
 
 /* ================= scene ================= */
 const mapEl = $('#map');
@@ -773,7 +1097,8 @@ function plantTrees(treePts, cypress=[]){
   for(const m of [crown,trunk,cyp]){ m.castShadow = true; m.receiveShadow = true; scene.add(m); }
 }
 const scatterInto = (list, cx,cz,w,d,n, avoid=() => false) => { for(let i=0;i<n;i++){ const x = cx-w/2+rnd()*w, z = cz-d/2+rnd()*d; if(!avoid(x,z)) list.push([x, z, .8+rnd()*.5]); } };
-function ctxLabel(text,x,z,y=2){ const d = document.createElement('div'); d.className='ctx'; d.textContent = text; const o = new CSS2DObject(d); o.position.set(x,y,z); scene.add(o); return o; }
+const CTX = [];
+function ctxLabel(text,x,z,y=2){ const d = document.createElement('div'); d.className='ctx'; d.textContent = T(text); d.dataset.en = text; CTX.push(d); const o = new CSS2DObject(d); o.position.set(x,y,z); scene.add(o); return o; }
 
 /* ================= Red Fort ================= */
 function buildRedFort(){
@@ -884,16 +1209,20 @@ function buildRedFort(){
 
 /* ================= Purana Qila ================= */
 function buildPuranaQila(){
-  const BAOLI = [95,-150], DIG = [110,95];
-  buildGround([rect(BAOLI[0],BAOLI[1],22,22), rect(DIG[0],DIG[1],60,34)], M.grass, null);
-  // lake along the west side, with a stone edge and boats
-  plane(210,390,M.water,-332,10,.05);
-  box(212,.7,2,M.stone,-332,-186,0,0,false); box(212,.7,2,M.stone,-332,206,0,0,false); box(2,.7,392,M.stone,-226,10,0,0,false); box(2,.7,392,M.stone,-438,10,0,0,false);
+  // Positions follow the venue team's coordinates (see VENUE.geo). The wall outline and monuments are approximate.
+  const PQ_SEED = (() => { try{ return JSON.parse(document.getElementById(VENUE.fallback).textContent).pois || []; }catch{ return []; } })();
+  const BAOLI = [225,-45], DIG = [26,52], SM = [190,70], MQ = [110,-45], MUS = [-30,135], LAKE = VENUE.lake;
+  buildGround([rect(BAOLI[0],BAOLI[1],22,22), rect(DIG[0],DIG[1],40,22)], M.grass, null);
+  // the lake along the west and north-west walls (outline traced from the reference map), with a stone edge and boats
+  poly(LAKE, M.water, .05).receiveShadow = false;   // no shadow acne at the edge of the shadow map
+  LAKE.forEach((p, k) => strip(p, LAKE[(k+1) % LAKE.length], 1.6, M.stone, 0));
+  const inLake = (x, z, m=0) => inPoly(LAKE, x, z) && (m <= 0 || [[m,0],[-m,0],[0,m],[0,-m]].every(([dx,dz]) => inPoly(LAKE, x+dx, z+dz)));
+  const boatLoops = [[-268,-290,14,30],[-272,-175,18,40],[-245,-85,16,26],[-205,-10,10,24],[-283,-235,10,22],[-230,-50,10,20]];
   const boatHull = new THREE.MeshStandardMaterial({color:0xf3efe6, roughness:.6}), boatTop = new THREE.MeshStandardMaterial({color:0xc0392b, roughness:.7});
   const skin = new THREE.MeshLambertMaterial({color:0x7a4e33}), wakeMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.35, depthWrite:false});
   const shirts = [0x2e86c1,0xf1c40f,0x27ae60,0xe67e22,0x8e44ad,0xecf0f1];
   const wakeShape = new THREE.Shape([new THREE.Vector2(0,-3), new THREE.Vector2(-3.4,-14), new THREE.Vector2(3.4,-14)]);
-  for(let i=0;i<6;i++){
+  for(let i=0;i<(LITE ? 4 : 6);i++){
     const g = new THREE.Group();
     const hull = new THREE.Mesh(new THREE.BoxGeometry(2.6,.9,6.4), boatHull); hull.position.y = .6;
     const bow = new THREE.Mesh(new THREE.ConeGeometry(1.3,2.2,4), boatHull); bow.rotation.set(Math.PI/2,Math.PI/4,0); bow.scale.set(1,1,.45); bow.position.set(0,.6,4.2);
@@ -904,28 +1233,27 @@ function buildPuranaQila(){
     const oars = new THREE.Group(); for(const a of [-1,1]){ const o = new THREE.Mesh(new THREE.BoxGeometry(2.2,.06,.14), boatHull); o.position.set(a*1.9,1.2,0); oars.add(o); } oars.position.z = -1.2;
     const wake = new THREE.Mesh(new THREE.ShapeGeometry(wakeShape), wakeMat); wake.rotation.x = -Math.PI/2; wake.position.y = .12;
     g.add(hull, bow, top, rower, head, oars, wake); g.scale.setScalar(1.5); scene.add(g);
-    BOATS.push({g, oars, wake, cx:-332, cz:10, rx:28 + i*11, rz:60 + i*19, a:rnd()*Math.PI*2, w:(i%2 ? -1 : 1)*(.05 - i*.004), bob:rnd()*6});
+    const [bx, bz, brx, brz] = boatLoops[i]; BOATS.push({g, oars, wake, cx:bx, cz:bz, rx:brx, rz:brz, a:rnd()*Math.PI*2, w:(i%2 ? -1 : 1)*(.09 - i*.008), bob:rnd()*6});
   }
-  plane(26,2400,M.road,330,0,.06);                 // Mathura Road
-  plane(24,2400,M.road,-480,0,.06);                // Bhairon Marg
-  plane(90,60,M.road,-262,250,.06);                // parking
-  plane(24,90,M.road,-10,330,.06);                 // south approach
-  plane(24,90,M.road,10,-330,.06);                 // north approach
-  buildWalls({height:16, bastionEvery:120, kioskOnBastion:(k,i) => k===0 && i%2===0});
-  gate(-178,0,true,{outer:-1, round:true, kiosks:5, H:24});            // Bara Darwaza
-  gate(-10,249,false,{outer:1, round:true, kiosks:5, H:22});           // Humayun Darwaza
-  gate(10,-245,false,{outer:-1, round:true, kiosks:5, H:22});          // Talaqi Darwaza
-  addFlag(-178, 25, 0, Math.PI/2);
+  plane(26,2400,M.road,-346,0,.06);                // Mathura Road (west, beyond the lake)
+  for(const [p, q] of [[[-130,-475],[-57,-373]], [[-57,-373],[127,-247]], [[127,-247],[369,-258]], [[369,-258],[480,-345]]]) strip(p, q, 24, M.road, -.08);   // Bhairon Marg (north-east)
+  strip([-134,63],[-180,108],10,M.path,0); strip([-180,108],[-336,112],12,M.road,-.08);   // approach from Mathura Road, south of the lake
+  plane(70,50,M.road,-240,150,.06);                // parking (approximate)
+  buildWalls({height:18, bastionEvery:140, kioskOnBastion:(k,i) => k===0 && i%2===0});
+  const GA = VENUE.gateAt;
+  gateTurned(GA.bara[0], GA.bara[1], true, {outer:-1, round:true, kiosks:5, H:26}, GA.bara[2]);          // Bara Darwaza (west, facing the lake)
+  gateTurned(GA.humayun[0], GA.humayun[1], false, {outer:1, round:true, kiosks:5, H:24}, GA.humayun[2]); // Humayun Darwaza (south)
+  gateTurned(GA.talaqi[0], GA.talaqi[1], false, {outer:-1, round:true, kiosks:5, H:24}, GA.talaqi[2]);   // Talaqi Darwaza (north)
+  addFlag(48, 0, -44, 0);                                              // tricolour (Biennale event behind it)
   // Qila-i-Kuhna Mosque: prayer hall facing east, five arched bays, single dome, corner turrets, paved courtyard
-  plane(46,62,M.path,32,-70,.12);
-  box(20,1.4,58,M.stoneDark,0,-70);
-  box(11,13,52,M.stoneDark,-2.5,-70,1.4);                                // recessed hall behind the arches
-  facade(arcadeGeo(52, 13, 5, 1.6, {open:.62, apex:.88}), M.stone, 6.6, -70, 'e', 1.4);
-  box(16.6,.8,54,M.marble,-.2,-70,14.4); parapet(-.2,-70,16,54,15.2,M.stone,2.4);
-  dome(6.5, M.stone, -2, -70, 15.2);
-  for(const tz of [-96.5,-43.5]){ cyl(2.6,17,M.stone,-8,tz,0,8); chhatri(-8,tz,17,.55); }
+  plane(46,62,M.path,MQ[0]+32,MQ[1],.12);
+  box(20,1.4,58,M.stoneDark,MQ[0],MQ[1]);
+  box(11,13,52,M.stoneDark,MQ[0]-2.5,MQ[1],1.4);
+  facade(arcadeGeo(52, 13, 5, 1.6, {open:.62, apex:.88}), M.stone, MQ[0]+6.6, MQ[1], 'e', 1.4);
+  box(16.6,.8,54,M.marble,MQ[0]-.2,MQ[1],14.4); parapet(MQ[0]-.2,MQ[1],16,54,15.2,M.stone,2.4);
+  dome(6.5, M.stone, MQ[0]-2, MQ[1], 15.2);
+  for(const dz of [-26.5,26.5]){ cyl(2.6,17,M.stone,MQ[0]-8,MQ[1]+dz,0,8); chhatri(MQ[0]-8,MQ[1]+dz,17,.55); }
   // Sher Mandal: two-storey octagonal tower with arched bays and a domed kiosk on top
-  const SM = [60,30];
   cyl(11,1.4,M.stoneDark,SM[0],SM[1],0,8);
   cyl(9,8,M.stone,SM[0],SM[1],1.4,8);
   cyl(9.7,.7,M.stoneDark,SM[0],SM[1],9.4,8);
@@ -938,26 +1266,40 @@ function buildPuranaQila(){
     facadeAt(arcadeGeo(2*7.4*Math.sin(Math.PI/8), 6.5, 1, .6, {open:.5}), M.stone, SM[0]+s1*ap2, SM[1]+c1*ap2, phi+Math.PI, 10.1);
   }
   chhatri(SM[0],SM[1],17.2,1.05);
-  // Archaeological Site Museum
-  box(34,7,13,M.barrack,-120,72.5);
-  facade(arcadeGeo(34,6.5,7,.8,{open:.6}), M.barrack, -120, 65.2, 'n');
-  box(35,.8,15,M.barrack,-120,72,7); parapet(-120,72,35,15,7.8,M.barrack,3);
+  // Archaeological Site Museum (front faces north)
+  box(34,7,13,M.barrack,MUS[0],MUS[1]);
+  facade(arcadeGeo(34,6.5,7,.8,{open:.6}), M.barrack, MUS[0], MUS[1]-7.3, 'n');
+  box(35,.8,15,M.barrack,MUS[0],MUS[1],7); parapet(MUS[0],MUS[1],35,15,7.8,M.barrack,3);
   // Stepwell and excavation trenches
   pit(BAOLI[0], BAOLI[1], 22, 22, 6, 1.3, 1.5, M.stone, M.water);
-  pit(DIG[0], DIG[1], 60, 34, 3, 1.6, 4, M.stoneDark, M.inn);
-  for(const [dx,dz,w,d] of [[-14,-4,10,1],[-6,5,1,9],[8,-3,12,1],[16,4,1,7],[2,6,9,1]]) box(w,1.1,d,M.stoneDark,DIG[0]+dx,DIG[1]+dz,-4.8,0,false);
-  // lawn edging and trees
+  pit(DIG[0], DIG[1], 40, 22, 3, 1.4, 3, M.stoneDark, M.inn);
+  for(const [dx,dz,w,d] of [[-9,-2,8,1],[-3,3,1,6],[6,-2,9,1],[10,3,1,5]]) box(w,1,d,M.stoneDark,DIG[0]+dx,DIG[1]+dz,-4.2,0,false);
+  // trees: keep walkways, monuments and exhibit spots clear
   const treePts = [], cypress = [];
-  const clear = (x,z) => !insideFortPoly(x,z,-10) || Math.hypot(x-SM[0],z-SM[1]) < 18 || (x>-14 && x<60 && z>-105 && z<-35) || (Math.abs(x-BAOLI[0])<18 && Math.abs(z-BAOLI[1])<18)
-    || (Math.abs(x-DIG[0])<36 && Math.abs(z-DIG[1])<22) || (Math.abs(x+120)<24 && Math.abs(z-72)<14) || Math.abs(z) < 12 && x < -30 || Math.abs(x-10) < 10 && z < -150 || Math.abs(x+10) < 10 && z > 170;
-  scatterInto(treePts, -90,-150,120,130,20, clear); scatterInto(treePts, -95,160,120,130,18, clear);
-  scatterInto(treePts, 125,-30,70,140,10, clear); scatterInto(treePts, 110,195,80,60,7, clear); scatterInto(treePts, -60,-20,40,40,3, clear);
-  for(let x=-165; x<=-40; x+=16){ cypress.push([x,-11]); cypress.push([x,11]); }
-  scatterInto(treePts, 420,440,500,420,120); scatterInto(treePts, -360,-420,300,200,40); scatterInto(treePts, -360,420,300,200,35); scatterInto(treePts, 260,-420,400,200,50);
-  for(let z=-1100; z<=1100; z+=34){ treePts.push([350,z,1.05]); treePts.push([-500,z,1]); }
+  const onPath = (x,z) => VENUE.edges.some(e => { const [a,b] = e.split('-').map(k => VENUE.base[k]); const vx=b[0]-a[0], vz=b[1]-a[1]; const t = Math.max(0,Math.min(1,((x-a[0])*vx+(z-a[1])*vz)/(vx*vx+vz*vz))); return Math.hypot(x-a[0]-vx*t, z-a[1]-vz*t) < 9; });
+  const spots = [SM, MQ, MUS, BAOLI, DIG];
+  const clear = (x,z) => !insideFortPoly(x,z,-14) || onPath(x,z) || spots.some(([sx,sz]) => Math.hypot(x-sx,z-sz) < 36) || (x > MQ[0]-14 && x < MQ[0]+60 && Math.abs(z-MQ[1]) < 40)
+    || PQ_SEED.some(p => Math.hypot(x-p.x, z-p.z) < 16);
+  scatterInto(treePts, 0,0,600,700,LITE ? 110 : 170, clear);
+  const outside = (x,z) => insideFortPoly(x,z,30) || inPoly(LAKE,x,z) || Math.abs(x+346) < 22 || onPath(x,z) || bhairon(x,z);
+  const bhairon = (x,z) => [[[-130,-475],[-57,-373]],[[-57,-373],[127,-247]],[[127,-247],[369,-258]],[[369,-258],[480,-345]]].some(([a,b]) => { const vx=b[0]-a[0], vz=b[1]-a[1]; const t=Math.max(0,Math.min(1,((x-a[0])*vx+(z-a[1])*vz)/(vx*vx+vz*vz))); return Math.hypot(x-a[0]-vx*t, z-a[1]-vz*t) < 22; });
+  scatterInto(treePts, 150,560,900,320,90, outside); scatterInto(treePts, 100,-560,900,300,70, outside);
+  scatterInto(treePts, 420,0,220,700,40, outside); scatterInto(treePts, -260,250,200,200,25, outside); scatterInto(treePts, -330,-400,200,150,15, outside);
+  for(let k=0; k<28; k++){ const p = LAKE[k % LAKE.length], q = LAKE[(k+1) % LAKE.length], t = rnd(); const x = p[0]+(q[0]-p[0])*t, z = p[1]+(q[1]-p[1])*t; const dx = x+240, dz = z+130, L = Math.hypot(dx,dz)||1; const tx = x + dx/L*9, tz = z + dz/L*9; if(!outside(tx,tz)) treePts.push([tx,tz,.9]); }
+  for(let t=.1; t<=1; t+=.15){ const x = -134 + (-180+134)*t, z = 63 + (108-63)*t; cypress.push([x-7, z+7]); cypress.push([x+7, z-7]); }   // avenue to Bara Darwaza
+  for(let z=-1100; z<=1100; z+=34){ treePts.push([-370,z,1.05]); treePts.push([-322,z,.95]); }
   plantTrees(treePts, cypress);
-  ctxLabel('Purana Qila lake',-332,-150); ctxLabel('Mathura Road',330,-560); ctxLabel('Bhairon Marg',-480,-560); ctxLabel('Delhi Zoo ↘',300,380);
-  ctxLabel('Pragati Maidan ↑',0,-430); ctxLabel('Parking',-262,290);
+  ctxLabel('Purana Qila lake',-268,-160); ctxLabel('Mathura Road',-346,-520); ctxLabel('Bhairon Marg',230,-282); ctxLabel('Delhi Zoo ↓',200,560);
+  ctxLabel('Pragati Maidan ↗',380,-420); ctxLabel('Parking',-240,185);
+}
+function inPoly(P, x, z){ let c = false; for(let i=0, j=P.length-1; i<P.length; j=i++){ const [xi,zi] = P[i], [xj,zj] = P[j]; if((zi > z) !== (zj > z) && x < (xj-xi)*(z-zi)/(zj-zi) + xi) c = !c; } return c; }
+/* A gate turned to follow a wall that isn't north-south or east-west: build it straight, then rotate its pieces about its centre. */
+function gateTurned(x, z, alongX, opts, ang){
+  const s0 = statics.length, d0 = DOORS.length;
+  gate(x, z, alongX, opts);
+  const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), ang), c = Math.cos(ang), sn = Math.sin(ang);
+  for(const m of statics.slice(s0)){ const dx = m.position.x - x, dz = m.position.z - z; m.position.x = x + dx*c + dz*sn; m.position.z = z - dx*sn + dz*c; m.quaternion.premultiply(q); }
+  for(const d of DOORS.slice(d0)) for(const p of d.pivots){ const h = new THREE.Group(); h.position.set(x, 0, z); h.rotation.y = ang; scene.add(h); p.piv.position.x -= x; p.piv.position.z -= z; h.add(p.piv); }
 }
 function insideFortPoly(x, z, margin=0){
   let c = false; for(let i=0, j=FORT.length-1; i<FORT.length; j=i++){ const [xi,zi] = FORT[i], [xj,zj] = FORT[j]; if((zi > z) !== (zj > z) && x < (xj-xi)*(z-zi)/(zj-zi) + xi) c = !c; }
@@ -1189,7 +1531,7 @@ function buildGraph(){
       const [ax,az] = BASE[a], [bx,bz] = BASE[b];
       const vx=bx-ax, vz=bz-az, L2 = vx*vx+vz*vz;
       let t = ((p.x-ax)*vx + (p.z-az)*vz)/L2; t = Math.max(0,Math.min(1,t));
-      const qx = ax+vx*t, qz = az+vz*t, d = Math.hypot(p.x-qx,p.z-qz);
+      const qx = ax+vx*t, qz = az+vz*t, d = Math.hypot(p.x-qx,p.z-qz) + (insideFortPoly(p.x,p.z) !== insideFortPoly(qx,qz) ? 400 : 0);   // stay on the same side of the fort wall
       if(!best || d < best.d) best = {d,ei,t,qx,qz};
     });
     nodes['p:'+p.id] = [p.x,p.z];
@@ -1234,18 +1576,19 @@ const pinObjs = new Map();
 let numbers = new Map();
 const byId = id => pois.find(p => p.id === id);
 const pinHeight = p => ({gate:36, monument:16, museum:16, garden:6, biennale:6, facility:6})[p.cat] ?? 8;
-function sortedPois(){ return [...pois].sort((a,b) => CAT_ORDER.indexOf(a.cat)-CAT_ORDER.indexOf(b.cat)); }
+function sortedPois(){ return visPois().sort((a,b) => CAT_ORDER.indexOf(a.cat)-CAT_ORDER.indexOf(b.cat) || (a.cat === 'biennale' ? String(a.num||'zz').localeCompare(String(b.num||'zz')) : 0)); }
 function rebuildPins(){
   for(const o of pinObjs.values()){ scene.remove(o); o.element.remove(); }
   pinObjs.clear(); numbers = new Map();
   sortedPois().forEach((p,i) => numbers.set(p.id, i+1));
   for(const p of pois){
+    if(!shown(p)) continue;
     const el = document.createElement('div');
-    el.className = 'pin' + (['gate','monument','museum','garden'].includes(p.cat) ? ' major':'') + (p.cat === 'facility' ? ' fac' : '');
+    el.className = 'pin' + (['gate','monument','museum','garden'].includes(p.cat) ? ' major':'') + (p.cat === 'facility' ? ' fac' : '') + (p.featured ? ' feat' : '');
     el.style.setProperty('--cat', `var(--c-${p.cat})`);
-    const dot = document.createElement('div'); dot.className='dot'; dot.setAttribute('role','button'); dot.tabIndex = 0; dot.setAttribute('aria-label', p.name);
-    const num = document.createElement('span'); num.innerHTML = iconSvg(iconKey(p)); dot.appendChild(num); dot.title = `${p.name} · ${ICON_NAMES[iconKey(p)]}`;
-    const nm = document.createElement('div'); nm.className='name'; nm.textContent = p.name;
+    const dot = document.createElement('div'); dot.className='dot'; dot.setAttribute('role','button'); dot.tabIndex = 0; dot.setAttribute('aria-label', pName(p) + (p.num ? ' · ' + T('Exhibit {n}', {n:p.num}) : ''));
+    const num = document.createElement('span'); num.innerHTML = iconSvg(iconKey(p)); dot.appendChild(num); dot.title = `${pName(p)} · ${T(ICON_NAMES[iconKey(p)])}`;
+    const nm = document.createElement('div'); nm.className='name'; nm.textContent = (p.num ? p.num + ' · ' : '') + pName(p);
     el.append(dot, nm);
     dot.addEventListener('pointerdown', e => e.stopPropagation());
     dot.addEventListener('click', e => { e.stopPropagation(); onPinClick(p.id); });
@@ -1266,6 +1609,7 @@ function refreshPinStates(){
     const sp = el.querySelector('.dot span'), want = idx >= 0 ? 'n' + (idx+1) : 'i'; if(sp.dataset.k !== want){ sp.dataset.k = want; sp.innerHTML = idx >= 0 ? `<b>${idx+1}</b>` : iconSvg(iconKey(byId(id))); }
     el.classList.toggle('dim', !!routeIds && !routeIds.includes(id) && id !== selectedId);
     el.classList.toggle('dim-cat', false);
+    el.classList.toggle('visited', visited.has(id));
     const hiddenCat = !catOn[byId(id)?.cat];
     o.visible = !hiddenCat || id === selectedId || idx >= 0 || (routeIds && routeIds.includes(id));
   }
@@ -1378,8 +1722,8 @@ function animatePerson(dt){
 let routeCurve = null, walkT = 0, walking = false, routeLen = 0;
 let routeSeq = [], routeStopT = [];
 function drawRoute(pts, seq=[], stopT=[]){
-  if(typeof walk !== 'undefined' && walk.active){ endWalk(); toast('The route changed, so the guided walk stopped.'); }
-  routeGroup.clear(); routeSeq = seq; routeStopT = stopT;
+  if(typeof walk !== 'undefined' && walk.active){ endWalk(); toast(T('The route changed, so the guided walk stopped.')); }
+  routeGroup.clear(); routeSeq = seq; routeStopT = stopT; lastRoutePts = pts; if(streetOn) drawStreet();
   if(!pts || pts.length < 2){ routeCurve = null; return; }
   const v = pts.map(([x,z]) => new THREE.Vector3(x,.7,z));
   const cp = new THREE.CurvePath();
@@ -1409,6 +1753,7 @@ const homePos = () => { const narrow = mapEl.clientWidth < 760; const k = narrow
 function flyHome(){ fly = {t0:performance.now(), dur:900, fp:camera.position.clone(), ft:controls.target.clone(), tp:homePos(), tt:HOME.target.clone()}; topBtn.setAttribute('aria-pressed','false'); }
 const topBtn = $('#topview');
 topBtn.addEventListener('click', () => {
+  closeStreet();
   if(mode === 'eye') setMode('map');
   const on = topBtn.getAttribute('aria-pressed') !== 'true';
   topBtn.setAttribute('aria-pressed', String(on));
@@ -1416,12 +1761,13 @@ topBtn.addEventListener('click', () => {
   const tp = on ? new THREE.Vector3(t.x, 1250, t.z+1) : t.clone().add(HOME.pos.clone().sub(HOME.target).normalize().multiplyScalar(900));
   fly = {t0:performance.now(), dur:800, fp:camera.position.clone(), ft:t.clone(), tp, tt:t};
 });
-$('#home').addEventListener('click', () => { if(mode === 'eye'){ setMode('map'); return; } flyHome(); });
+$('#home').addEventListener('click', () => { if(streetOn){ drawStreet(true); return; } if(mode === 'eye'){ setMode('map'); return; } flyHome(); });
 function zoom(f){ const dir = camera.position.clone().sub(controls.target); const len = THREE.MathUtils.clamp(dir.length()*f, controls.minDistance, controls.maxDistance);
   fly = {t0:performance.now(), dur:350, fp:camera.position.clone(), ft:controls.target.clone(), tp:controls.target.clone().add(dir.setLength(len)), tt:controls.target.clone()}; }
-$('#zin').addEventListener('click', () => mode === 'eye' ? eyeZoom(.72) : zoom(.7));
-$('#zout').addEventListener('click', () => mode === 'eye' ? eyeZoom(1.4) : zoom(1.4));
+$('#zin').addEventListener('click', () => streetOn ? LMAP?.zoomIn() : mode === 'eye' ? eyeZoom(.72) : zoom(.7));
+$('#zout').addEventListener('click', () => streetOn ? LMAP?.zoomOut() : mode === 'eye' ? eyeZoom(1.4) : zoom(1.4));
 $('#compass').addEventListener('click', () => {
+  if(streetOn) return;
   if(mode === 'eye'){ eye.yawTarget = 0; return; }
   const t = controls.target.clone(), dir = camera.position.clone().sub(t);
   const h = Math.hypot(dir.x, dir.z), y = dir.y;
@@ -1500,8 +1846,10 @@ let tab = 'explore';
 function setTab(t){
   tab = t;
   for(const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', String(b.dataset.tab === t));
-  $('#tab-explore').hidden = t !== 'explore'; $('#tab-route').hidden = t !== 'route'; $('#tab-manage').hidden = t !== 'manage';
+  for(const k of ['explore','exhibits','route','info','manage']) $('#tab-'+k).hidden = t !== k;
   if(t !== 'manage') stopPlacing();
+  if(t === 'exhibits'){ renderExhibits(); track('tab', 'exhibits'); }
+  if(t === 'info'){ renderInfo(); track('tab', 'info'); }
   refreshPinStates();
   expandSheet();
 }
@@ -1514,10 +1862,10 @@ const catOn = Object.fromEntries(CAT_ORDER.map(c => [c,true]));
 function renderChips(){
   const box = $('#chips'); box.textContent = '';
   for(const c of CAT_ORDER){
-    if(!pois.some(p => p.cat === c)) continue;
+    if(!visPois().some(p => p.cat === c)) continue;
     const b = document.createElement('button'); b.className='chip'; b.type='button'; b.setAttribute('aria-pressed', String(catOn[c]));
     b.style.setProperty('--cat', `var(--c-${c})`);
-    const i = document.createElement('i'); i.innerHTML = iconSvg(CAT_ICON[c]); b.append(i, document.createTextNode(CATS[c].label));
+    const i = document.createElement('i'); i.innerHTML = iconSvg(CAT_ICON[c]); b.append(i, document.createTextNode(T(CATS[c].label)));
     b.addEventListener('click', () => { catOn[c] = !catOn[c]; renderChips(); renderList(); refreshPinStates(); });
     box.appendChild(b);
   }
@@ -1526,21 +1874,23 @@ function renderList(){
   const q = $('#q').value.trim().toLowerCase();
   const list = $('#list'); list.textContent = '';
   for(const c of CAT_ORDER){
-    const items = sortedPois().filter(p => p.cat === c && catOn[c] && (!q || (p.name+' '+p.desc+' '+(p.note||'')).toLowerCase().includes(q)));
+    const items = sortedPois().filter(p => p.cat === c && catOn[c] && (!q || searchText(p).includes(q)));
     if(!items.length) continue;
-    const h = document.createElement('div'); h.className='grp-h'; h.textContent = CATS[c].label; list.appendChild(h);
+    const h = document.createElement('div'); h.className='grp-h'; h.textContent = T(CATS[c].label); list.appendChild(h);
     const wrap = document.createElement('div'); wrap.className='list';
     for(const p of items){
       const b = document.createElement('button'); b.type='button'; b.className='item'; b.style.setProperty('--cat', `var(--c-${p.cat})`);
       const n = document.createElement('span'); n.className='n'; n.innerHTML = iconSvg(iconKey(p));
-      const d = document.createElement('div'); const t = document.createElement('b'); t.textContent = p.name; const s = document.createElement('small'); s.textContent = p.desc;
+      const d = document.createElement('div'); const t = document.createElement('b'); t.textContent = (p.num ? p.num + ' · ' : '') + pName(p); const s = document.createElement('small'); s.textContent = p.artist ? p.artist : pf(p,'desc');
       d.append(t,s); b.append(n,d); b.addEventListener('click', () => selectPoi(p.id, true)); wrap.appendChild(b);
     }
     list.appendChild(wrap);
   }
-  if(!list.children.length){ const p = document.createElement('p'); p.className='hint'; p.textContent = 'No places match. Clear the search or turn a category back on.'; list.appendChild(p); }
+  if(!list.children.length){ const p = document.createElement('p'); p.className='hint'; p.textContent = T('No places match. Clear the search or turn a category back on.'); list.appendChild(p); }
 }
-$('#q').addEventListener('input', renderList);
+const searchText = p => [p.name, p.name_hi, p.desc, p.desc_hi, p.note, p.note_hi, p.artist, p.num, T(ICON_NAMES[iconKey(p)]), ICON_NAMES[iconKey(p)]].filter(Boolean).join(' ').toLowerCase();
+let searchT;
+$('#q').addEventListener('input', () => { renderList(); clearTimeout(searchT); searchT = setTimeout(() => { if($('#q').value.trim()) track('search', null, {hits:$('#list').querySelectorAll('.item').length}); }, 1500); });
 
 function selectPoi(id, fly_=false){
   selectedId = id; const p = byId(id); refreshPinStates();
@@ -1548,21 +1898,28 @@ function selectPoi(id, fly_=false){
   if(fly_) flyTo(p.x, p.z, 360);
   if(tab === 'manage'){ $('#mPick').value = id; fillForm(); return; }
   if(tab !== 'explore') setTab('explore');
+  track('view', id);
   const d = $('#detail'); d.textContent = ''; d.style.setProperty('--cat', `var(--c-${p.cat})`);
-  const back = document.createElement('button'); back.className='back'; back.type='button'; back.textContent = '← All places';
+  const back = document.createElement('button'); back.className='back'; back.type='button'; back.textContent = T('← All places');
   back.addEventListener('click', () => { d.hidden = true; $('#exploreList').hidden = false; selectedId = null; refreshPinStates(); });
-  const cl = document.createElement('div'); cl.className='catline'; { const ic = document.createElement('i'); ic.innerHTML = iconSvg(iconKey(p)); cl.append(ic, document.createTextNode(ICON_NAMES[iconKey(p)] === CATS[p.cat]?.one ? CATS[p.cat]?.one : `${ICON_NAMES[iconKey(p)]} · ${CATS[p.cat]?.one || p.cat}`)); }
-  const h = document.createElement('h2'); h.textContent = p.name;
-  const desc = document.createElement('p'); desc.textContent = p.desc;
-  d.append(back, cl, h, desc);
-  if(p.photo){ const im = document.createElement('img'); im.className = 'photo'; im.alt = p.name; im.loading = 'lazy'; im.src = /[\/.]/.test(p.photo) ? p.photo : '/_blob/' + p.photo; im.onerror = () => im.remove(); d.insertBefore(im, cl); }
-  if(p.note){ const n = document.createElement('div'); n.className='note'; const b = document.createElement('b'); b.textContent = 'At the Biennale'; n.append(b, document.createTextNode(p.note)); d.appendChild(n); }
+  const cl = document.createElement('div'); cl.className='catline'; { const ic = document.createElement('i'); ic.innerHTML = iconSvg(iconKey(p)); cl.append(ic, document.createTextNode(ICON_NAMES[iconKey(p)] === CATS[p.cat]?.one ? T(CATS[p.cat]?.one) : `${T(ICON_NAMES[iconKey(p)])} · ${T(CATS[p.cat]?.one || p.cat)}`));
+    if(p.num){ const n = document.createElement('span'); n.className = 'exnum'; n.textContent = T('No. {n}', {n:p.num}); cl.appendChild(n); }
+    if(visited.has(p.id)){ const v = document.createElement('span'); v.className = 'vis-badge'; v.style.marginLeft = '6px'; v.textContent = '✓ ' + T('Visited'); cl.appendChild(v); } }
+  const h = document.createElement('h2'); h.textContent = pName(p);
+  d.append(back, cl, h);
+  if(p.artist){ const a = document.createElement('p'); a.className = 'artist'; a.textContent = T('Artist: {a}', {a:p.artist}); d.appendChild(a); }
+  const desc = document.createElement('p'); desc.textContent = pf(p,'desc'); d.appendChild(desc);
+  if(p.photo){ const im = document.createElement('img'); im.className = 'photo'; im.alt = pName(p); im.loading = 'lazy'; im.src = /[\/.]/.test(p.photo) ? p.photo : '/_blob/' + p.photo; im.onerror = () => im.remove(); d.insertBefore(im, cl); }
+  if(pf(p,'note')){ const n = document.createElement('div'); n.className='note'; const b = document.createElement('b'); b.textContent = T('At the Biennale'); n.append(b, document.createTextNode(pf(p,'note'))); d.appendChild(n); }
+  if(editorMode && p.check){ const c = document.createElement('p'); c.className = 'check-note'; c.textContent = 'To check: ' + p.check; d.appendChild(c); }
   const row = document.createElement('div'); row.className='btnrow'; row.style.marginTop='14px';
   const mk = (txt,cls,fn) => { const b = document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent = txt; b.addEventListener('click', fn); row.appendChild(b); };
-  mk(stops.includes(p.id) ? 'Already in my stops' : 'Add to my stops','route', () => { setTab('route'); addStop(p.id); });
-  mk('Directions from entrance','', () => { const s0 = byId(VENUE.entrance) && p.id !== VENUE.entrance ? VENUE.entrance : (pois.find(q => q.id !== p.id)?.id); stops = [s0, p.id]; setTab('route'); renderStops(); doRoute(); });
-  mk('Open 360° view','', () => { setMode('eye'); goEye(p.id, false); });
-  mk('Show on map','', () => { setMode('map'); flyTo(p.x,p.z,300); });
+  mk(stops.includes(p.id) ? T('Already in my stops') : T('Add to my stops'),'route', () => { setTab('route'); addStop(p.id); });
+  const from = startId();
+  mk(KIOSK.on && kioskHere() ? T('Directions from here') : T('Directions from entrance'),'', () => { const s0 = from && p.id !== from ? from : (visPois().find(q => q.id !== p.id)?.id); stops = [s0, p.id]; setTab('route'); renderStops(); doRoute(); });
+  mk(T('Open 360° view'),'', () => { setMode('eye'); goEye(p.id, false); });
+  mk(T('Show on map'),'', () => { setMode('map'); flyTo(p.x,p.z,300); });
+  mk(visited.has(p.id) ? '✓ ' + T('Visited') : T('Mark as visited'),'', () => { setVisited(p.id, !visited.has(p.id)); selectPoi(p.id); });
   d.appendChild(row);
   $('#exploreList').hidden = true; d.hidden = false; expandSheet();
   $('#tab-explore').scrollTop = 0;
@@ -1570,8 +1927,8 @@ function selectPoi(id, fly_=false){
 function onPinClick(id){
   if(placing) return;
   if(walk.active && walk.state === 'done') endWalk();
-  if(mode === 'eye'){ if(walk.active){ askEndWalk(`go to ${byId(id)?.name}`, () => goEye(id, true)); return; } goEye(id, true); return; }
-  if(tab === 'route'){ if(walk.active){ askEndWalk(`add ${byId(id)?.name} as a stop`, () => addStop(id)); return; } addStop(id); return; }
+  if(mode === 'eye'){ if(walk.active){ askEndWalk(T('go to {p}', {p:pName(byId(id))}), () => goEye(id, true)); return; } goEye(id, true); return; }
+  if(tab === 'route'){ if(walk.active){ askEndWalk(T('add {p} as a stop', {p:pName(byId(id))}), () => addStop(id)); return; } addStop(id); return; }
   selectPoi(id, false);
 }
 
@@ -1580,8 +1937,8 @@ function poiOptions(sel, value){
   sel.textContent = '';
   for(const c of CAT_ORDER){
     const items = sortedPois().filter(p => p.cat === c); if(!items.length) continue;
-    const g = document.createElement('optgroup'); g.label = CATS[c].label;
-    for(const p of items){ const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; g.appendChild(o); }
+    const g = document.createElement('optgroup'); g.label = T(CATS[c].label);
+    for(const p of items){ const o = document.createElement('option'); o.value = p.id; o.textContent = (p.num ? p.num + ' · ' : '') + (sel.id === 'mPick' ? p.name + (p.staff ? ' (staff only)' : '') : pName(p)); g.appendChild(o); }
     sel.appendChild(g);
   }
   if(value && byId(value)) sel.value = value;
@@ -1602,15 +1959,19 @@ const ICONS = {
   skip:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5.5v13l9-6.5z"/><rect x="16" y="5.5" width="2.6" height="13" rx="1"/></svg>',
   follow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/></svg>'
 };
-function defaultStops(){ stops = VENUE.defaultStops.filter(id => byId(id)); if(stops.length < 2) stops = pois.slice(0,2).map(p => p.id); }
+function defaultStops(){
+  stops = VENUE.defaultStops.filter(id => shown(byId(id)));
+  const h = KIOSK.on && kioskHere(); if(h){ stops = [h, ...stops.filter(id => id !== h)]; }
+  if(stops.length < 2) stops = visPois().slice(0,2).map(p => p.id);
+}
 function renderStops(){
   stops = stops.filter(id => byId(id));
   const ol = $('#stops'); ol.textContent = '';
-  if(!stops.length){ const li = document.createElement('li'); li.className = 'empty'; li.style.display = 'block'; li.textContent = 'No stops yet. Tap places on the map or use “Add stop”.'; ol.appendChild(li); }
+  if(!stops.length){ const li = document.createElement('li'); li.className = 'empty'; li.style.display = 'block'; li.textContent = T('No stops yet. Tap places on the map or use “Add stop”.'); ol.appendChild(li); }
   stops.forEach((id,i) => {
     const li = document.createElement('li'); li.dataset.id = id;
-    const grip = document.createElement('button'); grip.type = 'button'; grip.className = 'grip'; grip.innerHTML = ICONS.grip; grip.title = 'Drag to reorder';
-    grip.setAttribute('aria-label', `Move stop ${i+1}, ${byId(id).name}. Drag it, or use the up and down arrow keys.`);
+    const grip = document.createElement('button'); grip.type = 'button'; grip.className = 'grip'; grip.innerHTML = ICONS.grip; grip.title = T('Drag to reorder');
+    grip.setAttribute('aria-label', T('Move stop {n}, {p}. Drag it, or use the up and down arrow keys.', {n:i+1, p:pName(byId(id))}));
     grip.addEventListener('keydown', e => {
       const j = e.key === 'ArrowUp' ? i-1 : e.key === 'ArrowDown' ? i+1 : -1;
       if(j < 0 || j >= stops.length) return; e.preventDefault();
@@ -1619,19 +1980,19 @@ function renderStops(){
     });
     grip.addEventListener('pointerdown', e => startDrag(e, li));
     const k = document.createElement('span'); k.className = 'k'; k.textContent = i+1;
-    const sel = document.createElement('select'); sel.id = 'stop-'+i; sel.setAttribute('aria-label', `Stop ${i+1}`); poiOptions(sel, id);
+    const sel = document.createElement('select'); sel.id = 'stop-'+i; sel.setAttribute('aria-label', T('Stop {n}', {n:i+1})); poiOptions(sel, id);
     sel.addEventListener('change', () => { stops[i] = sel.value; stopsChanged(); });
     const acts = document.createElement('div'); acts.className = 'acts';
-    const ic = (name, label, disabled, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'icon'; b.innerHTML = ICONS[name]; b.title = label; b.setAttribute('aria-label', `${label} (stop ${i+1})`); b.disabled = disabled; b.addEventListener('click', fn); acts.appendChild(b); };
-    ic('x','Remove', false, () => { stops.splice(i,1); stopsChanged(); });
+    const ic = (name, label, disabled, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'icon'; b.innerHTML = ICONS[name]; b.title = label; b.setAttribute('aria-label', `${label} (${T('Stop {n}', {n:i+1})})`); b.disabled = disabled; b.addEventListener('click', fn); acts.appendChild(b); };
+    ic('x',T('Remove'), false, () => { stops.splice(i,1); stopsChanged(); });
     li.append(grip, k, sel, acts); ol.appendChild(li);
   });
-  $('#stopCount').textContent = stops.length === 1 ? '1 stop' : `${stops.length} stops`;
+  $('#stopCount').textContent = stops.length === 1 ? T('1 stop') : T('{n} stops', {n:stops.length});
   $('#goRoute').disabled = stops.length < 2;
   refreshPinStates();
 }
 function manualOrder(){
-  if($('#optOrder').checked){ $('#optOrder').checked = false; $('#keepEnd').disabled = true; toast('Using your order. Tick “Find the shortest order” to let the map reorder stops.'); }
+  if($('#optOrder').checked){ $('#optOrder').checked = false; $('#keepEnd').disabled = true; toast(T('Using your order. Tick “Find the shortest order” to let the map reorder stops.')); }
 }
 function startDrag(e, li){
   if(e.button !== undefined && e.button !== 0) return;
@@ -1660,9 +2021,9 @@ let lastWasTour = false;
 function stopsChanged(){ renderStops(); if(!$('#result').hidden && !lastWasTour && stops.length >= 2) doRoute(false); else if(stops.length < 2 && !lastWasTour) clearRoute(); }
 function addStop(id){
   const p = byId(id); if(!p) return;
-  if(stops.includes(id)){ toast(`${p.name} is already stop ${stops.indexOf(id)+1}`); return; }
+  if(stops.includes(id)){ toast(T('{p} is already stop {n}', {p:pName(p), n:stops.indexOf(id)+1})); return; }
   stops.push(id); renderStops(); expandSheet();
-  toast(`Added ${p.name} as stop ${stops.length}`);
+  toast(T('Added {p} as stop {n}', {p:pName(p), n:stops.length}));
   if(stops.length >= 2 && (!$('#result').hidden || stops.length === 2)) doRoute(false);
 }
 $('#addStop').addEventListener('click', () => {
@@ -1670,8 +2031,8 @@ $('#addStop').addEventListener('click', () => {
   if(!next) return; stops.push(next.id); renderStops(); $('#stop-'+(stops.length-1))?.focus();
 });
 $('#resetStops').addEventListener('click', () => { stops = []; clearRoute(); renderStops(); });
-const fmtM = m => m >= 1000 ? (m/1000).toFixed(2)+' km' : Math.round(m/5)*5+' m';
-const fmtMin = m => { const t = Math.max(1, Math.round(m/WALK_M_PER_MIN)); return t >= 60 ? `${Math.floor(t/60)} h${t%60 ? ' '+(t%60)+' min' : ''}` : `${t} min`; };
+const fmtM = m => m >= 1000 ? T('{n} km', {n:(m/1000).toFixed(2)}) : T('{n} m', {n:Math.round(m/5)*5});
+const fmtMin = m => { const n = Math.max(1, Math.round(m/WALK_M_PER_MIN)); return n >= 60 ? T('{h} h', {h:Math.floor(n/60)}) + (n%60 ? ' ' + T('{n} min', {n:n%60}) : '') : T('{n} min', {n}); };
 function routeGeom(legs){
   const pts = [], stopIdx = [];
   const push = q => { const l = pts.at(-1); if(!l || Math.hypot(l[0]-q[0], l[1]-q[1]) > .01) pts.push(q); };
@@ -1687,7 +2048,7 @@ function routeGeom(legs){
   return {pts, stopT: stopIdx.map(i => cum[i]/total)};
 }
 function legsToPts(legs){ const pts = []; for(const leg of legs) for(const n of leg){ const q = G.nodes[n]; const lastP = pts.at(-1); if(!lastP || lastP[0]!==q[0] || lastP[1]!==q[1]) pts.push(q); } return pts; }
-function passedPois(nodePath, exclude){ const ids = []; for(const n of nodePath){ if(n.startsWith('j:')){ const id = n.slice(2); if(!exclude.includes(id) && byId(id)?.cat !== 'facility') ids.push(id); } } return ids; }
+function passedPois(nodePath, exclude){ const ids = []; for(const n of nodePath){ if(n.startsWith('j:')){ const id = n.slice(2); const q = byId(id); if(!exclude.includes(id) && q?.cat !== 'facility' && shown(q)) ids.push(id); } } return ids; }
 
 function optimizeOrder(seq, d, keepEnd){
   const start = seq[0], end = keepEnd ? seq.at(-1) : null;
@@ -1709,7 +2070,7 @@ function optimizeOrder(seq, d, keepEnd){
 }
 function doRoute(fit=true){
   let seq = [...new Set(stops.filter(id => byId(id)))];
-  if(seq.length < 2){ toast('Add at least two stops.'); return; }
+  if(seq.length < 2){ toast(T('Add at least two stops.')); return; }
   const memo = {}; const D = id => (memo[id] ??= dijkstra('p:'+id));
   const d = (a,b) => D(a).dist['p:'+b];
   if($('#optOrder').checked && seq.length > 2){
@@ -1720,7 +2081,7 @@ function doRoute(fit=true){
   const legs = [], legLen = [];
   for(let i=0;i<seq.length-1;i++){
     const path = pathTo(D(seq[i]).prev, 'p:'+seq[i], 'p:'+seq[i+1]);
-    if(!path){ toast(`No walkway reaches ${byId(seq[i+1]).name}.`); return; }
+    if(!path){ toast(T('No walkway reaches {p}.', {p:pName(byId(seq[i+1]))})); return; }
     legs.push(path); legLen.push(d(seq[i], seq[i+1]));
   }
   const {pts, stopT} = routeGeom(legs);
@@ -1730,18 +2091,19 @@ function doRoute(fit=true){
   let acc = 0;
   const steps = seq.map((id,i) => {
     if(i > 0) acc += legLen[i-1];
-    const via = i > 0 && vias[i-1].length ? ' · via ' + [...new Set(vias[i-1])].map(v => byId(v).name).join(', ') : '';
-    return {id, label:byId(id).name, sub: i === 0 ? 'Start here' : `${fmtM(legLen[i-1])} from stop ${i}, about ${fmtMin(legLen[i-1])}${via}`, d:acc};
+    const via = i > 0 && vias[i-1].length ? ' · ' + T('via {list}', {list:[...new Set(vias[i-1])].map(v => pName(byId(v))).join(', ')}) : '';
+    return {id, label:pName(byId(id)), sub: i === 0 ? T('Start here') : T('{d} from stop {n}, about {t}', {d:fmtM(legLen[i-1]), n:i, t:fmtMin(legLen[i-1])}) + via, d:acc};
   });
   const total = legLen.reduce((a,b) => a+b, 0);
   walking = true;
-  showResult({title: seq.length === 2 ? `${byId(seq[0]).name} → ${byId(seq[1]).name}` : `Your route · ${seq.length} stops`, dist:total, steps, tour:true});
+  track('route', null, {stops:seq.length, m:Math.round(total)});
+  showResult({title: seq.length === 2 ? `${pName(byId(seq[0]))} → ${pName(byId(seq[1]))}` : T('Your route · {n} stops', {n:seq.length}), dist:total, steps, tour:true});
   if(fit) fitTo(pts);
 }
 function doTour(){
-  const start = (stops[0] && byId(stops[0])) ? stops[0] : (byId(VENUE.entrance) ? VENUE.entrance : pois[0]?.id); if(!start) return;
+  const start = (stops[0] && byId(stops[0])) ? stops[0] : (startId() || visPois()[0]?.id); if(!start) return;
   const inc = $('#incFac').checked;
-  const remaining = new Set(pois.filter(p => p.id !== start && (inc || p.cat !== 'facility')).map(p => p.id));
+  const remaining = new Set(visPois().filter(p => p.id !== start && (inc || p.cat !== 'facility')).map(p => p.id));
   let cur = start, total = 0; const order = [start], legs = [], legD = [0];
   while(remaining.size){
     const {dist, prev} = dijkstra('p:'+cur);
@@ -1752,8 +2114,9 @@ function doTour(){
   }
   const {pts, stopT} = routeGeom(legs);
   drawRoute(pts, order, stopT); routeIds = order; shownOrder = order; lastWasTour = true; refreshPinStates(); walking = true;
-  showResult({title:`Full tour from ${byId(start).name}`, dist:total, tour:true,
-    steps: order.map((id,i) => ({id, label:byId(id).name, sub:i===0 ? 'Start' : CATS[byId(id).cat]?.one, d:legD[i]}))});
+  track('tour', null, {stops:order.length});
+  showResult({title:T('Full tour from {p}', {p:pName(byId(start))}), dist:total, tour:true,
+    steps: order.map((id,i) => ({id, label:pName(byId(id)), sub:i===0 ? T('Start') : T(CATS[byId(id).cat]?.one), d:legD[i]}))});
   fitTo(pts); walking = true;
 }
 function showResult({title, dist, steps, tour}){
@@ -1762,8 +2125,8 @@ function showResult({title, dist, steps, tour}){
   const h = document.createElement('b'); h.style.cssText = 'font-family:var(--f-display);font-size:16px'; h.textContent = title; r.appendChild(h);
   const st = document.createElement('div'); st.className='stats';
   const stat = (v,l) => { const d = document.createElement('div'); const s = document.createElement('strong'); s.textContent = v; const t = document.createElement('span'); t.textContent = l; d.append(s,t); st.appendChild(d); };
-  stat(fmtM(dist),'walking distance'); stat(fmtMin(dist), tour ? 'walking time, plus visits' : 'at an easy pace');
-  if(tour) stat(String(steps.length),'stops');
+  stat(fmtM(dist),T('walking distance')); stat(fmtMin(dist), tour ? T('walking time, plus visits') : T('at an easy pace'));
+  if(tour) stat(String(steps.length),T('stops'));
   r.appendChild(st);
   if(steps.length){
     const ol = document.createElement('ol'); ol.className='steps';
@@ -1779,16 +2142,16 @@ function showResult({title, dist, steps, tour}){
   }
   if(routeCurve){
     const row = document.createElement('div'); row.className='btnrow';
-    const pb = document.createElement('button'); pb.type='button'; pb.className='btn route'; pb.textContent = 'Start guided walk';
+    const pb = document.createElement('button'); pb.type='button'; pb.className='btn route'; pb.textContent = T('Start guided walk');
     pb.addEventListener('click', startWalk);
-    const eb = document.createElement('button'); eb.type='button'; eb.className='btn danger'; eb.id = 'resEnd'; eb.textContent = 'End guided walk'; eb.hidden = !walk.active; eb.addEventListener('click', endWalk);
+    const eb = document.createElement('button'); eb.type='button'; eb.className='btn danger'; eb.id = 'resEnd'; eb.textContent = T('End guided walk'); eb.hidden = !walk.active; eb.addEventListener('click', endWalk);
     const mb = document.createElement('button'); mb.type='button'; mb.className='btn'; mb.id = 'resMute';
     mb.addEventListener('click', toggleSound);
-    const tb = document.createElement('button'); tb.type='button'; tb.className='btn'; tb.textContent = 'Test sound';
+    const tb = document.createElement('button'); tb.type='button'; tb.className='btn'; tb.textContent = T('Test sound');
     tb.addEventListener('click', testSound);
     row.append(pb, eb, mb, tb); r.appendChild(row);
     const note = document.createElement('p'); note.className = 'hint voice-note'; note.id = 'voiceNote';
-    note.textContent = 'The guided walk moves along your route and reads out each stop’s name and description when it gets there.';
+    note.textContent = T('The guided walk moves along your route and reads out each stop’s name and description when it gets there.');
     r.appendChild(note);
     updateVoiceUI();
   }
@@ -1816,7 +2179,8 @@ const voice = { tts:null, synth:('speechSynthesis' in window) ? window.speechSyn
 try{ voice.muted = localStorage.getItem('rf-muted') === '1'; }catch{}
 function pickSynthVoice(){
   try{ const vs = voice.synth.getVoices();
-    voice.synthVoice = vs.find(v => /^en[-_]IN/i.test(v.lang)) || vs.find(v => /^en[-_]GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || vs[0] || null; }catch{}
+    voice.synthVoice = vs.find(v => /^en[-_]IN/i.test(v.lang)) || vs.find(v => /^en[-_]GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || vs[0] || null;
+    voice.synthHi = vs.find(v => /^hi([-_]|$)/i.test(v.lang)) || null; }catch{}
 }
 async function initVoice(){
   if(voice.synth){ pickSynthVoice(); try{ voice.synth.addEventListener('voiceschanged', pickSynthVoice); }catch{} }
@@ -1835,35 +2199,39 @@ async function initVoice(){
 const useTts = () => !!voice.tts && !voice.ttsStalled;
 const hasVoice = () => useTts() || !!voice.synth;
 const canSpeak = () => hasVoice() && !voice.denied && !voice.broken;
-function speakNow(text){
+/* Which language to read in: Hindi when the screen is in Hindi and a Hindi voice exists, otherwise English. */
+const speakLang = () => LANG === 'hi' && (useTts() || voice.synthHi) ? 'hi' : 'en';
+function speakNow(text, lang='en', fallback){
   if(voice.muted || voice.blocked || !canSpeak() || !text) return Promise.resolve(false);
+  const viaSynth = () => { if(!voice.synth) return Promise.resolve(false); if(lang === 'hi' && !voice.synthHi) return synthSpeak(fallback || text, 'en'); return synthSpeak(text, lang); };
   if(useTts()){
     let call;
-    try{ call = voice.tts.speak(text.slice(0, 1900), {language:'en'}); }catch{ call = null; }
-    if(!call || typeof call.then !== 'function'){ voice.ttsStalled = true; updateVoiceUI(); return voice.synth ? synthSpeak(text) : Promise.resolve(false); }
+    try{ call = voice.tts.speak(text.slice(0, 1900), {language:lang}); }catch{ call = null; }
+    if(!call || typeof call.then !== 'function'){ voice.ttsStalled = true; updateVoiceUI(); return viaSynth(); }
     return call.then(() => true, err => {
       const c = err?.code;
       if(c === 'not_granted') voice.denied = true;
-      else if(c === 'unavailable' || c === 'upstream_error' || c === 'rate_limited'){ voice.ttsStalled = true; updateVoiceUI(); return voice.synth ? synthSpeak(text) : false; }
+      else if(c === 'unavailable' || c === 'upstream_error' || c === 'rate_limited'){ voice.ttsStalled = true; updateVoiceUI(); return viaSynth(); }
       else if(c === 'no_gesture' || (c === 'stopped' && err?.reason === 'viewer_stopped')) voice.blocked = true;
       updateVoiceUI(); return false;
     });
   }
-  return synthSpeak(text);
+  return viaSynth();
 }
-function synthSpeak(text){
+function synthSpeak(text, lang='en'){
   return new Promise(res => {
     const s = voice.synth, tok = ++voice.synthTok;
     let finished = false, started = false, i = 0;
     const fin = ok => { if(!finished){ finished = true; voice.speaking = false; updateVoiceUI(); res(ok); } };
     try{ s.cancel(); }catch{}
     // Short sentence-sized utterances: some browsers cut off long ones after about 15 seconds.
-    const parts = (text.match(/[^.!?]+[.!?]*/g) || [text]).map(x => x.trim()).filter(Boolean);
+    const parts = (text.match(/[^.!?।]+[.!?।]*/g) || [text]).map(x => x.trim()).filter(Boolean);
     const next = () => {
       if(tok !== voice.synthTok) return fin(false);
       if(i >= parts.length) return fin(true);
       const u = new SpeechSynthesisUtterance(parts[i++]);
-      if(voice.synthVoice){ u.voice = voice.synthVoice; u.lang = voice.synthVoice.lang; } else u.lang = 'en-IN';
+      const sv = lang === 'hi' ? voice.synthHi : voice.synthVoice;
+      if(sv){ u.voice = sv; u.lang = sv.lang; } else u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
       u.onstart = () => { started = true; voice.speaking = true; voice.lastStart = performance.now(); updateVoiceUI(); };
       u.onend = () => next();
       u.onerror = e => { if(e.error === 'not-allowed'){ voice.blocked = true; fin(false); } else if(e.error === 'interrupted' || e.error === 'canceled') fin(false); else next(); };
@@ -1885,7 +2253,7 @@ function toggleSound(){
     voice.muted = false; voice.blocked = false; voice.broken = false; try{ localStorage.setItem('rf-muted','0'); }catch{}
     // This click is a fresh tap, so speech is allowed: read the current stop again, or confirm sound works.
     if(walk.active && (walk.state === 'speaking' || walk.state === 'dwell')) speakStop(walk.stopIdx);
-    else if(!walk.active) speakNow('Sound is on.');
+    else if(!walk.active) speakNow(T('Sound is on.', null, speakLang()), speakLang(), 'Sound is on.');
   }
   updateVoiceUI();
 }
@@ -1893,28 +2261,30 @@ function testSound(){
   voice.blocked = false; voice.broken = false;
   if(voice.muted){ voice.muted = false; try{ localStorage.setItem('rf-muted','0'); }catch{} }
   updateVoiceUI();
-  speakNow('Sound check. Each stop will be read out like this when the walker arrives.').then(ok => {
-    if(!ok && !voice.speaking) toast(voice.broken ? 'This device has no voice for reading aloud. Descriptions show on screen instead.' : voice.denied ? 'Reading aloud is turned off for this page.' : 'Could not play sound. Check the device volume and try again.');
+  const msg = 'Sound check. Each stop will be read out like this when the walker arrives.';
+  speakNow(T(msg, null, speakLang()), speakLang(), msg).then(ok => {
+    if(!ok && !voice.speaking) toast(T(voice.broken ? 'This device has no voice for reading aloud. Descriptions show on screen instead.' : voice.denied ? 'Reading aloud is turned off for this page.' : 'Could not play sound. Check the device volume and try again.'));
   });
 }
 function voiceStatus(){
-  if(!hasVoice()) return 'Reading aloud is not available on this device. Descriptions show on screen.';
-  if(voice.denied) return 'Reading aloud is turned off for this page. Descriptions show on screen.';
-  if(voice.broken) return 'No voice found on this device. Descriptions show on screen.';
+  if(!hasVoice()) return T('Reading aloud is not available on this device. Descriptions show on screen.');
+  if(voice.denied) return T('Reading aloud is turned off for this page. Descriptions show on screen.');
+  if(voice.broken) return T('No voice found on this device. Descriptions show on screen.');
   if(voice.muted) return '';
-  if(voice.blocked) return 'Sound paused. Tap “Sound” to hear it again.';
-  if(voice.speaking) return 'Reading aloud…';
+  if(voice.blocked) return T('Sound paused. Tap “Sound” to hear it again.');
+  if(voice.speaking) return T('Reading aloud…');
+  if(LANG === 'hi' && speakLang() === 'en') return T('No Hindi voice on this device, so stops are read in English.');
   return '';
 }
 function updateVoiceUI(){
   const on = soundIsOn();
   const pm = $('#plMute');
   pm.hidden = !hasVoice();
-  pm.innerHTML = (on ? ICONS.sound : ICONS.muted) + `<span>${on ? 'Sound on' : 'Sound off'}</span>`;
-  pm.setAttribute('aria-pressed', String(on)); pm.setAttribute('aria-label', on ? 'Sound is on. Turn sound off' : 'Sound is off. Turn sound on');
-  pm.title = on ? 'Turn sound off' : 'Turn sound on';
+  pm.innerHTML = (on ? ICONS.sound : ICONS.muted) + `<span>${T(on ? 'Sound on' : 'Sound off')}</span>`;
+  pm.setAttribute('aria-pressed', String(on)); pm.setAttribute('aria-label', T(on ? 'Sound is on. Turn sound off' : 'Sound is off. Turn sound on'));
+  pm.title = T(on ? 'Turn sound off' : 'Turn sound on');
   const vs = $('#plVoice'); if(vs){ const t = voiceStatus(); vs.textContent = t; vs.hidden = !t; vs.classList.toggle('live', voice.speaking && on); }
-  const rm = $('#resMute'); if(rm){ rm.hidden = !hasVoice(); rm.textContent = on ? 'Sound: on' : 'Sound: off'; rm.setAttribute('aria-pressed', String(on)); }
+  const rm = $('#resMute'); if(rm){ rm.hidden = !hasVoice(); rm.textContent = T(on ? 'Sound: on' : 'Sound: off'); rm.setAttribute('aria-pressed', String(on)); }
   const n = $('#voiceNote'); if(n && !canSpeak()) n.textContent = voiceStatus();
 }
 
@@ -1927,29 +2297,29 @@ function setPlayer(status, name, desc, photo){
 }
 function updatePlayerButtons(){
   const pb = $('#plPlay');
-  if(walk.state === 'done'){ pb.innerHTML = ICONS.replay; pb.setAttribute('aria-label','Walk again'); pb.title = 'Walk again'; }
-  else if(walk.paused){ pb.innerHTML = ICONS.play; pb.setAttribute('aria-label','Resume walk'); pb.title = 'Resume walk'; }
-  else { pb.innerHTML = ICONS.pause; pb.setAttribute('aria-label','Pause walk'); pb.title = 'Pause walk'; }
+  const lab = walk.state === 'done' ? 'Walk again' : walk.paused ? 'Resume walk' : 'Pause walk';
+  pb.innerHTML = walk.state === 'done' ? ICONS.replay : walk.paused ? ICONS.play : ICONS.pause; pb.setAttribute('aria-label', T(lab)); pb.title = T(lab);
   const nb = $('#plNext'); nb.innerHTML = ICONS.skip; nb.disabled = walk.state === 'done' || walk.last;
   const fb = $('#plFollow'); fb.innerHTML = ICONS.follow; fb.hidden = mode !== 'map'; fb.setAttribute('aria-pressed', String(walk.follow));
-  $('#plStop').innerHTML = ICONS.x + '<span>End walk</span>';
+  $('#plStop').innerHTML = ICONS.x + `<span>${T('End walk')}</span>`;
   const wv = mode === 'map' ? 'map' : (eye.chase ? 'behind' : 'eyes');
   document.querySelectorAll('.wviews button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.wv === wv)));
   $('#plSpeed').textContent = (walk.speedMul || 1) + '×';
   const re = $('#resEnd'); if(re) re.hidden = !walk.active;
   updateVoiceUI();
 }
-const placeText = p => `${p.name}. ${p.desc || ''} ${p.note ? 'At the Biennale: ' + p.note : ''}`.replace(/\s+/g,' ').trim();
-function stopText(i){
+const placeText = (p, lang=LANG) => `${p.num ? T('Exhibit {n}', {n:p.num}, lang) + '. ' : ''}${pName(p, lang)}. ${p.artist ? T('Artist: {a}', {a:p.artist}, lang) + '. ' : ''}${pf(p,'desc',lang)} ${pf(p,'note',lang) ? T('At the Biennale', null, lang) + ': ' + pf(p,'note',lang) : ''}`.replace(/\s+/g,' ').trim();
+function stopText(i, lang=LANG){
   const p = byId(routeSeq[i]); if(!p) return '';
   const last = i === routeSeq.length-1;
-  return `${i === 0 ? 'Starting at' : 'Stop ' + (i+1) + '.'} ${placeText(p)} ${last && i > 0 ? 'This is your last stop.' : ''}`.trim();
+  return `${i === 0 ? T('Starting at', null, lang) : T('Stop {n}.', {n:i+1}, lang)} ${placeText(p, lang)} ${last && i > 0 ? T('This is your last stop.', null, lang) : ''}`.trim();
 }
+const speakPlace = p => speakNow(placeText(p, speakLang()), speakLang(), placeText(p, 'en'));
 function speakStop(i){
   const tok = ++walk.token;
   walk.state = 'speaking'; walk.t0 = performance.now(); walk.speechDone = false; walk.spoken = false;
   walk.readMs = Math.min(10000, Math.max(3500, 1800 + stopText(i).length*45));   // time to read the text when silent
-  let pr; try{ pr = speakNow(stopText(i)); }catch{ pr = Promise.resolve(false); }
+  let pr; try{ pr = speakNow(stopText(i, speakLang()), speakLang(), stopText(i, 'en')); }catch{ pr = Promise.resolve(false); }
   pr.then(sp => { if(tok !== walk.token) return; walk.speechDone = true; walk.spoken = sp; walk.doneAt = performance.now(); },
           () => { if(tok !== walk.token) return; walk.speechDone = true; walk.doneAt = performance.now(); });
 }
@@ -1961,7 +2331,7 @@ function checkSpeech(now){
   if(!soundIsOn() && el > walk.readMs){ walk.state = 'dwell'; walk.resumeAt = now; return; }
   if(useTts() && voice.lastStart < walk.t0 && el > 4500){
     voice.ttsStalled = true; try{ voice.tts.stop()?.catch?.(() => {}); }catch{}
-    if(voice.synth){ toast('Claude’s voice did not start here, so the device voice is used instead.'); speakStop(walk.stopIdx); }
+    if(voice.synth){ toast(T('Claude’s voice did not start here, so the device voice is used instead.')); speakStop(walk.stopIdx); }
     else { voice.broken = true; walk.state = 'dwell'; walk.resumeAt = Math.max(walk.t0 + walk.readMs, now); }
     updateVoiceUI(); return;
   }
@@ -1972,7 +2342,7 @@ function startWalk(){
   if(voice.speaking) stopSpeech();
   walk.active = true; walk.paused = false; walk.follow = true; walk.token++; walk.t = 0; eye.glide = null;
   if(voice.blocked) voice.blocked = false;          // this click counts as a fresh tap
-  $('#player').hidden = false;
+  $('#player').hidden = false; track('walk', null, {stops:routeSeq.length});
   if(matchMedia('(max-width:760px)').matches) panel.classList.add('collapsed');
   if(mode === 'map'){ const p = routeCurve.getPointAt(0); flyTo(p.x, p.z, 360); }
   arriveAt(0); updatePlayerButtons();
@@ -1980,9 +2350,9 @@ function startWalk(){
 function arriveAt(i){
   const id = routeSeq[i], p = byId(id); if(!p){ finishWalk(); return; }
   walk.t = routeStopT[i] ?? walk.t; walk.next = i+1; walk.stopIdx = i; walk.last = i === routeSeq.length-1;
-  selectedId = id; refreshPinStates();
-  setPlayer(i === 0 ? `Start · stop 1 of ${routeSeq.length}` : `Stop ${i+1} of ${routeSeq.length}`, p.name,
-    [p.desc, p.note && ('At the Biennale: ' + p.note)].filter(Boolean).join(' '), p.photo);
+  selectedId = id; setVisited(id, true, true); refreshPinStates();
+  setPlayer(i === 0 ? T('Start · stop 1 of {m}', {m:routeSeq.length}) : T('Stop {n} of {m}', {n:i+1, m:routeSeq.length}), (p.num ? p.num + ' · ' : '') + pName(p),
+    [p.artist && T('Artist: {a}', {a:p.artist}), pf(p,'desc'), pf(p,'note') && (T('At the Biennale') + ': ' + pf(p,'note'))].filter(Boolean).join(' '), p.photo);
   if(mode === 'eye'){
     const sp = standPoint(id);
     eye.glide = {from:eye.base.slice(), to:sp, t:0}; eye.pivot = [p.x, p.z];
@@ -1996,7 +2366,7 @@ function depart(){
   walk.state = 'moving'; hidePano();
   if(mode === 'eye'){ const q = routeCurve.getPointAt(walk.t); eye.glide = {from:eye.base.slice(), to:[q.x, q.z], t:0}; }
   const nx = byId(routeSeq[walk.next]);
-  setPlayer(`Walking to stop ${walk.next+1} of ${routeSeq.length}`, nx?.name || '', '');
+  setPlayer(T('Walking to stop {n} of {m}', {n:walk.next+1, m:routeSeq.length}), nx ? pName(nx) : '', '');
   updatePlayerButtons();
 }
 function skipToNext(){
@@ -2007,7 +2377,8 @@ function skipToNext(){
 }
 function finishWalk(){
   walk.state = 'done'; walk.paused = false;
-  setPlayer('Walk complete', `${routeSeq.length} stops · ${fmtM(routeLen)}`, 'Press play to walk it again, or close the player.');
+  setPlayer(T('Walk complete'), `${T('{n} stops', {n:routeSeq.length})} · ${fmtM(routeLen)}`, T('Press play to walk it again, or close the player.'));
+  track('walk_done', null, {stops:routeSeq.length});
   updatePlayerButtons();
 }
 function endWalk(){ if(!walk.active) return; eye.chase = false; walk.active = false; walk.state = 'idle'; walk.token++; stopSpeech(); hidePano(); eye.glide = null; $('#player').hidden = true; const re = $('#resEnd'); if(re) re.hidden = true; refreshPinStates(); }
@@ -2096,7 +2467,7 @@ function maybeShowPano(id){
     if(!still) return;
     panoMesh.material.map = tex; panoMesh.material.needsUpdate = true; panoActive = true; mapEl.classList.add('pano');
     eye.pitchTarget = 0;
-  }).catch(() => toast(`Could not load the 360° photo for ${p.name}.`));
+  }).catch(() => toast(T('Could not load the 360° photo for {p}.', {p:pName(p)})));
 }
 function hidePano(){ panoActive = false; mapEl.classList.remove('pano'); }
 
@@ -2127,7 +2498,7 @@ function standPoint(id){
     const d = Math.hypot(x-p.x, z-p.z); if(d < 20 || d > 110) continue;
     const ins = insideFort(x, z); if(!isGate && ins !== pIn) continue;
     if(wallDist(x, z) < 9) continue;
-    if(VENUE.noStand?.some(([x0,z0,x1,z1]) => x > x0 && x < x1 && z > z0 && z < z1)) continue;   // not in the lake or river
+    if(VENUE.noStand?.some(r => Array.isArray(r[0]) ? inPoly(r, x, z) : (x > r[0] && x < r[2] && z > r[1] && z < r[3]))) continue;   // not in the lake or river
     if(solidBoxes.some(b => x > b.min.x && x < b.max.x && z > b.min.z && z < b.max.z)) continue;
     from.set(x, EYE, z); dir.copy(target).sub(from); const L = dir.length(); dir.normalize();
     standRay.set(from, dir); standRay.far = L;
@@ -2135,7 +2506,7 @@ function standPoint(id){
     const blocked = hit && Math.hypot(hit.point.x - p.x, hit.point.z - p.z) > 32;
     let clear = wallDist(x, z) - 5;
     for(const b of solidBoxes){ const ex = Math.max(b.min.x - x, 0, x - b.max.x), ez = Math.max(b.min.z - z, 0, z - b.max.z); clear = Math.min(clear, Math.hypot(ex, ez)); }
-    const hv = {n:[0,-1], s:[0,1], e:[1,0], w:[-1,0]}[VENUE.views?.[p.id]];
+    const vw = VENUE.views?.[p.id], hv = Array.isArray(vw) ? vw : {n:[0,-1], s:[0,1], e:[1,0], w:[-1,0]}[vw];
     const face = hv ? (1 - (hv[0]*(x-p.x) + hv[1]*(z-p.z))/d)*30 : 0;   // prefer the side the building faces
     const s = Math.abs(d - want) + pen + face + (blocked ? 400 : 0) + (ins ? 0 : 4) + (clear < 10 ? (10 - clear)*4 : 0);
     if(s < bestS){ bestS = s; best = [x, z]; }
@@ -2150,16 +2521,16 @@ function faceToward(p, from){
   const ty = Math.min(pinHeight(p)*.5, 9);
   eye.pitchTarget = eye.alt > EYE + .05 ? aerialPitch() : THREE.MathUtils.clamp(Math.atan2(ty - eye.alt, Math.max(d, 1)), -1.3, .45);
 }
-const eyeList = () => (shownOrder?.length ? shownOrder : sortedPois().map(p => p.id)).filter(id => byId(id));
+const eyeList = () => (shownOrder?.length ? shownOrder : sortedPois().map(p => p.id)).filter(id => shown(byId(id)));
 function updatePlacebar(id){
   const p = byId(id); if(!p) return;
   const list = eyeList(), i = list.indexOf(id);
   const aerial = eye.alt > EYE + .05;
-  $('#pName').textContent = p.name;
-  $('#pSub').textContent = (shownOrder?.length && i >= 0 ? `Stop ${i+1} of ${list.length}` : (CATS[p.cat]?.one || '')) +
-    (aerial ? ` · Aerial view, ${Math.round(eye.alt)} m up` : (p.pano ? ' · 360° photo' : ' · Ground level'));
-  $('#pDesc').textContent = p.desc || '';
-  const pb = $('#pPhoto'); pb.hidden = !p.pano || aerial; pb.setAttribute('aria-pressed', String(eye.photoOn)); pb.textContent = eye.photoOn ? '360° photo on' : 'Show 360° photo';
+  $('#pName').textContent = (p.num ? p.num + ' · ' : '') + pName(p);
+  $('#pSub').textContent = (shownOrder?.length && i >= 0 ? T('Stop {n} of {m}', {n:i+1, m:list.length}) : T(CATS[p.cat]?.one || '')) + ' · ' +
+    (aerial ? T('Aerial view, {n} m up', {n:Math.round(eye.alt)}) : T(p.pano ? '360° photo' : 'Ground level'));
+  $('#pDesc').textContent = pf(p,'desc');
+  const pb = $('#pPhoto'); pb.hidden = !p.pano || aerial; pb.setAttribute('aria-pressed', String(eye.photoOn)); pb.textContent = T(eye.photoOn ? '360° photo on' : 'Show 360° photo');
   $('#pGround').hidden = !aerial;
 }
 function eyeZoom(f){          // f > 1 zooms out, f < 1 zooms in
@@ -2190,6 +2561,7 @@ function goEye(id, animate=true){
     }
   }
   eye.anim = null; eye.base = sp.slice(); eye.pivot = [p.x, p.z]; faceToward(p, sp); eye.at = id; updatePlacebar(id); maybeShowPano(id);
+  track('view360', id);
 }
 function stepEye(dt){
   if(eye.chase && walk.active){            // Follow: camera behind the guide's shoulder, drag to swing around, zoom to pull back
@@ -2205,7 +2577,7 @@ function stepEye(dt){
     const q = a.curve.getPointAt(a.t); eye.base = [q.x, q.z]; eye.pivot = eye.base;
     const tg = a.curve.getTangentAt(a.t); eye.yawTarget = Math.atan2(-tg.x, -tg.z);
     eye.pitchTarget = eye.alt > EYE + .05 ? aerialPitch() : 0;
-    if(a.t >= 1){ eye.anim = null; const p = byId(a.id); if(p){ eye.pivot = [p.x, p.z]; faceToward(p, eye.base); maybeShowPano(a.id); speakNow(placeText(p)); } }
+    if(a.t >= 1){ eye.anim = null; const p = byId(a.id); if(p){ eye.pivot = [p.x, p.z]; faceToward(p, eye.base); maybeShowPano(a.id); speakPlace(p); } }
   }
   eye.altCur += (eye.alt - eye.altCur)*Math.min(1, dt*3.5);
   // Ground: stand at eye.base. Aerial: rise and pull back behind eye.pivot along the view, so dragging orbits the place.
@@ -2222,7 +2594,7 @@ function setMode(m){
   if(m === mode) return;
   document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === m)));
   if(m === 'eye'){
-    stopPlacing(); fly = null;
+    stopPlacing(); fly = null; closeStreet();
     eye.saved = {pos:camera.position.clone(), target:controls.target.clone()};
     mode = 'eye'; mapEl.classList.add('eye'); controls.enabled = false;
     eye.alt = eye.altCur = EYE; camera.near = .3; setFov(baseFov());
@@ -2234,8 +2606,8 @@ function setMode(m){
       else { const sp = standPoint(id), pp = byId(id); eye.base = sp.slice(); eye.pivot = [pp.x, pp.z]; faceToward(pp, sp); maybeShowPano(id); }
       updatePlacebar(id);
     }
-    else goEye(selectedId && byId(selectedId) ? selectedId : (shownOrder?.[0] || stops[0] || pois[0]?.id), false);
-    toast('Drag to look around. Zoom out to rise into an aerial view.');
+    else goEye(selectedId && shown(byId(selectedId)) ? selectedId : (shownOrder?.[0] || stops[0] || visPois()[0]?.id), false);
+    toast(T('Drag to look around. Zoom out to rise into an aerial view.'));
   }else{
     eye.chase = false; mode = 'map'; mapEl.classList.remove('eye'); hidePano(); eye.anim = null; eye.glide = null;
     controls.enabled = true; camera.near = 5; camera.fov = 40; camera.updateProjectionMatrix();
@@ -2248,8 +2620,8 @@ function setMode(m){
   if(walk.active) updatePlayerButtons();
   layout();
 }
-document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
-function eyeStep(dir){ if(walk.active && walk.state === 'done') endWalk(); if(walk.active){ askEndWalk('move to another place', () => eyeStep(dir)); return; } const l = eyeList(); const i = l.indexOf(eye.at); goEye(l[(i + dir + l.length) % l.length], true); }
+document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => { closeStreet(); setMode(b.dataset.mode); if(b.dataset.mode === 'eye') track('mode360'); }));
+function eyeStep(dir){ if(walk.active && walk.state === 'done') endWalk(); if(walk.active){ askEndWalk(T('move to another place'), () => eyeStep(dir)); return; } const l = eyeList(); const i = l.indexOf(eye.at); goEye(l[(i + dir + l.length) % l.length], true); }
 $('#pPrev').addEventListener('click', () => eyeStep(-1));
 $('#pNext').addEventListener('click', () => eyeStep(1));
 $('#pPhoto').addEventListener('click', () => { eye.photoOn = !eye.photoOn; const id = currentEyeId(); if(eye.photoOn) maybeShowPano(id); else hidePano(); updatePlacebar(id); });
@@ -2291,7 +2663,7 @@ function toast(msg, action){
   if(action){ const b = document.createElement('button'); b.type = 'button'; b.className = 'toast-btn'; b.textContent = action.label; b.addEventListener('click', () => { t.hidden = true; action.fn(); }); t.append(b); }
   t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, action ? 7000 : 3200);
 }
-function askEndWalk(what, then){ toast(`A guided walk is running. End it to ${what}?`, {label:'End walk', fn:() => { endWalk(); then(); }}); }
+function askEndWalk(what, then){ toast(T('A guided walk is running. End it to {w}?', {w:what}), {label:T('End walk'), fn:() => { endWalk(); then(); }}); }
 
 /* ================= manage (editors only) ================= */
 let ART = null, ASSETS = null;
@@ -2333,9 +2705,10 @@ labelRenderer.domElement.addEventListener('pointerup', e => {
   if(placing === 'add'){
     let i = 1; while(byId('pt'+i)) i++;
     const p = {id:'pt'+i, name:'New point', cat:'biennale', x, z, desc:'', note:''};
+    if(GEO) [p.lat, p.lng] = toLatLng(x, z);
     pois.push(p); selectedId = p.id;
   }else{
-    const p = byId(selectedId); if(p){ p.x = x; p.z = z; }
+    const p = byId(selectedId); if(p){ p.x = x; p.z = z; if(GEO) [p.lat, p.lng] = toLatLng(x, z); }
   }
   stopPlacing(); expandSheet(); markDirty(); rebuildAll(); $('#mPick').value = selectedId; fillForm();
   if(placing === null) setTimeout(() => $('#fName').focus(), 50);
@@ -2343,7 +2716,7 @@ labelRenderer.domElement.addEventListener('pointerup', e => {
 
 function markDirty(){ dirty = true; updateManageStatus(); }
 function updateManageStatus(){
-  $('#mCount').textContent = `${pois.length} points`;
+  $('#mCount').textContent = `${pois.length} points · ${pois.filter(p => p.cat === 'biennale').length} exhibits`;
   const b = $('#mBadge'); b.textContent = dirty ? 'Unsaved changes' : 'Saved'; b.className = 'badge ' + (dirty ? 'dirty' : 'saved');
   $('#mSave').disabled = !dirty; $('#mDiscard').disabled = !dirty;
 }
@@ -2351,6 +2724,10 @@ function fillForm(){
   const p = byId($('#mPick').value) || pois[0]; if(!p) return;
   selectedId = p.id; refreshPinStates();
   $('#fName').value = p.name; $('#fCat').value = p.cat; $('#fIcon').value = p.icon || ''; $('#fDesc').value = p.desc || ''; $('#fNote').value = p.note || '';
+  $('#fNum').value = p.num || ''; $('#fArtist').value = p.artist || ''; $('#fNameHi').value = p.name_hi || ''; $('#fDescHi').value = p.desc_hi || ''; $('#fNoteHi').value = p.note_hi || '';
+  $('#fLat').value = p.lat ?? ''; $('#fLng').value = p.lng ?? ''; $('#fGeo').hidden = !GEO;
+  $('#fFeat').checked = !!p.featured; $('#fStaff').checked = !!p.staff;
+  $('#fCheck').hidden = !p.check; $('#fCheck').textContent = p.check ? 'To check: ' + p.check : '';
   $('#fPanoState').textContent = p.pano ? 'Photo attached' : 'No photo';
   $('#fPhotoState').textContent = p.photo ? 'Photo attached' : 'No photo';
   $('#fPhotoDel').hidden = !p.photo; $('#fPhotoBtn').textContent = p.photo ? 'Replace photo' : 'Upload photo';
@@ -2367,13 +2744,46 @@ function editField(key, el, rebuild){
   if(!rebuild) el.addEventListener('change', () => { fillSelects(); renderList(); });
 }
 editField('name', $('#fName'), false); editField('desc', $('#fDesc'), false); editField('note', $('#fNote'), false); editField('cat', $('#fCat'), true); editField('icon', $('#fIcon'), true);
+editField('num', $('#fNum'), true); editField('artist', $('#fArtist'), false); editField('name_hi', $('#fNameHi'), false); editField('desc_hi', $('#fDescHi'), false); editField('note_hi', $('#fNoteHi'), false);
+for(const [k, el] of [['featured', $('#fFeat')], ['staff', $('#fStaff')]]) el.addEventListener('change', () => { const p = byId(selectedId); if(!p) return; if(el.checked) p[k] = true; else delete p[k]; markDirty(); rebuildAll(); });
+for(const el of [$('#fLat'), $('#fLng')]) el.addEventListener('change', () => {
+  const p = byId(selectedId); if(!p || !GEO) return;
+  const lat = parseFloat($('#fLat').value), lng = parseFloat($('#fLng').value);
+  if(!Number.isFinite(lat) || !Number.isFinite(lng)){ toast('Enter latitude and longitude as decimal degrees, for example 28.6092, 77.2440.'); return; }
+  const [x, z] = toLocal(lat, lng);
+  if(Math.hypot(x, z) > 2500){ toast('That point is more than 2.5 km from the venue. Check for a typing mistake.'); return; }
+  p.lat = lat; p.lng = lng; p.x = x; p.z = z; markDirty(); rebuildAll(); flyTo(x, z, 360);
+});
+/* Visitor information editor (English and Hindi for each section) */
+for(const k in INFO_KEYS){ const o = document.createElement('option'); o.value = k; o.textContent = INFO_KEYS[k]; $('#iKey').appendChild(o); }
+function fillInfo(){ const k = $('#iKey').value, v = INFO[k] || {}; $('#iEn').value = v.en || ''; $('#iHi').value = v.hi || ''; }
+$('#iKey').addEventListener('change', fillInfo);
+for(const [el, lg] of [[$('#iEn'),'en'], [$('#iHi'),'hi']]) el.addEventListener('input', () => { const k = $('#iKey').value; INFO[k] = {...(INFO[k] || {}), [lg]: el.value}; markDirty(); });
+$('#mImport').addEventListener('change', async e => {
+  const f = e.target.files?.[0]; e.target.value = ''; if(!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    const list = Array.isArray(d) ? d : d.pois;
+    if(!Array.isArray(list) || !list.length) throw new Error('No "pois" list in the file.');
+    const ids = new Set();
+    for(const p of list){
+      if(!p.id || !p.name || !CATS[p.cat]) throw new Error(`Each point needs id, name and a category (${Object.keys(CATS).join(', ')}).`);
+      if(ids.has(p.id)) throw new Error(`The id "${p.id}" is used twice.`); ids.add(p.id);
+      if(GEO && Number.isFinite(+p.lat) && Number.isFinite(+p.lng)) [p.x, p.z] = toLocal(+p.lat, +p.lng);
+      if(!Number.isFinite(p.x) || !Number.isFinite(p.z)) throw new Error(`"${p.name}" has no position (lat/lng or x/z).`);
+      if(GEO && !Number.isFinite(+p.lat)) [p.lat, p.lng] = toLatLng(p.x, p.z);
+    }
+    pois = list; if(d.info) INFO = d.info; if(d.kiosk) saved.kiosk = d.kiosk;
+    markDirty(); rebuildAll(); fillForm(); fillInfo(); toast(`Imported ${list.length} points. Press “Save for everyone” to publish.`);
+  }catch(err){ toast('Could not import: ' + (err?.message || 'the file is not valid JSON.')); }
+});
 $('#mAdd').addEventListener('click', () => startPlacing('add'));
 $('#fMove').addEventListener('click', () => { if(selectedId) startPlacing('move'); });
 $('#fDel').addEventListener('click', () => { const p = byId(selectedId); if(!p) return; $('#fConfirmText').textContent = `Delete “${p.name}”?`; $('#fConfirm').hidden = false; });
 $('#fDelNo').addEventListener('click', () => $('#fConfirm').hidden = true);
 $('#fDelYes').addEventListener('click', () => { pois = pois.filter(p => p.id !== selectedId); selectedId = pois[0]?.id || null; markDirty(); rebuildAll(); if(selectedId){ $('#mPick').value = selectedId; fillForm(); } });
-$('#mDiscard').addEventListener('click', () => { pois = structuredClone(saved.pois); dirty = false; updateManageStatus(); rebuildAll(); fillForm(); toast('Changes discarded'); });
-function dataJson(){ return JSON.stringify({version:1, updated:new Date().toISOString().slice(0,10), pois}, null, 2); }
+$('#mDiscard').addEventListener('click', () => { pois = structuredClone(saved.pois); INFO = structuredClone(saved.info || DEFAULT_INFO); fillInfo(); dirty = false; updateManageStatus(); rebuildAll(); fillForm(); toast('Changes discarded'); });
+function dataJson(){ return JSON.stringify({version:2, updated:new Date().toISOString().slice(0,10), ...(GEO ? {geo:GEO} : {}), info:INFO, ...(saved.kiosk ? {kiosk:saved.kiosk} : {}), pois}, null, 1); }
 $('#mCopy').addEventListener('click', () => {
   const txt = dataJson();
   navigator.clipboard.writeText(txt).then(() => toast('Map data copied')).catch(() => { const b = $('#mCopyBox'); b.value = txt; b.hidden = false; b.select(); toast('Select the text below and copy it'); });
@@ -2383,7 +2793,7 @@ $('#mSave').addEventListener('click', async () => {
   const btn = $('#mSave'); btn.disabled = true; btn.textContent = 'Saving…';
   try{
     await ART.publish({[VENUE.file]: {content:dataJson(), contentType:'application/json'}});
-    saved = {pois: structuredClone(pois)}; dirty = false; updateManageStatus(); toast('Saved. Everyone now sees this version.');
+    saved = {...saved, info:structuredClone(INFO), pois: structuredClone(pois)}; dirty = false; updateManageStatus(); toast('Saved. Everyone now sees this version.');
   }catch(err){
     const code = err?.code;
     const msg = code === 'conflict' ? 'Someone else saved first. The map will reload with their version.'
@@ -2402,17 +2812,352 @@ async function initManage(){
     if(!art || !user) return;
     const can = await user.canEdit().catch(() => false);
     if(!can) return;
-    ART = art; $('#t-manage').hidden = false; updateManageStatus(); fillForm();
+    ART = art; editorMode = true; $('#t-manage').hidden = KIOSK.on; rebuildAll(); updateManageStatus(); fillForm(); fillInfo();
     ASSETS = await window.claude.use('assets').catch(() => null);
     $('#fPanoField').hidden = !ASSETS; $('#fPhotoField').hidden = !ASSETS;
   }catch{}
 }
 
+/* ================= visited, exhibits directory, visitor info ================= */
+const VKEY = 'bfm-visited-' + VENUE.key;
+const visited = new Set((() => { try{ return JSON.parse(localStorage.getItem(VKEY) || '[]'); }catch{ return []; } })());
+function saveVisited(){ try{ localStorage.setItem(VKEY, JSON.stringify([...visited])); }catch{} }
+function setVisited(id, on, quiet){
+  if(on === visited.has(id)) return;
+  if(on) visited.add(id); else visited.delete(id);
+  saveVisited(); if(on) track('visited', id);
+  refreshPinStates(); if(tab === 'exhibits') renderExhibits();
+  if(!quiet && on) toast(T('Marked {p} as visited', {p:pName(byId(id))}));
+}
+const kioskHere = () => { const id = KIOSK.here?.[VENUE.key] || saved.kiosk?.here; return shown(byId(id)) ? id : null; };
+const startId = () => (KIOSK.on && kioskHere()) || (shown(byId(VENUE.entrance)) ? VENUE.entrance : visPois()[0]?.id);
+const exhibitList = () => sortedPois().filter(p => p.cat === 'biennale');
+let xFilter = 'all';
+function renderExhibits(){
+  const q = $('#xq').value.trim().toLowerCase(), all = exhibitList();
+  const pass = p => xFilter === 'all' || (xFilter === 'done' && visited.has(p.id)) || (xFilter === 'todo' && !visited.has(p.id)) || (xFilter === 'feat' && p.featured);
+  const items = all.filter(p => pass(p) && (!q || searchText(p).includes(q)));
+  const nv = all.filter(p => visited.has(p.id)).length;
+  $('#xCount').textContent = T('{v} of {n} exhibits visited', {v:nv, n:all.length});
+  document.querySelectorAll('#xFilter button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === xFilter)));
+  const list = $('#xList'); list.textContent = '';
+  for(const p of items){
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'xitem' + (visited.has(p.id) ? ' done' : '');
+    const n = document.createElement('span'); n.className = 'xn'; if(p.num) n.textContent = p.num; else n.innerHTML = iconSvg(iconKey(p));
+    const d = document.createElement('div'); const nm = document.createElement('b'); nm.textContent = pName(p);
+    const sm = document.createElement('small'); sm.textContent = p.artist || pf(p,'desc'); d.append(nm, sm);
+    const st = document.createElement('span'); st.className = 'xs';
+    if(p.featured){ const s = document.createElement('span'); s.className = 'star'; s.textContent = '★'; s.title = T('Highlight'); st.appendChild(s); }
+    if(visited.has(p.id)) st.appendChild(document.createTextNode('✓ ' + T('Visited')));
+    b.append(n, d, st); b.addEventListener('click', () => selectPoi(p.id, true)); list.appendChild(b);
+  }
+  if(!items.length){ const e = document.createElement('p'); e.className = 'hint'; e.textContent = T(all.length ? 'No exhibits match.' : 'No exhibits have been added for this venue yet.'); list.appendChild(e); }
+  const hasFeat = all.some(p => p.featured);
+  $('#xTour').disabled = $('#xVirtual').disabled = !hasFeat || !G;
+  $('#xClear').hidden = !nv;
+}
+$('#xq').addEventListener('input', renderExhibits);
+document.querySelectorAll('#xFilter button').forEach(b => b.addEventListener('click', () => { xFilter = b.dataset.f; renderExhibits(); }));
+$('#xClear').addEventListener('click', () => { visited.clear(); saveVisited(); refreshPinStates(); renderExhibits(); });
+function planHighlights(){
+  const feat = exhibitList().filter(p => p.featured).map(p => p.id), s = startId();
+  stops = s ? [s, ...feat.filter(id => id !== s)] : feat;
+  if(stops.length < 2){ toast(T('Add at least two stops.')); return false; }
+  $('#optOrder').checked = true; $('#keepEnd').checked = false; $('#keepEnd').disabled = false;
+  setTab('route'); renderStops(); doRoute(true); return !!routeCurve;
+}
+$('#xTour').addEventListener('click', () => { if(planHighlights()) track('highlights'); });
+$('#xVirtual').addEventListener('click', () => { if(!planHighlights()) return; track('walkthrough'); startWalk(); setWalkView('eyes'); });
+
+function renderInfo(){
+  const b = $('#infoBody'); b.textContent = '';
+  const add = (tag, txt, cls) => { const e = document.createElement(tag); e.textContent = txt; if(cls) e.className = cls; b.appendChild(e); return e; };
+  const iv = k => INFO[k]?.[LANG] || INFO[k]?.en || '';
+  add('h3', LANG === 'hi' && VENUE.name_hi || VENUE.name, 'first');
+  add('p', T('The India Biennale ’26') + ' · ' + iv('dates'));
+  for(const k of ['hours','pass','rules','access','help']) if(iv(k)){ add('h3', T(INFO_KEYS[k])); add('p', iv(k)); }
+  add('h3', T('Map symbols'));
+  const counts = {}, catOf = {}; for(const q of visPois()){ const k = iconKey(q); counts[k] = (counts[k] || 0) + 1; catOf[k] ||= q.cat; }
+  const lg = document.createElement('div'); lg.className = 'legend';
+  for(const k of Object.keys(ICONS_MAP)){
+    if(!counts[k]) continue;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.style.setProperty('--cat', `var(--c-${catOf[k]})`);
+    const i = document.createElement('i'); i.innerHTML = iconSvg(k); const sm = document.createElement('small'); sm.textContent = counts[k];
+    btn.append(i, document.createTextNode(T(ICON_NAMES[k])), sm);
+    btn.addEventListener('click', () => { for(const c of CAT_ORDER) catOn[c] = true; $('#q').value = T(ICON_NAMES[k]); setTab('explore'); $('#detail').hidden = true; $('#exploreList').hidden = false; renderChips(); renderList(); refreshPinStates(); });
+    lg.appendChild(btn);
+  }
+  b.appendChild(lg);
+  if(GEO){
+    add('h3', T('Getting here'));
+    const row = document.createElement('div'); row.className = 'btnrow';
+    const sb = document.createElement('button'); sb.type = 'button'; sb.className = 'btn'; sb.textContent = T('Open street map'); sb.addEventListener('click', openStreet); row.appendChild(sb);
+    const a = document.createElement('a'); a.className = 'btn ext'; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.href = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_foot&route=%3B${GEO.lat}%2C${GEO.lng}`; a.textContent = T('Directions in OpenStreetMap'); a.style.textDecoration = 'none';
+    row.appendChild(a); b.appendChild(row);
+  }
+  add('p', T(GEO && !GEO.approx ? 'Places follow the venue team’s coordinates. Buildings in the 3D model are simplified.' : 'Positions are approximate. Buildings in the 3D model are simplified.'), 'hint').style.marginTop = '12px';
+  if(GEO) add('p', T('Street map data © OpenStreetMap contributors.'), 'attrib');
+}
+
+/* ================= language switch ================= */
+const I18N_SKIP = '#attract,#admin,#tab-manage,#lf,#map,#list,#detail,#stops,#result,#xList,#xCount,#infoBody,#chips,#toast,#plName,#plDesc,#plStatus,#plVoice,#pName,#pSub,#pDesc,#venueName,#stopCount,.lang,#snote';
+function applyStaticI18n(){
+  const root = $('.app'), skip = el => !!el?.closest(I18N_SKIP);
+  const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode: n => skip(n.parentElement) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+  for(let n = tw.nextNode(); n; n = tw.nextNode()){
+    if(n.__en === undefined){ const k = n.nodeValue.trim(); n.__en = k && HI[k] ? n.nodeValue : null; n.__k = k; }
+    if(n.__en) n.nodeValue = LANG === 'hi' ? n.__en.replace(n.__k, HI[n.__k]) : n.__en;
+  }
+  for(const el of root.querySelectorAll('[placeholder],[title],[aria-label]')){
+    if(skip(el)) continue;
+    el.__a ||= {};
+    for(const a of ['placeholder','title','aria-label']){
+      if(!el.hasAttribute(a)) continue;
+      if(el.__a[a] === undefined) el.__a[a] = el.getAttribute(a);
+      const en = el.__a[a]; if(HI[en]) el.setAttribute(a, LANG === 'hi' ? HI[en] : en);
+    }
+  }
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  $('#venueName').textContent = LANG === 'hi' && VENUE.name_hi ? `${VENUE.name_hi} · ${VENUE.short}` : VENUE.name;
+}
+function setLang(l, quiet){
+  const changed = l !== LANG; LANG = l === 'hi' ? 'hi' : 'en';
+  try{ localStorage.setItem('bfm-lang', LANG); }catch{}
+  applyStaticI18n();
+  if(quiet && !changed) return;
+  if(changed) track('lang', null, {lang:LANG});
+  rebuildPins(); renderChips(); renderList(); renderStops(); updateYou();
+  for(const d of CTX) d.textContent = T(d.dataset.en);
+  if(!$('#detail').hidden && selectedId) selectPoi(selectedId);
+  if(tab === 'exhibits') renderExhibits();
+  if(tab === 'info') renderInfo();
+  if(!$('#result').hidden && !walk.active && shownOrder) (lastWasTour ? doTour() : doRoute(false));
+  if(walk.active){ updatePlayerButtons(); arriveLabel(); }
+  if(mode === 'eye') updatePlacebar(currentEyeId());
+  updateVoiceUI(); if(streetOn) drawStreet();
+}
+function arriveLabel(){ const i = walk.stopIdx, p = byId(routeSeq[i]); if(!p) return;
+  if(walk.state === 'done'){ setPlayer(T('Walk complete'), `${T('{n} stops', {n:routeSeq.length})} · ${fmtM(routeLen)}`, T('Press play to walk it again, or close the player.')); return; }
+  if(walk.state === 'moving'){ const nx = byId(routeSeq[walk.next]); setPlayer(T('Walking to stop {n} of {m}', {n:walk.next+1, m:routeSeq.length}), nx ? pName(nx) : '', ''); return; }
+  setPlayer(i === 0 ? T('Start · stop 1 of {m}', {m:routeSeq.length}) : T('Stop {n} of {m}', {n:i+1, m:routeSeq.length}), (p.num ? p.num + ' · ' : '') + pName(p),
+    [p.artist && T('Artist: {a}', {a:p.artist}), pf(p,'desc'), pf(p,'note') && (T('At the Biennale') + ': ' + pf(p,'note'))].filter(Boolean).join(' '), p.photo); }
+document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+/* ================= you are here (kiosk location or the visitor's GPS position) ================= */
+let youAt = null;
+const youObj = (() => { const el = document.createElement('div'); el.className = 'you'; el.innerHTML = '<div class="yd"></div><div class="yl"></div>'; const o = new CSS2DObject(el); o.visible = false; scene.add(o); return o; })();
+function updateYou(){
+  const h = KIOSK.on && kioskHere() ? byId(kioskHere()) : null;
+  const at = youAt || (h ? [h.x + 6, h.z + 6] : null);
+  youObj.visible = !!at; if(at) youObj.position.set(at[0], 1, at[1]);
+  youObj.element.querySelector('.yl').textContent = T('You are here');
+  if(streetOn) drawStreet();
+}
+$('#myLoc').hidden = !GEO || !navigator.geolocation || !!window.claude;
+$('#myLoc').addEventListener('click', () => {
+  if(!navigator.geolocation || !GEO) return;
+  toast(T('Finding your location…'));
+  navigator.geolocation.getCurrentPosition(pos => {
+    const [x, z] = toLocal(pos.coords.latitude, pos.coords.longitude);
+    if(Math.hypot(x, z) > 1500){ toast(T('You seem to be away from {v}. Choose a starting stop instead.', {v:LANG === 'hi' && VENUE.name_hi || VENUE.short})); return; }
+    youAt = [x, z]; updateYou();
+    let best = null, bd = Infinity; for(const p of visPois()){ const d = Math.hypot(p.x - x, p.z - z); if(d < bd){ bd = d; best = p; } }
+    if(best){ stops = [best.id, ...stops.filter(id => id !== best.id)]; renderStops(); if(stops.length >= 2) doRoute(false); toast(T('Starting from the nearest place: {p}', {p:pName(best)})); }
+    track('locate'); flyTo(x, z, 360);
+  }, () => toast(T('Could not get your location. Allow location access, or choose a starting stop.')), {enableHighAccuracy:true, timeout:12000, maximumAge:30000});
+});
+
+/* ================= street map (OpenStreetMap via Leaflet) ================= */
+let LMAP = null, streetOn = false, streetLayer = null, lastRoutePts = null;
+const LEAFLET_SRC = document.querySelector('meta[name="leaflet-src"]')?.content || 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+function loadLeaflet(){
+  if(window.L?.map) return Promise.resolve(window.L);
+  return new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = LEAFLET_SRC; sc.onload = () => window.L ? res(window.L) : rej(); sc.onerror = rej; document.head.appendChild(sc); });
+}
+const panelPad = () => { const pr = panel.getBoundingClientRect(), mobile = matchMedia('(max-width:760px)').matches; return mobile ? {tl:[20, 120], br:[70, pr.height + 20]} : {tl:[pr.right + 20, 80], br:[80, 20]}; };
+async function openStreet(){
+  if(!GEO) return;
+  if(walk.active) endWalk();
+  if(mode === 'eye') setMode('map');
+  $('#street').hidden = false; streetOn = true; $('#streetBtn').setAttribute('aria-pressed', 'true'); track('street');
+  const note = $('#snote'); note.textContent = T('Loading the street map…');
+  let L;
+  try{ L = await loadLeaflet(); }catch{ note.textContent = T('The street map could not load here (offline or blocked). The 3D map works without it.'); return; }
+  if(!LMAP){
+    LMAP = L.map('lf', {zoomControl:false, attributionControl:true, maxZoom:19});
+    let ok = 0, bad = 0;
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'})
+      .on('tileload', () => { ok++; }).on('tileerror', () => { bad++; if(!ok && bad > 3) $('#snote').textContent = T('Street tiles can’t load here (offline or blocked). Pins and the fort outline still show.'); }).addTo(LMAP);
+    LMAP.attributionControl.setPrefix(false);
+  }
+  setTimeout(() => { LMAP.invalidateSize(); drawStreet(true); }, 30);
+  note.textContent = T(GEO.approx ? 'Street map © OpenStreetMap contributors. Positions here are approximate.' : 'Street map © OpenStreetMap contributors. Pins use the venue team’s coordinates.');
+}
+function drawStreet(fit){
+  if(!LMAP || !window.L) return;
+  const L = window.L;
+  if(streetLayer) streetLayer.remove();
+  streetLayer = L.layerGroup().addTo(LMAP);
+  const ll = ([x, z]) => toLatLng(x, z);
+  const fort = L.polygon(FORT.map(ll), {color:getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#AE3820', weight:2, dashArray:'6 6', fillOpacity:.06}).addTo(streetLayer);
+  if(lastRoutePts?.length > 1) L.polyline(lastRoutePts.map(ll), {color:getComputedStyle(document.documentElement).getPropertyValue('--route').trim() || '#1659C7', weight:5, opacity:.9}).addTo(streetLayer);
+  const order = shownOrder || [];
+  for(const p of visPois()){
+    if(!catOn[p.cat] && !order.includes(p.id)) continue;
+    const idx = order.indexOf(p.id);
+    const html = `<div class="lpin" style="--cat:${idx >= 0 ? 'var(--route)' : `var(--c-${p.cat})`}"><span>${idx >= 0 ? `<b style="font:600 11px/1 var(--f-mono)">${idx+1}</b>` : iconSvg(iconKey(p))}</span></div>`;
+    L.marker([p.lat ?? toLatLng(p.x, p.z)[0], p.lng ?? toLatLng(p.x, p.z)[1]], {icon:L.divIcon({className:'', html, iconSize:[26,26], iconAnchor:[13,30]}), title:pName(p), alt:pName(p), keyboard:true})
+      .bindTooltip((p.num ? p.num + ' · ' : '') + pName(p), {direction:'top', offset:[0,-28]})
+      .on('click', () => { if(tab === 'route') addStop(p.id); else selectPoi(p.id); }).addTo(streetLayer);
+  }
+  const h = KIOSK.on && kioskHere() ? byId(kioskHere()) : null, at = youAt || (h ? [h.x, h.z] : null);
+  if(at) L.circleMarker(ll(at), {radius:9, color:'#fff', weight:3, fillColor:'#1A73E8', fillOpacity:1}).bindTooltip(T('You are here'), {permanent:true, direction:'right', offset:[10,0]}).addTo(streetLayer);
+  if(fit){ const pd = panelPad(); LMAP.fitBounds(fort.getBounds(), {paddingTopLeft:pd.tl, paddingBottomRight:pd.br}); }
+}
+function closeStreet(){ if(!streetOn) return; streetOn = false; $('#street').hidden = true; $('#streetBtn').setAttribute('aria-pressed', 'false'); }
+$('#streetBtn').hidden = !GEO;
+$('#streetBtn').addEventListener('click', () => streetOn ? closeStreet() : openStreet());
+
+/* ================= visitor engagement analytics (on this device, no personal data) ================= */
+const AKEY = 'bfm-stats', ALOG = (() => { try{ return JSON.parse(localStorage.getItem(AKEY) || '[]'); }catch{ return []; } })();
+let aTimer = null, aQueue = [];
+function track(ev, id, extra){
+  const row = [Date.now(), VENUE.key, ev, id || '', LANG, KIOSK.on ? 1 : 0, extra ? JSON.stringify(extra) : ''];
+  ALOG.push(row); if(ALOG.length > 20000) ALOG.splice(0, ALOG.length - 20000);
+  clearTimeout(aTimer); aTimer = setTimeout(flushStats, 2000);
+  if(saved.kiosk?.analyticsUrl) aQueue.push(row);
+}
+function flushStats(){ try{ localStorage.setItem(AKEY, JSON.stringify(ALOG)); }catch{} }
+function sendQueue(){
+  const url = saved.kiosk?.analyticsUrl; if(!url || !aQueue.length || !/^https:\/\//.test(url)) return;
+  const body = JSON.stringify({device:KIOSK.id || '', rows:aQueue.splice(0)});
+  try{ if(!navigator.sendBeacon?.(url, new Blob([body], {type:'application/json'}))) fetch(url, {method:'POST', body, keepalive:true, headers:{'content-type':'application/json'}}).catch(() => {}); }catch{}
+}
+setInterval(sendQueue, 60000);
+addEventListener('pagehide', () => { flushStats(); sendQueue(); });
+function statsReport(){
+  const rows = ALOG.filter(r => r[1] === VENUE.key), cnt = ev => rows.filter(r => r[2] === ev).length;
+  const per = {}; for(const r of rows) if(['view','view360','visited'].includes(r[2]) && r[3]){ const o = per[r[3]] ||= {view:0, view360:0, visited:0}; o[r[2]]++; }
+  const top = Object.entries(per).map(([id, o]) => ({id, ...o, score:o.view + o.view360 + o.visited})).sort((a,b) => b.score - a.score).slice(0, 12);
+  const sessions = rows.filter(r => r[2] === 'session'), hi = sessions.filter(r => r[4] === 'hi').length;
+  return {rows, top, k:{sessions:sessions.length, views:cnt('view'), v360:cnt('view360'), routes:cnt('route') + cnt('tour') + cnt('highlights'), walks:cnt('walk'), done:cnt('walk_done'), visited:cnt('visited'), searches:cnt('search'), hiShare: sessions.length ? Math.round(hi*100/sessions.length) : 0, resets:cnt('reset')}};
+}
+function renderReport(){
+  const {rows, top, k} = statsReport();
+  const fmt = ts => new Date(ts).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'});
+  $('#aRange').textContent = rows.length ? `${fmt(rows[0][0])} – ${fmt(rows.at(-1)[0])}` : 'No data yet';
+  const kp = $('#aKpis'); kp.textContent = '';
+  for(const [v, l] of [[k.sessions,'Sessions'],[k.views,'Place views'],[k.v360,'360° views'],[k.routes,'Routes planned'],[k.walks,'Guided walks'],[k.done,'Walks completed'],[k.visited,'Marked visited'],[k.hiShare + '%','Sessions in Hindi']]){
+    const d = document.createElement('div'); const s = document.createElement('strong'); s.textContent = v; const sp = document.createElement('span'); sp.textContent = l; d.append(s, sp); kp.appendChild(d);
+  }
+  const box = $('#aTop'); box.textContent = '';
+  if(!top.length) return;
+  const tb = document.createElement('table'); tb.innerHTML = '<thead><tr><th>Most popular places</th><th class="r">Views</th><th class="r">360°</th><th class="r">Visited</th></tr></thead>';
+  const body = document.createElement('tbody');
+  for(const r of top){ const tr = document.createElement('tr'); const p = byId(r.id);
+    for(const [v, c] of [[(p?.num ? p.num + ' · ' : '') + (p?.name || r.id), ''], [r.view, 'r'], [r.view360, 'r'], [r.visited, 'r']]){ const td = document.createElement('td'); td.textContent = v; if(c) td.className = c; tr.appendChild(td); }
+    body.appendChild(tr); }
+  tb.appendChild(body); box.appendChild(tb);
+}
+let DL = null;
+async function saveFile(filename, data, type){
+  if(DL){ try{ await DL.save({filename, data}); return; }catch(e){ if(e?.code === 'declined') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type})); a.download = filename; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+const stamp = () => new Date().toISOString().slice(0,10);
+$('#aCsv').addEventListener('click', () => {
+  const q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g,'""')}"` : String(v);
+  const lines = [['time','venue','event','place_id','place_name','language','kiosk','details'].join(',')];
+  for(const r of ALOG){ const p = r[1] === VENUE.key ? byId(r[3]) : null; lines.push([new Date(r[0]).toISOString(), r[1], r[2], r[3], p?.name || '', r[4], r[5], r[6]].map(q).join(',')); }
+  saveFile(`biennale-map-analytics-${stamp()}.csv`, lines.join('\n'), 'text/csv');
+});
+$('#aJson').addEventListener('click', () => saveFile(`biennale-map-analytics-${stamp()}.json`, JSON.stringify({exported:new Date().toISOString(), fields:['time','venue','event','place_id','language','kiosk','details'], rows:ALOG}), 'application/json'));
+let clearArm = 0;
+$('#aClear').addEventListener('click', () => {
+  if(Date.now() - clearArm > 4000){ clearArm = Date.now(); $('#aClear').textContent = 'Tap again to clear'; setTimeout(() => $('#aClear').textContent = 'Clear data', 4000); return; }
+  ALOG.length = 0; flushStats(); renderReport(); $('#aClear').textContent = 'Clear data';
+});
+
+/* ================= kiosk mode: welcome screen, idle reset, staff settings ================= */
+const KIOSK = (() => {
+  let k = {}; try{ k = JSON.parse(localStorage.getItem('bfm-kiosk') || '{}'); }catch{}
+  const q = new URLSearchParams(location.search); if(q.has('kiosk')) k.on = q.get('kiosk') !== '0';
+  k.here ||= {}; if(!k.id){ k.id = Math.random().toString(36).slice(2, 10); }
+  return k;
+})();
+function saveKiosk(){ try{ localStorage.setItem('bfm-kiosk', JSON.stringify(KIOSK)); }catch{} }
+function applyKiosk(){
+  document.body.classList.toggle('kiosk', !!KIOSK.on);
+  $('#t-manage').hidden = !editorMode || !!KIOSK.on;
+  if(KIOSK.on && tab === 'manage') setTab('explore');
+  updateYou(); layout();
+}
+function showAttract(){
+  if(mode === 'eye') setMode('map');
+  $('#atVenue').textContent = `${VENUE.name}${VENUE.name_hi ? ' · ' + VENUE.name_hi : ''}`;
+  $('#attract').hidden = false; controls.autoRotate = !reduceMotion; controls.autoRotateSpeed = .35;
+}
+function hideAttract(lang){
+  $('#attract').hidden = true; controls.autoRotate = false; lastAct = performance.now();
+  setLang(lang || LANG); track('session');
+  if(KIOSK.on && !document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+}
+document.querySelectorAll('#attract [data-start]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); hideAttract(b.dataset.start); }));
+$('#attract').addEventListener('click', () => hideAttract('en'));
+let lastAct = performance.now(), idleWarned = false;
+for(const ev of ['pointerdown','keydown','wheel']) addEventListener(ev, () => { lastAct = performance.now(); idleWarned = false; }, {capture:true, passive:true});
+setInterval(() => {
+  if(!KIOSK.on || !$('#attract').hidden || !$('#admin').hidden || dirty) return;
+  if(walk.active && !walk.paused && walk.state !== 'done'){ lastAct = performance.now(); return; }
+  const idle = (performance.now() - lastAct)/1000, lim = +KIOSK.idle || +saved.kiosk?.idleSeconds || 90;
+  if(idle > lim + 15) kioskReset();
+  else if(idle > lim && !idleWarned){ idleWarned = true; toast(T('Still exploring? The map will reset in a few seconds.'), {label:T('Keep exploring'), fn:() => { lastAct = performance.now(); idleWarned = false; }}); }
+}, 1000);
+function kioskReset(){
+  track('reset'); idleWarned = false;
+  endWalk(); stopSpeech(); if(mode === 'eye') setMode('map'); stopPlacing(); closeStreet();
+  clearRoute(); visited.clear(); saveVisited(); youAt = null;
+  $('#q').value = ''; $('#xq').value = ''; xFilter = 'all'; for(const c of CAT_ORDER) catOn[c] = true;
+  selectedId = null; $('#detail').hidden = true; $('#exploreList').hidden = false; $('#toast').hidden = true;
+  defaultStops(); setLang('en'); renderChips(); renderList(); renderStops(); setTab('explore'); flyHome(); showAttract();
+}
+// staff dialog: long-press the logo for 2 seconds, or press Ctrl+Shift+K
+function openAdmin(){
+  const locked = !!KIOSK.on;
+  $('#admin').hidden = false; $('#admLock').hidden = !locked; $('#admBody').hidden = locked; $('#admPin').value = '';
+  if(locked) setTimeout(() => $('#admPin').focus(), 50); else fillAdmin();
+}
+function fillAdmin(){
+  $('#kOn').checked = !!KIOSK.on; poiOptions($('#kHere'), kioskHere() || startId()); $('#kIdle').value = String(KIOSK.idle || saved.kiosk?.idleSeconds || 90);
+  renderReport();
+}
+$('#admUnlock').addEventListener('click', () => {
+  if($('#admPin').value === String(KIOSK.pin || saved.kiosk?.pin || '2026')){ $('#admLock').hidden = true; $('#admBody').hidden = false; fillAdmin(); }
+  else { $('#admPin').value = ''; toast('Wrong PIN'); }
+});
+$('#admPin').addEventListener('keydown', e => { if(e.key === 'Enter') $('#admUnlock').click(); });
+$('#admClose').addEventListener('click', () => { $('#admin').hidden = true; lastAct = performance.now(); });
+$('#kOn').addEventListener('change', () => { KIOSK.on = $('#kOn').checked; saveKiosk(); applyKiosk(); defaultStops(); renderStops(); });
+$('#kHere').addEventListener('change', () => { KIOSK.here[VENUE.key] = $('#kHere').value; saveKiosk(); updateYou(); defaultStops(); renderStops(); });
+$('#kIdle').addEventListener('change', () => { KIOSK.idle = +$('#kIdle').value; saveKiosk(); });
+$('#kFull').addEventListener('click', () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.())?.catch?.(() => toast('Full screen is not allowed in this view.')));
+$('#kAttract').addEventListener('click', () => { $('#admin').hidden = true; kioskReset(); });
+{
+  const mark = $('.brand .mark'); let lp = null;
+  mark.addEventListener('pointerdown', () => { clearTimeout(lp); lp = setTimeout(openAdmin, 2000); });
+  for(const ev of ['pointerup','pointerleave','pointercancel']) mark.addEventListener(ev, () => clearTimeout(lp));
+  addEventListener('keydown', e => { if(e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')){ e.preventDefault(); openAdmin(); } });
+  addEventListener('contextmenu', e => { if(KIOSK.on) e.preventDefault(); });
+}
+
 /* ================= boot ================= */
-function rebuildAll(){ buildGraph(); rebuildPins(); renderChips(); fillSelects(); renderList(); updateManageStatus(); if(routeIds && !routeIds.every(id => byId(id))) clearRoute(); }
+function rebuildAll(){ buildGraph(); rebuildPins(); renderChips(); fillSelects(); renderList(); updateManageStatus(); if(tab === 'exhibits') renderExhibits(); if(tab === 'info') renderInfo(); if(streetOn) drawStreet(); if(routeIds && !routeIds.every(id => byId(id))) clearRoute(); }
 (async () => {
   $('#venueName').textContent = VENUE.name;
   if(LOCKED_VENUE) document.querySelector('.venues').hidden = true;
+  applyStaticI18n();
   document.querySelectorAll('.venues button').forEach(b => {
     b.setAttribute('aria-pressed', String(b.dataset.venue === VENUE.key));
     b.addEventListener('click', () => {
@@ -2424,11 +3169,16 @@ function rebuildAll(){ buildGraph(); rebuildPins(); renderChips(); fillSelects()
   if(!LOCKED_VENUE) addEventListener('hashchange', () => { const k = location.hash.slice(1); if(VENUES[k] && k !== VENUE.key && !dirty) location.reload(); });
   applyTheme(); layout(); camera.position.copy(homePos()); controls.update(); requestAnimationFrame(tick);
   await loadData();
+  applyKiosk();
   defaultStops();
   rebuildAll();
+  if(KIOSK.on) showAttract(); else track('session');
   initManage();
   initVoice();
-  if(location.search.includes('rfdebug')) window.__rf = {goEye, setMode, eyeZoom, startWalk, standPoint, get walk(){ return walk; }, get eye(){ return eye; }, camera, controls, walker, get fly(){ return fly; }, set fly(v){ fly = v; }, DOORS, setWalkView, pose, live};
+  window.claude?.use?.('downloads').then(d => { DL = d; }).catch(() => {});
+  if(document.querySelector('link[rel="manifest"]') && 'serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if(location.search.includes('rfdebug')) window.__rf = {goEye, setMode, eyeZoom, startWalk, standPoint, get walk(){ return walk; }, get eye(){ return eye; }, camera, controls, walker, get fly(){ return fly; }, set fly(v){ fly = v; }, DOORS, setWalkView, pose, live,
+    setLang, kioskReset, openStreet, closeStreet, openAdmin, renderExhibits, statsReport, get pois(){ return pois; }, get stops(){ return stops; }, KIOSK, visited, toLocal, toLatLng, setTab};
 })();
 </script>
 
